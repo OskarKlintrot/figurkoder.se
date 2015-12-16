@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import Main from './components/main.jsx'; // Our custom react component
+import Main from './components/main'; // Our custom react component
 
-import StartPage from './components/startPage.jsx';
-import Game from './components/game.jsx';
-import Result from './components/result.jsx';
+import StartPage from './components/startPage';
+import Game from './components/game';
+import Result from './components/result';
 
 //Needed for React Developer Tools
 window.React = React;

@@ -1,16 +1,14 @@
-import React from 'react';
-import Master from './shared/master';
+import React from 'react'
+import Tiles from './startPage/tiles'
 
-import Tiles from './startPage/tiles';
-
-const StartPage = React.createClass({
+class StartPage extends React.Component{
   render(){
     return(
-      <Master>
+      <div>
         <Tiles />
-      </Master>
-    );
+      </div>
+    )
   }
-});
+}
 
-export default StartPage;
+export default StartPage

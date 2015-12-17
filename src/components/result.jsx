@@ -1,22 +1,27 @@
-import React, { PropTypes } from 'react';
-import Master from './shared/master';
-import InGameHeader from './shared/inGameHeader';
-import ResultTable from './result/resultTable';
+import React, { PropTypes } from 'react'
+import InGameHeader from './shared/inGameHeader'
+import ResultTable from './result/resultTable'
 
-const Result = () => {
+const Result = (props) => {
+  let { url } = props
+
   let results = [
                 ['02', 1.2],
                 ['01', "Näsa"],
                 ['04', 2.3],
-                ['03', 0.5]
-              ];
+                ['03', 0.5],
+              ]
 
   return(
-    <Master>
-      <InGameHeader title="Siffror" />
+    <div>
+      <InGameHeader title="Siffror" url={url} />
       <ResultTable results={results} />
-    </Master>
-  );
-};
+    </div>
+  )
+}
 
-export default Result;
+Result.propTypes = {
+    url: PropTypes.string.isRequired,
+}
+
+export default Result

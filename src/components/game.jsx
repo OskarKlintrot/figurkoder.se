@@ -1,21 +1,41 @@
-import React from 'react';
-import Master from './shared/master';
-import InGameHeader from './shared/inGameHeader';
-import Description from './game/description';
-import GameOptions from './game/gameOptions3';
-import Playground from './game/playground';
+import React from 'react'
+import InGameHeader from './shared/inGameHeader'
+import Description from './game/description'
+import GameOptionsTextbox from './game/gameOptionsTextbox'
+import GameOptionsDropdown from './game/gameOptionsDropdown'
+import Playground from './game/playground'
 
-const Game = React.createClass({
-  render(){
-    return(
-      <Master>
-        <InGameHeader title="Bokstäver" />
-        <Description description="Låt oss öva på lite bokstäver vetja! It be fun, they said..." />
-        <Playground mnemomicImage='C' countdown={'Chokladtårta'} />
-        <GameOptions />
-      </Master>
-    );
+import Games from '../games'
+
+class Game extends React.Component{
+  constructor(props) {
+    super(props)
+    this.state = {
+      game: Games[this.props.params.game],
+    }
   }
-});
 
-export default Game;
+  render() {
+    return(
+      <div>
+        <InGameHeader title={this.state.game.title} />
+        <Description description={this.state.game.description} />
+        <Playground mnemomicImage='C' countdown={'Chokladtårta'} options={this.state.game.option} />
+          {(() => {
+          switch (this.state.game.option) {
+            case "textbox":
+              return <GameOptionsTextbox />
+              break
+              case "dropdown":
+                return <GameOptionsDropdown />
+                break
+            default:
+              return null
+          }
+        })()}
+      </div>
+    )
+  }
+}
+
+export default Game

@@ -1,8 +1,8 @@
-import React from 'react';
-import { Navigation, Drawer } from 'react-mdl';
+import React from 'react'
+import { Navigation, Drawer } from 'react-mdl'
 
-const Menu = () =>{
-    return(
+const Menu = () => {
+    return (
       <Drawer title="Meny">
         <Navigation>
           <a href="">Hem</a>
@@ -11,7 +11,7 @@ const Menu = () =>{
           <a href="">Kontakta mig</a>
         </Navigation>
       </Drawer>
-    );
-};
+    )
+}
 
-export default Menu;
+export default Menu

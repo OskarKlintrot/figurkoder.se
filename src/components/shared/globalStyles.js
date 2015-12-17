@@ -1,14 +1,13 @@
-const GlobalStyles =  {
+const GlobalStyles = {
   game: {
     div: {
       padding: '0 10px 10px 10px',
       // display: 'flex'
     },
     grid: {
-        paddingBottom: '0'
-      }
-  }
+        paddingBottom: '0',
+      },
+  },
+}
 
-};
-
-export default GlobalStyles;
+export default GlobalStyles

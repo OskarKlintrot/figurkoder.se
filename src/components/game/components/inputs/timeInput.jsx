@@ -1,22 +1,23 @@
-import React from 'react';
-import { Textfield } from 'react-mdl';
+import React from 'react'
+import { Textfield } from 'react-mdl'
 
 const styles = {
   Textfield: {
-    paddingBottom: '10px'
-  }
-};
-
-const TimeInput = React.createClass({
-getInitialState(){
-    return {
-      time: 6
-    };
+    paddingBottom: '10px',
   },
+}
+
+class TimeInput extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      time: 6,
+    }
+  }
 
   onTimeChange(e){
-    this.setState({time: e.target.value});
-  },
+    this.setState({time: e.target.value})
+  }
 
   render(){
     return (
@@ -30,8 +31,8 @@ getInitialState(){
       value={this.state.time}
       style={styles.Textfield}
       />
-    );
+    )
   }
-});
+}
 
-export default TimeInput;
+export default TimeInput

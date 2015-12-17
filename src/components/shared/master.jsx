@@ -1,11 +1,11 @@
-import React from 'react';
-import { Layout, Content, Footer } from 'react-mdl';
-import Container from './container';
-import Menu from './menu';
-import CustomHeader from './customHeader';
+import React from 'react'
+import { Layout, Content, Footer } from 'react-mdl'
+import Container from './container'
+import Menu from './menu'
+import CustomHeader from './customHeader'
 
-const Master = props => {
-  const { children } = props;
+const Master = (props) => {
+  const { children } = props
 
   return(
     <Layout fixedHeader>
@@ -17,7 +17,7 @@ const Master = props => {
         </Container>
       </Content>
     </Layout>
-  );
-};
+  )
+}
 
-export default Master;
+export default Master

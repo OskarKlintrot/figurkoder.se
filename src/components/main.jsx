@@ -1,27 +1,24 @@
-import React, { PropTypes } from 'react';
-import Master from './shared/master';
-
-import InGameHeader from './shared/inGameHeader';
-
-import ResultTable from './result/resultTable';
+import React, { PropTypes } from 'react'
+import InGameHeader from './shared/inGameHeader'
+import ResultTable from './result/resultTable'
 
 const Main = () => {
   let results = [
                 ['02', 1.2],
                 ['01', "Näsa"],
                 ['04', 2.3],
-                ['03', 0.5]
-              ];
+                ['03', 0.5],
+              ]
 
-  return(
-    <Master>
+  return (
+    <div>
       <InGameHeader title="Siffror" />
       <ResultTable results={results} />
-    </Master>
-  );
-};
+    </div>
+  )
+}
 
-export default Main;
+export default Main
 
 
 
@@ -32,21 +29,21 @@ export default Main;
 // getInitialState () {
 //   return {
 //     muiTheme: ThemeManager.getMuiTheme(LightRawTheme),
-//   };
+//   }
 // },
 //
 // getChildContext() {
 //   return {
 //     muiTheme: this.state.muiTheme,
-//   };
+//   }
 // },
 //
 // componentWillMount() {
 //   let newMuiTheme = ThemeManager.modifyRawThemePalette(this.state.muiTheme, {
 //     accent1Color: Colors.deepOrange500,
-//   });
+//   })
 //
-//   this.setState({muiTheme: newMuiTheme});
+//   this.setState({muiTheme: newMuiTheme})
 // },
 //
 // render() {
@@ -54,11 +51,11 @@ export default Main;
 //   let containerStyle = {
 //     textAlign: 'center',
 //     paddingTop: '200px',
-//   };
+//   }
 //
 //   let standardActions = [
 //     { text: 'Okay' },
-//   ];
+//   ]
 //
 //   return (
 //     <div style={containerStyle}>
@@ -75,9 +72,9 @@ export default Main;
 //       <RaisedButton label="My Not So Super Secret Password" primary={true} onTouchTap={this._handleTouchTap} />
 //
 //     </div>
-//   );
+//   )
 // },
 //
 // _handleTouchTap() {
-//   this.refs.superSecretPasswordDialog.show();
+//   this.refs.superSecretPasswordDialog.show()
 // },

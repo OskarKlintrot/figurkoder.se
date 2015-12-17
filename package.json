@@ -1,7 +1,11 @@
 {
   "name": "figurkoder",
   "version": "0.0.1",
+<<<<<<< HEAD
   "description": "figurkoder.se ",
+=======
+  "description": "",
+>>>>>>> 094acf190820a23e5bdc391f59d0c8efb477402c
   "repository": {
     "type": "git",
     "url": "https://github.com/OskarKlintrot/figurkoder.se"
@@ -28,9 +32,16 @@
     "webpack-dev-server": "^1.14.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
+=======
+    "history": "^1.13.1",
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0",
+>>>>>>> 094acf190820a23e5bdc391f59d0c8efb477402c
     "react-mdl": "^1.0.2",
+    "react-router": "^1.0.2",
     "react-tap-event-plugin": "^0.2.1"
   }
 }

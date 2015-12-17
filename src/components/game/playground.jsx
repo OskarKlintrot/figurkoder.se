@@ -1,6 +1,6 @@
-import React, { PropTypes } from 'react';
-import { Button, Grid, Cell, Icon, FABButton } from 'react-mdl';
-import Presentation from './components/presentation';
+import React, { PropTypes } from 'react'
+import { Button, Grid, Cell, Icon, FABButton } from 'react-mdl'
+import Presentation from './components/presentation'
 
 const styles = {
   div: {
@@ -11,22 +11,22 @@ const styles = {
         paddingTop: '5px',
         display: 'flex',
         flexWrap: 'nowrap',
-        justifyContent: 'space-around'
-      }
+        justifyContent: 'space-around',
+      },
+  },
+}
+
+class Playground extends React.Component {
+  show() {
+    console.log("Show!")
   }
-};
 
-const Playground = React.createClass({
-  show(){
-    console.log("Show!");
-  },
+  next() {
+    console.log("Next!")
+  }
 
-  next(){
-    console.log("Next!");
-  },
-
-  render(){
-    return(
+  render() {
+    return (
       <div style={styles.div.main}>
         <Presentation value={this.props.mnemomicImage} />
         <Presentation value={isNaN(this.props.countdown) ? this.props.countdown : this.props.countdown + '...'} />
@@ -35,8 +35,8 @@ const Playground = React.createClass({
           <Button onClick={this.next} ripple raised>Nästa <Icon name="skip_next" /></Button>
         </div>
       </div>
-    );
+    )
   }
-});
+}
 
-export default Playground;
+export default Playground

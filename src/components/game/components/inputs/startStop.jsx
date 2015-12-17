@@ -1,35 +1,35 @@
-import React from 'react';
-import { Icon, FABButton } from 'react-mdl';
+import React from 'react'
+import { Icon, FABButton } from 'react-mdl'
 
 const styles = {
   div: {
       display: 'flex',
       flexWrap: 'nowrap',
       justifyContent: 'space-around',
-      paddingBottom: '10px'
+      paddingBottom: '10px',
     },
   FABButton: {
     height: '40px',
     width: '40px',
-    minWidth: '40px'
+    minWidth: '40px',
+  },
+}
+
+class StartStop extends React.Component {
+  start() {
+    console.log("Start!")
   }
-};
 
-const StartStop = React.createClass({
-  start(){
-    console.log("Start!");
-  },
+  pause() {
+    console.log("Pause!")
+  }
 
-  pause(){
-    console.log("Pause!");
-  },
+  stop() {
+    console.log("Stop!")
+  }
 
-  stop(){
-    console.log("Stop!");
-  },
-
-  render(){
-    return(
+  render() {
+    return (
         <div style={styles.div}>
           <FABButton ripple onClick={this.start}
             style={styles.FABButton}>
@@ -44,8 +44,8 @@ const StartStop = React.createClass({
             <Icon name="stop" />
           </FABButton>
         </div>
-    );
+    )
   }
-});
+}
 
-export default StartStop;
+export default StartStop

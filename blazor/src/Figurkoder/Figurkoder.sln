@@ -3,7 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.WebApp", "Figurkoder.WebApp\Figurkoder.WebApp.csproj", "{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.WebApp", "Figurkoder.WebApp\Figurkoder.WebApp.csproj", "{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.Domain", "Figurkoder.Domain\Figurkoder.Domain.csproj", "{831966A5-0706-4F19-AD28-E4757FD0CE49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.Application", "Figurkoder.Application\Figurkoder.Application.csproj", "{C58741E3-F4CA-4A6F-9515-95E23B8B2454}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DA6C4E5B-C771-436A-8E05-F2958583C158}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.UnitTests", "Tests\Figurkoder.UnitTests\Figurkoder.UnitTests.csproj", "{FD656A64-9776-40F2-A22D-24555843EA9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +23,24 @@ Global
 		{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{831966A5-0706-4F19-AD28-E4757FD0CE49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{831966A5-0706-4F19-AD28-E4757FD0CE49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{831966A5-0706-4F19-AD28-E4757FD0CE49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{831966A5-0706-4F19-AD28-E4757FD0CE49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C58741E3-F4CA-4A6F-9515-95E23B8B2454}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C58741E3-F4CA-4A6F-9515-95E23B8B2454}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C58741E3-F4CA-4A6F-9515-95E23B8B2454}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C58741E3-F4CA-4A6F-9515-95E23B8B2454}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD656A64-9776-40F2-A22D-24555843EA9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD656A64-9776-40F2-A22D-24555843EA9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD656A64-9776-40F2-A22D-24555843EA9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD656A64-9776-40F2-A22D-24555843EA9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FD656A64-9776-40F2-A22D-24555843EA9B} = {DA6C4E5B-C771-436A-8E05-F2958583C158}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {377E7C12-B5D4-4724-A338-93F40F653C93}

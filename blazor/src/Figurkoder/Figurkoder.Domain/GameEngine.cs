@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Timers;
 
 namespace Figurkoder.Domain
@@ -7,7 +8,14 @@ namespace Figurkoder.Domain
     {
         private readonly Timer _timer;
 
-        public event EventHandler<EventArgs>? ShowNext;
+        /// <summary>
+        /// Shows the current flash card
+        /// </summary>
+        public event EventHandler<EventArgs>? Current;
+
+        /// <summary>
+        /// Triggers when the game starts
+        /// </summary>
         public event EventHandler<EventArgs>? GameStart;
 
         public GameEngine()
@@ -23,6 +31,7 @@ namespace Figurkoder.Domain
             _timer.Start();
 
             OnStart(EventArgs.Empty);
+            OnShowNext(EventArgs.Empty);
         }
 
         private void TimerElapsed(object sender, ElapsedEventArgs e)
@@ -37,7 +46,7 @@ namespace Figurkoder.Domain
 
         private void OnShowNext(EventArgs e)
         {
-            ShowNext?.Invoke(this, e);
+            Current?.Invoke(this, e);
         }
     }
 

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddDomain(this IServiceCollection services)
         {
             return services
-                .AddSingleton<Game>(); // TODO: Use interface
+                .AddSingleton<GameEngine>(); // TODO: Use interface
         }
     }
 }

@@ -6,13 +6,13 @@ using Xunit;
 
 namespace Figurkoder.UnitTests.Domain
 {
-    public class GameFacts
+    public class GameEngineFacts
     {
         [Fact]
         public void Start_GameStarts_ShowNextEventTriggers()
         {
             // Arrange
-            var game = new Game();
+            var game = new GameEngine();
             var sw = new Stopwatch();
             var showNextReceived = new AutoResetEvent(false);
             game.GameStart += GameStartHandler;
@@ -29,7 +29,7 @@ namespace Figurkoder.UnitTests.Domain
             }
 
             // Act
-            game.Start(new NewGame { FlashTime = TimeSpan.FromMilliseconds(100) });
+            game.Start(new Game { FlashTime = TimeSpan.FromMilliseconds(100) });
 
             // Assert
             showNextReceived.WaitOne(TimeSpan.FromMilliseconds(115));

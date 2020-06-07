@@ -3,20 +3,20 @@ using System.Timers;
 
 namespace Figurkoder.Domain
 {
-    public sealed class Game
+    public sealed class GameEngine
     {
         private readonly Timer _timer;
 
         public event EventHandler<EventArgs>? ShowNext;
         public event EventHandler<EventArgs>? GameStart;
 
-        public Game()
+        public GameEngine()
         {
             _timer = new Timer();
             _timer.Elapsed += TimerElapsed;
         }
 
-        public void Start(NewGame newGame)
+        public void Start(Game newGame)
         {
             _timer.Interval = newGame.FlashTime.TotalMilliseconds;
 
@@ -41,7 +41,7 @@ namespace Figurkoder.Domain
         }
     }
 
-    public sealed class NewGame
+    public sealed class Game
     {
         public TimeSpan FlashTime { get; set; } = TimeSpan.FromSeconds(6);
     }

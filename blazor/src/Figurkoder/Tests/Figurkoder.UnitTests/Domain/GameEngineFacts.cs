@@ -10,6 +10,21 @@ namespace Figurkoder.UnitTests.Domain
     public class GameEngineFacts
     {
         [Fact]
+        public void Start_NoFlashCardsProvided_ThrowArgumentException()
+        {
+            // Arrange
+            var gameEngine = new GameEngine();
+
+            // Act
+            var exception = Record.Exception(()
+                => gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), Array.Empty<KeyValuePair<string, string>>())));
+
+            // Assert
+            Assert.IsType<ArgumentException>(exception);
+            Assert.Equal("Missing flash cards! (Parameter 'game')", exception.Message);
+        }
+
+        [Fact]
         public void Start_GameStarts_CurrentEventTriggers()
         {
             // Arrange

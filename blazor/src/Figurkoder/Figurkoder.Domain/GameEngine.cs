@@ -8,6 +8,7 @@ namespace Figurkoder.Domain
     public sealed class GameEngine
     {
         private readonly Timer _timer;
+        private readonly IList<(KeyValuePair<string, string> FlashCard, TimeSpan Time)> _result;
         private int _counter;
         private KeyValuePair<string, string>[] _flashCards = Array.Empty<KeyValuePair<string, string>>();
 
@@ -24,23 +25,25 @@ namespace Figurkoder.Domain
         /// <summary>
         /// Triggers when the game has finished
         /// </summary>
-        public event EventHandler<EventArgs>? GameFinished;
+        public event EventHandler<GameFinishedEventArgs>? GameFinished;
 
         public GameEngine()
         {
             _timer = new Timer();
+            _result = new List<(KeyValuePair<string, string> FlashCard, TimeSpan Time)>();
+
             _timer.Elapsed += TimerElapsed;
         }
 
         public void Start(Game game)
         {
             OnStart(game);
-            UpdateCurrent();
+            UpdateCurrent(TimeSpan.Zero);
         }
 
         private void TimerElapsed(object sender, ElapsedEventArgs e)
         {
-            UpdateCurrent();
+            UpdateCurrent(TimeSpan.FromMilliseconds(_timer.Interval));
         }
 
         private void OnStart(Game game)
@@ -61,22 +64,32 @@ namespace Figurkoder.Domain
             _timer.Start();
         }
 
-        private void OnFinished(EventArgs e)
+        private void OnFinished()
         {
             _timer.Stop();
 
-            GameFinished?.Invoke(this, e);
+            var result = new GameFinishedEventArgs(_result.ToArray());
+
+            GameFinished?.Invoke(this, result);
         }
 
-        private void UpdateCurrent()
+        private void UpdateCurrent(TimeSpan timeSpan)
         {
+            // Add previous, if any, to result
+            if (_counter > 0)
+            {
+                _result.Add((_flashCards[_counter - 1], timeSpan));
+            }
+
+            // Check if we have any flash cards left
             if (_counter >= _flashCards.Length)
             {
-                OnFinished(EventArgs.Empty);
+                OnFinished();
 
                 return;
             }
 
+            // Next flash card
             _counter++;
 
             var e = new CurrentEventArgs(_counter, _flashCards[_counter-1]);
@@ -95,6 +108,21 @@ namespace Figurkoder.Domain
         {
             Count = count;
             Current = current;
+        }
+    }
+
+    public sealed class GameFinishedEventArgs : EventArgs
+    {
+        public TimeSpan Average { get; }
+        public (KeyValuePair<string, string> FlashCard, TimeSpan Time)[] Result { get; }
+
+        public GameFinishedEventArgs((KeyValuePair<string, string> FlashCard, TimeSpan Time)[] result)
+        {
+            Result = result;
+
+            Average = TimeSpan.FromMilliseconds(result
+                .Select(x => x.Time)
+                .Average(x => x.TotalMilliseconds));
         }
     }
 

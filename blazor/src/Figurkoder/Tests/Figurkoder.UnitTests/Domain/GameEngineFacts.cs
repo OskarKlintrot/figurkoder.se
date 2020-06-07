@@ -90,6 +90,39 @@ namespace Figurkoder.UnitTests.Domain
         }
 
         [Fact]
+        public void Start_GameEnds_Result()
+        {
+            // Arrange
+            var gameEngine = new GameEngine();
+            var finishedReceived = new AutoResetEvent(false);
+            gameEngine.GameFinished += GameFinishedHandler;
+            GameFinishedEventArgs? gameFinishedEventArgs = null;
+
+            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
+            {
+                gameFinishedEventArgs = e;
+                finishedReceived.Set();
+            }
+
+            // Act
+            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(10), new[] { KeyValuePair.Create("Foo", "Bar"), KeyValuePair.Create("Bar", "Foo") }));
+
+            // Assert
+            Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(50)));
+            Assert.Equal(2, gameFinishedEventArgs?.Result.Length);
+
+            Assert.Equal("Foo", gameFinishedEventArgs?.Result[0].FlashCard.Key);
+            Assert.Equal("Bar", gameFinishedEventArgs?.Result[0].FlashCard.Value);
+            Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Result[0].Time);
+
+            Assert.Equal("Bar", gameFinishedEventArgs?.Result[1].FlashCard.Key);
+            Assert.Equal("Foo", gameFinishedEventArgs?.Result[1].FlashCard.Value);
+            Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Result[1].Time);
+
+            Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Average);
+        }
+
+        [Fact]
         public void Start_TimesUp_CurrentEventTriggers()
         {
             // Arrange

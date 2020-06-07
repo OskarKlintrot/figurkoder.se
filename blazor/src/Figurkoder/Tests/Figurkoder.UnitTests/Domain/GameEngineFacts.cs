@@ -25,15 +25,37 @@ namespace Figurkoder.UnitTests.Domain
         }
 
         [Fact]
+        public void Start_GameStarts_GameStartEventTriggers()
+        {
+            // Arrange
+            var gameEngine = new GameEngine();
+            var startReceived = new AutoResetEvent(false);
+            gameEngine.GameStart += GameStartHandler;
+
+            void GameStartHandler(object? _, EventArgs e)
+            {
+                startReceived.Set();
+            }
+
+            // Act
+            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), new [] { KeyValuePair.Create("Foo", "Bar") }));
+
+            // Assert
+            Assert.True(startReceived.WaitOne(TimeSpan.FromMilliseconds(10)));
+        }
+
+        [Fact]
         public void Start_GameStarts_CurrentEventTriggers()
         {
             // Arrange
             var gameEngine = new GameEngine();
             var currentReceived = new AutoResetEvent(false);
+            CurrentEventArgs? currentEventArgs = null;
             gameEngine.Current += CurrentHandler;
 
-            void CurrentHandler(object? _, EventArgs e)
+            void CurrentHandler(object? _, CurrentEventArgs e)
             {
+                currentEventArgs = e;
                 currentReceived.Set();
             }
 
@@ -41,7 +63,10 @@ namespace Figurkoder.UnitTests.Domain
             gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), new [] { KeyValuePair.Create("Foo", "Bar") }));
 
             // Assert
-            Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(10)));
+            Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(10))); // 10 ms to make sure the enginge never has a change to trigger Current based on timer elapsed
+            Assert.Equal(1, currentEventArgs?.Count);
+            Assert.Equal("Foo", currentEventArgs?.Current.Key);
+            Assert.Equal("Bar", currentEventArgs?.Current.Value);
         }
 
         [Fact]
@@ -72,21 +97,24 @@ namespace Figurkoder.UnitTests.Domain
             var gameEngine = new GameEngine();
             var sw = new Stopwatch();
             var currentReceived = new AutoResetEvent(false);
-            gameEngine.GameStart += GameStartHandler;
             gameEngine.Current += CurrentHandler;
 
-            void GameStartHandler(object? _, EventArgs e)
-            {
-                sw.Start();
-            }
             void CurrentHandler(object? _, EventArgs e)
             {
                 currentCounter++;
 
-                if (currentCounter == 2)
+                if (currentCounter == 1)
+                {
+                    sw.Start();
+                }
+                else if (currentCounter == 2)
                 {
                     sw.Stop();
                     currentReceived.Set();
+                }
+                else
+                {
+                    throw new NotSupportedException($"Current should only be triggered 2 times, not {currentCounter}.");
                 }
             }
 

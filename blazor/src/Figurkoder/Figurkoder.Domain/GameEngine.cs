@@ -22,7 +22,7 @@ namespace Figurkoder.Domain
 
             _timer.Start();
 
-            OnStart(new EventArgs());
+            OnStart(EventArgs.Empty);
         }
 
         private void TimerElapsed(object sender, ElapsedEventArgs e)

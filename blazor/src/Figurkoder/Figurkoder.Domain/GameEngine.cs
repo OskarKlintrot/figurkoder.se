@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 
@@ -7,6 +8,7 @@ namespace Figurkoder.Domain
 {
     public sealed class GameEngine
     {
+        private readonly Stopwatch _stopwatch;
         private readonly Timer _timer;
         private readonly IList<(KeyValuePair<string, string> FlashCard, TimeSpan Time)> _result;
         private int _counter;
@@ -29,6 +31,7 @@ namespace Figurkoder.Domain
 
         public GameEngine()
         {
+            _stopwatch = new Stopwatch();
             _timer = new Timer();
             _result = new List<(KeyValuePair<string, string> FlashCard, TimeSpan Time)>();
 
@@ -38,12 +41,38 @@ namespace Figurkoder.Domain
         public void Start(Game game)
         {
             OnStart(game);
-            UpdateCurrent(TimeSpan.Zero);
+            Next(TimeSpan.Zero);
+        }
+
+        public void Next(TimeSpan? time = null)
+        {
+            // Add previous, if any, to result
+            if (_counter > 0)
+            {
+                _result.Add((_flashCards[_counter - 1], time ?? _stopwatch.Elapsed));
+            }
+
+            // Check if we have any flash cards left
+            if (_counter >= _flashCards.Length)
+            {
+                OnFinished();
+
+                return;
+            }
+
+            // Next flash card
+            _counter++;
+
+            var e = new CurrentEventArgs(_counter, _flashCards[_counter - 1]);
+
+            // Reset timer and stopwatch
+            Current?.Invoke(this, e);
+            _stopwatch.Restart();
         }
 
         private void TimerElapsed(object sender, ElapsedEventArgs e)
         {
-            UpdateCurrent(TimeSpan.FromMilliseconds(_timer.Interval));
+            Next(TimeSpan.FromMilliseconds(_timer.Interval));
         }
 
         private void OnStart(Game game)
@@ -61,6 +90,7 @@ namespace Figurkoder.Domain
 
             GameStart?.Invoke(this, EventArgs.Empty);
 
+            _stopwatch.Restart();
             _timer.Start();
         }
 
@@ -71,30 +101,6 @@ namespace Figurkoder.Domain
             var result = new GameFinishedEventArgs(_result.ToArray());
 
             GameFinished?.Invoke(this, result);
-        }
-
-        private void UpdateCurrent(TimeSpan timeSpan)
-        {
-            // Add previous, if any, to result
-            if (_counter > 0)
-            {
-                _result.Add((_flashCards[_counter - 1], timeSpan));
-            }
-
-            // Check if we have any flash cards left
-            if (_counter >= _flashCards.Length)
-            {
-                OnFinished();
-
-                return;
-            }
-
-            // Next flash card
-            _counter++;
-
-            var e = new CurrentEventArgs(_counter, _flashCards[_counter-1]);
-
-            Current?.Invoke(this, e);
         }
     }
 

@@ -11,7 +11,7 @@ namespace Figurkoder.UnitTests.Domain
     public class GameEngineFacts
     {
         [Fact]
-        public void Start_NoFlashCardsProvided_ThrowArgumentException()
+        public void Start_NoFlashcardsProvided_ThrowArgumentException()
         {
             // Arrange
             var gameEngine = new GameEngine();
@@ -22,7 +22,7 @@ namespace Figurkoder.UnitTests.Domain
 
             // Assert
             Assert.IsType<ArgumentException>(exception);
-            Assert.Equal("Missing flash cards! (Parameter 'game')", exception.Message);
+            Assert.Equal("Missing flashcards! (Parameter 'game')", exception.Message);
         }
 
         [Fact]
@@ -112,12 +112,12 @@ namespace Figurkoder.UnitTests.Domain
             Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(50)));
             Assert.Equal(2, gameFinishedEventArgs?.Result.Length);
 
-            Assert.Equal("Foo", gameFinishedEventArgs?.Result[0].FlashCard.Key);
-            Assert.Equal("Bar", gameFinishedEventArgs?.Result[0].FlashCard.Value);
+            Assert.Equal("Foo", gameFinishedEventArgs?.Result[0].Flashcard.Key);
+            Assert.Equal("Bar", gameFinishedEventArgs?.Result[0].Flashcard.Value);
             Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Result[0].Time);
 
-            Assert.Equal("Bar", gameFinishedEventArgs?.Result[1].FlashCard.Key);
-            Assert.Equal("Foo", gameFinishedEventArgs?.Result[1].FlashCard.Value);
+            Assert.Equal("Bar", gameFinishedEventArgs?.Result[1].Flashcard.Key);
+            Assert.Equal("Foo", gameFinishedEventArgs?.Result[1].Flashcard.Value);
             Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Result[1].Time);
 
             Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Average);
@@ -230,16 +230,16 @@ namespace Figurkoder.UnitTests.Domain
             Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(1000)));
             Assert.Equal(3, gameFinishedEventArgs?.Result.Length);
 
-            Assert.Equal("Foo", gameFinishedEventArgs?.Result[0].FlashCard.Key);
-            Assert.Equal("Bar", gameFinishedEventArgs?.Result[0].FlashCard.Value);
+            Assert.Equal("Foo", gameFinishedEventArgs?.Result[0].Flashcard.Key);
+            Assert.Equal("Bar", gameFinishedEventArgs?.Result[0].Flashcard.Value);
             Assert.InRange(gameFinishedEventArgs?.Result[0].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(180), TimeSpan.FromMilliseconds(220)); // Allow ±20ms
 
-            Assert.Equal("Bar", gameFinishedEventArgs?.Result[1].FlashCard.Key);
-            Assert.Equal("Foo", gameFinishedEventArgs?.Result[1].FlashCard.Value);
+            Assert.Equal("Bar", gameFinishedEventArgs?.Result[1].Flashcard.Key);
+            Assert.Equal("Foo", gameFinishedEventArgs?.Result[1].Flashcard.Value);
             Assert.InRange(gameFinishedEventArgs?.Result[1].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
 
-            Assert.Equal("Fuu", gameFinishedEventArgs?.Result[2].FlashCard.Key);
-            Assert.Equal("bar", gameFinishedEventArgs?.Result[2].FlashCard.Value);
+            Assert.Equal("Fuu", gameFinishedEventArgs?.Result[2].Flashcard.Key);
+            Assert.Equal("bar", gameFinishedEventArgs?.Result[2].Flashcard.Value);
             Assert.Equal(TimeSpan.FromMilliseconds(500), gameFinishedEventArgs?.Result[2].Time);
 
             Assert.InRange(gameFinishedEventArgs?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(240), TimeSpan.FromMilliseconds(280)); // Allow ±20ms
@@ -257,7 +257,7 @@ namespace Figurkoder.UnitTests.Domain
         [InlineData(8)]
         [InlineData(9)]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters", Justification = "Run test 10 times to make sure order is respected")]
-        public void Start_TwoFlashCard_CurrentEventTriggersTwoTimes(int _)
+        public void Start_TwoFlashcard_CurrentEventTriggersTwoTimes(int _)
         {
             // Arrange
             var gameEngine = new GameEngine();

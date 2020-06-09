@@ -11,6 +11,7 @@ namespace Figurkoder.UnitTests.Domain
 {
     public class GameEngineFacts
     {
+        #region Start
         [Fact]
         public void Start_NoFlashcardsProvided_ThrowArgumentException()
         {
@@ -175,103 +176,6 @@ namespace Figurkoder.UnitTests.Domain
             Assert.InRange(sw.Elapsed, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
         }
 
-        [Fact]
-        public async Task Start_Next_CurrentEventTriggers()
-        {
-            // Arrange
-            var currentCounter = 0;
-            var gameEngine = new GameEngine();
-            var sw = new Stopwatch();
-            var currentReceived = new AutoResetEvent(false);
-            gameEngine.Current += CurrentHandler;
-
-            void CurrentHandler(object? _, EventArgs e)
-            {
-                currentCounter++;
-
-                if (currentCounter == 1)
-                {
-                    sw.Start();
-                }
-                else if (currentCounter == 2)
-                {
-                    sw.Stop();
-                    currentReceived.Set();
-                }
-                else
-                {
-                    throw new NotSupportedException($"Current should only be triggered 2 times, not {currentCounter}.");
-                }
-            }
-
-            gameEngine.Start(new Game(
-                TimeSpan.FromMilliseconds(1000),
-                new[]
-                {
-                    KeyValuePair.Create("Foo", "Bar"),
-                    KeyValuePair.Create("Foo", "Bar")
-                },
-                false));
-
-            // Act
-            await Task.Delay(100);
-            gameEngine.Next();
-
-            // Assert
-            currentReceived.WaitOne(TimeSpan.FromMilliseconds(115));
-            Assert.InRange(sw.Elapsed, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
-        }
-
-        [Fact]
-        public async Task Start_GameEndsByUsingNext_Result()
-        {
-            // Arrange
-            var gameEngine = new GameEngine();
-            var finishedReceived = new AutoResetEvent(false);
-            gameEngine.GameFinished += GameFinishedHandler;
-            GameFinishedEventArgs? gameFinishedEventArgs = null;
-
-            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
-            {
-                gameFinishedEventArgs = e;
-                finishedReceived.Set();
-            }
-
-            gameEngine.Start(new Game(
-                TimeSpan.FromMilliseconds(500),
-                new[]
-                {
-                    KeyValuePair.Create("Foo", "Bar"),
-                    KeyValuePair.Create("Bar", "Foo"),
-                    KeyValuePair.Create("Fuu", "bar")
-                },
-                false));
-
-            // Act
-            await Task.Delay(200);
-            gameEngine.Next();
-            await Task.Delay(100);
-            gameEngine.Next();
-
-            // Assert
-            Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(1000)));
-            Assert.Equal(3, gameFinishedEventArgs?.Result.Length);
-
-            Assert.Equal("Foo", gameFinishedEventArgs?.Result[0].Flashcard.Key);
-            Assert.Equal("Bar", gameFinishedEventArgs?.Result[0].Flashcard.Value);
-            Assert.InRange(gameFinishedEventArgs?.Result[0].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(180), TimeSpan.FromMilliseconds(220)); // Allow ±20ms
-
-            Assert.Equal("Bar", gameFinishedEventArgs?.Result[1].Flashcard.Key);
-            Assert.Equal("Foo", gameFinishedEventArgs?.Result[1].Flashcard.Value);
-            Assert.InRange(gameFinishedEventArgs?.Result[1].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
-
-            Assert.Equal("Fuu", gameFinishedEventArgs?.Result[2].Flashcard.Key);
-            Assert.Equal("bar", gameFinishedEventArgs?.Result[2].Flashcard.Value);
-            Assert.Equal(TimeSpan.FromMilliseconds(500), gameFinishedEventArgs?.Result[2].Time);
-
-            Assert.InRange(gameFinishedEventArgs?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(240), TimeSpan.FromMilliseconds(280)); // Allow ±20ms
-        }
-
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
@@ -399,5 +303,105 @@ namespace Figurkoder.UnitTests.Domain
             Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Average);
             Assert.True(flashcards.SequenceEqual(gameFinishedEventArgs?.Result.Select(x => x.Flashcard)));
         }
+        #endregion
+
+        #region Next
+        [Fact]
+        public async Task Next_BeforeTimesUp_CurrentEventTriggers()
+        {
+            // Arrange
+            var currentCounter = 0;
+            var gameEngine = new GameEngine();
+            var sw = new Stopwatch();
+            var currentReceived = new AutoResetEvent(false);
+            gameEngine.Current += CurrentHandler;
+
+            void CurrentHandler(object? _, EventArgs e)
+            {
+                currentCounter++;
+
+                if (currentCounter == 1)
+                {
+                    sw.Start();
+                }
+                else if (currentCounter == 2)
+                {
+                    sw.Stop();
+                    currentReceived.Set();
+                }
+                else
+                {
+                    throw new NotSupportedException($"Current should only be triggered 2 times, not {currentCounter}.");
+                }
+            }
+
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(1000),
+                new[]
+                {
+                    KeyValuePair.Create("Foo", "Bar"),
+                    KeyValuePair.Create("Foo", "Bar")
+                },
+                false));
+
+            // Act
+            await Task.Delay(100);
+            gameEngine.Next();
+
+            // Assert
+            currentReceived.WaitOne(TimeSpan.FromMilliseconds(115));
+            Assert.InRange(sw.Elapsed, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
+        }
+
+        [Fact]
+        public async Task Next_GameEnds_Result()
+        {
+            // Arrange
+            var gameEngine = new GameEngine();
+            var finishedReceived = new AutoResetEvent(false);
+            gameEngine.GameFinished += GameFinishedHandler;
+            GameFinishedEventArgs? gameFinishedEventArgs = null;
+
+            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
+            {
+                gameFinishedEventArgs = e;
+                finishedReceived.Set();
+            }
+
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(500),
+                new[]
+                {
+                    KeyValuePair.Create("Foo", "Bar"),
+                    KeyValuePair.Create("Bar", "Foo"),
+                    KeyValuePair.Create("Fuu", "bar")
+                },
+                false));
+
+            // Act
+            await Task.Delay(200);
+            gameEngine.Next();
+            await Task.Delay(100);
+            gameEngine.Next();
+
+            // Assert
+            Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(1000)));
+            Assert.Equal(3, gameFinishedEventArgs?.Result.Length);
+
+            Assert.Equal("Foo", gameFinishedEventArgs?.Result[0].Flashcard.Key);
+            Assert.Equal("Bar", gameFinishedEventArgs?.Result[0].Flashcard.Value);
+            Assert.InRange(gameFinishedEventArgs?.Result[0].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(180), TimeSpan.FromMilliseconds(220)); // Allow ±20ms
+
+            Assert.Equal("Bar", gameFinishedEventArgs?.Result[1].Flashcard.Key);
+            Assert.Equal("Foo", gameFinishedEventArgs?.Result[1].Flashcard.Value);
+            Assert.InRange(gameFinishedEventArgs?.Result[1].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
+
+            Assert.Equal("Fuu", gameFinishedEventArgs?.Result[2].Flashcard.Key);
+            Assert.Equal("bar", gameFinishedEventArgs?.Result[2].Flashcard.Value);
+            Assert.Equal(TimeSpan.FromMilliseconds(500), gameFinishedEventArgs?.Result[2].Time);
+
+            Assert.InRange(gameFinishedEventArgs?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(240), TimeSpan.FromMilliseconds(280)); // Allow ±20ms
+        }
+        #endregion
     }
 }

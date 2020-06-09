@@ -64,7 +64,7 @@ namespace Figurkoder.UnitTests.Domain
             gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), new [] { KeyValuePair.Create("Foo", "Bar") }));
 
             // Assert
-            Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(10))); // 10 ms to make sure the enginge never has a change to trigger Current based on timer elapsed
+            Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(10))); // 10 ms to make sure the enginge never have a chance to trigger Current based on timer elapsed
             Assert.Equal(1, currentEventArgs?.Count);
             Assert.Equal("Foo", currentEventArgs?.Current.Key);
             Assert.Equal("Bar", currentEventArgs?.Current.Value);

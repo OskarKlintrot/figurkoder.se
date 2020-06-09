@@ -10,9 +10,11 @@ namespace Figurkoder.Domain
     {
         private readonly Stopwatch _stopwatch;
         private readonly Timer _timer;
-        private readonly IList<(KeyValuePair<string, string> Flashcard, TimeSpan Time)> _result;
+        private readonly IList<(KeyValuePair<string, string> Flashcard, TimeSpan Time)> _showedFlashcards;
+
         private int _counter;
-        private KeyValuePair<string, string>[] _flashCards = Array.Empty<KeyValuePair<string, string>>();
+        private KeyValuePair<string, string>[] _flashcards = Array.Empty<KeyValuePair<string, string>>();
+        private KeyValuePair<string, string>[] _originalFlashcards = Array.Empty<KeyValuePair<string, string>>();
 
         /// <summary>
         /// Shows the current flashcard
@@ -33,7 +35,7 @@ namespace Figurkoder.Domain
         {
             _stopwatch = new Stopwatch();
             _timer = new Timer();
-            _result = new List<(KeyValuePair<string, string> Flashcard, TimeSpan Time)>();
+            _showedFlashcards = new List<(KeyValuePair<string, string> Flashcard, TimeSpan Time)>();
 
             _timer.Elapsed += TimerElapsed;
         }
@@ -49,11 +51,11 @@ namespace Figurkoder.Domain
             // Add previous, if any, to result
             if (_counter > 0)
             {
-                _result.Add((_flashCards[_counter - 1], time ?? _stopwatch.Elapsed));
+                _showedFlashcards.Add((_flashcards[_counter - 1], time ?? _stopwatch.Elapsed));
             }
 
             // Check if we have any flashcards left
-            if (_counter >= _flashCards.Length)
+            if (_counter >= _flashcards.Length)
             {
                 OnFinished();
 
@@ -63,7 +65,7 @@ namespace Figurkoder.Domain
             // Next flashcard
             _counter++;
 
-            var e = new CurrentEventArgs(_counter, _flashCards[_counter - 1]);
+            var e = new CurrentEventArgs(_counter, _flashcards[_counter - 1]);
 
             // Reset timer and stopwatch
             Current?.Invoke(this, e);
@@ -81,9 +83,18 @@ namespace Figurkoder.Domain
 
             _timer.Interval = game.FlashTime.TotalMilliseconds;
 
-            _flashCards = game.Flashcards;
+            _originalFlashcards = new KeyValuePair<string, string>[game.Flashcards.Length];
+            _flashcards = new KeyValuePair<string, string>[game.Flashcards.Length];
 
-            if (_flashCards.Length == 0)
+            game.Flashcards.CopyTo(_originalFlashcards, 0);
+            game.Flashcards.CopyTo(_flashcards, 0);
+
+            if (game.Randomize)
+            {
+                Shuffle(_flashcards);
+            }
+
+            if (_flashcards.Length == 0)
             {
                 throw new ArgumentException("Missing flashcards!", nameof(game));
             }
@@ -98,16 +109,39 @@ namespace Figurkoder.Domain
         {
             _timer.Stop();
 
-            var result = new GameFinishedEventArgs(_result.ToArray());
+            var orderedResult = new (KeyValuePair<string, string> Flashcard, TimeSpan Time)[_showedFlashcards.Count];
 
-            GameFinished?.Invoke(this, result);
+            foreach (var item in _showedFlashcards)
+            {
+                orderedResult[Array.IndexOf(_originalFlashcards, item.Flashcard)] = item;
+            }
+
+            GameFinished?.Invoke(this, new GameFinishedEventArgs(orderedResult));
+        }
+
+        /// <summary>
+        /// Fisher–Yates shuffle
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="array"></param>
+        private void Shuffle<T>(T[] array)
+        {
+            var rng = new Random();
+            var n = array.Length;
+
+            while (n > 1)
+            {
+                int k = rng.Next(n--);
+                T temp = array[n];
+                array[n] = array[k];
+                array[k] = temp;
+            }
         }
     }
 
     public sealed class CurrentEventArgs : EventArgs
     {
         public int Count { get; }
-        public int TotalCount { get; }
         public KeyValuePair<string, string> Current { get; }
 
         public CurrentEventArgs(int count, KeyValuePair<string, string> current)
@@ -134,14 +168,15 @@ namespace Figurkoder.Domain
 
     public sealed class Game
     {
-        public Game(TimeSpan flashTime, KeyValuePair<string, string>[] flashCards)
+        public Game(TimeSpan flashTime, KeyValuePair<string, string>[] flashcards, bool randomize)
         {
             FlashTime = flashTime;
-            Flashcards = flashCards;
+            Flashcards = flashcards;
+            Randomize = randomize;
         }
 
         public TimeSpan FlashTime { get; }
-
         public KeyValuePair<string, string>[] Flashcards { get; }
+        public bool Randomize { get; }
     }
 }

@@ -2,6 +2,7 @@ using Figurkoder.Domain;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Figurkoder.UnitTests.Domain
 
             // Act
             var exception = Record.Exception(()
-                => gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), Array.Empty<KeyValuePair<string, string>>())));
+                => gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), Array.Empty<KeyValuePair<string, string>>(), false)));
 
             // Assert
             Assert.IsType<ArgumentException>(exception);
@@ -39,7 +40,7 @@ namespace Figurkoder.UnitTests.Domain
             }
 
             // Act
-            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), new [] { KeyValuePair.Create("Foo", "Bar") }));
+            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), new[] { KeyValuePair.Create("Foo", "Bar") }, false));
 
             // Assert
             Assert.True(startReceived.WaitOne(TimeSpan.FromMilliseconds(10)));
@@ -61,7 +62,7 @@ namespace Figurkoder.UnitTests.Domain
             }
 
             // Act
-            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), new [] { KeyValuePair.Create("Foo", "Bar") }));
+            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), new[] { KeyValuePair.Create("Foo", "Bar") }, false));
 
             // Assert
             Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(10))); // 10 ms to make sure the enginge never have a chance to trigger Current based on timer elapsed
@@ -84,7 +85,7 @@ namespace Figurkoder.UnitTests.Domain
             }
 
             // Act
-            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(50), new[] { KeyValuePair.Create("Foo", "Bar") }));
+            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(50), new[] { KeyValuePair.Create("Foo", "Bar") }, false));
 
             // Assert
             Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(75)));
@@ -106,7 +107,14 @@ namespace Figurkoder.UnitTests.Domain
             }
 
             // Act
-            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(10), new[] { KeyValuePair.Create("Foo", "Bar"), KeyValuePair.Create("Bar", "Foo") }));
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(10),
+                new[]
+                {
+                    KeyValuePair.Create("Foo", "Bar"),
+                    KeyValuePair.Create("Bar", "Foo")
+                },
+                false));
 
             // Assert
             Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(50)));
@@ -153,7 +161,14 @@ namespace Figurkoder.UnitTests.Domain
             }
 
             // Act
-            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(100), new[] { KeyValuePair.Create("Foo", "Bar"), KeyValuePair.Create("Foo", "Bar") }));
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(100),
+                new[]
+                {
+                    KeyValuePair.Create("Foo", "Bar"),
+                    KeyValuePair.Create("Foo", "Bar")
+                },
+                false));
 
             // Assert
             currentReceived.WaitOne(TimeSpan.FromMilliseconds(115));
@@ -189,7 +204,14 @@ namespace Figurkoder.UnitTests.Domain
                 }
             }
 
-            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(1000), new[] { KeyValuePair.Create("Foo", "Bar"), KeyValuePair.Create("Foo", "Bar") }));
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(1000),
+                new[]
+                {
+                    KeyValuePair.Create("Foo", "Bar"),
+                    KeyValuePair.Create("Foo", "Bar")
+                },
+                false));
 
             // Act
             await Task.Delay(100);
@@ -215,10 +237,15 @@ namespace Figurkoder.UnitTests.Domain
                 finishedReceived.Set();
             }
 
-            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(500), new[] {
-                KeyValuePair.Create("Foo", "Bar"),
-                KeyValuePair.Create("Bar", "Foo"),
-                KeyValuePair.Create("Fuu", "bar") }));
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(500),
+                new[]
+                {
+                    KeyValuePair.Create("Foo", "Bar"),
+                    KeyValuePair.Create("Bar", "Foo"),
+                    KeyValuePair.Create("Fuu", "bar")
+                },
+                false));
 
             // Act
             await Task.Delay(200);
@@ -272,9 +299,14 @@ namespace Figurkoder.UnitTests.Domain
             }
 
             // Act
-            gameEngine.Start(new Game(TimeSpan.FromMilliseconds(10), new[] {
-                KeyValuePair.Create("FirstKey", "FirstValue"),
-                KeyValuePair.Create("SecondKey", "SecondValue") }));
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(10),
+                new[]
+                {
+                    KeyValuePair.Create("FirstKey", "FirstValue"),
+                    KeyValuePair.Create("SecondKey", "SecondValue")
+                },
+                false));
 
             // Assert
             Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(30)));
@@ -286,6 +318,86 @@ namespace Figurkoder.UnitTests.Domain
             Assert.Equal(2, currentEventArgs?.Count);
             Assert.Equal("SecondKey", currentEventArgs?.Current.Key);
             Assert.Equal("SecondValue", currentEventArgs?.Current.Value);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Start_Randomize_RandomizeOrder(bool randomize)
+        {
+            // Arrange
+            var flashcards = new[]
+            {
+                KeyValuePair.Create("FirstKey", "FirstValue"),
+                KeyValuePair.Create("SecondKey", "SecondValue"),
+                KeyValuePair.Create("ThirdKey", "ThirdValue"),
+                KeyValuePair.Create("FourthKey", "FourthValue")
+            };
+
+            var showedFlashcards = new List<KeyValuePair<string, string>>(flashcards.Length);
+
+            var gameEngine = new GameEngine();
+            var endReceived = new AutoResetEvent(false);
+            gameEngine.Current += CurrentHandler;
+            gameEngine.GameFinished += GameFinishedHandler;
+
+            void CurrentHandler(object? _, CurrentEventArgs e)
+            {
+                showedFlashcards.Add(e.Current);
+            }
+
+            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
+            {
+                endReceived.Set();
+            }
+
+            // Act
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(10),
+                flashcards,
+                randomize));
+
+            // Assert
+            Assert.True(endReceived.WaitOne(TimeSpan.FromMilliseconds(80)));
+            Assert.Equal(flashcards.Length, showedFlashcards.Count);
+            Assert.NotEqual(randomize, flashcards.SequenceEqual(showedFlashcards));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Start_Randomize_DoNotRandomizeResult(bool randomize)
+        {
+            // Arrange
+            var gameEngine = new GameEngine();
+            GameFinishedEventArgs? gameFinishedEventArgs = null;
+            var endReceived = new AutoResetEvent(false);
+            gameEngine.GameFinished += GameFinishedHandler;
+
+            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
+            {
+                gameFinishedEventArgs = e;
+                endReceived.Set();
+            }
+
+            var flashcards = new[]
+            {
+                KeyValuePair.Create("FirstKey", "FirstValue"),
+                KeyValuePair.Create("SecondKey", "SecondValue"),
+                KeyValuePair.Create("ThirdKey", "ThirdValue"),
+                KeyValuePair.Create("FourthKey", "FourthValue")
+            };
+
+            // Act
+            gameEngine.Start(new Game(
+                TimeSpan.FromMilliseconds(10),
+                flashcards,
+                randomize));
+
+            // Assert
+            Assert.True(endReceived.WaitOne(TimeSpan.FromMilliseconds(80)));
+            Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Average);
+            Assert.True(flashcards.SequenceEqual(gameFinishedEventArgs?.Result.Select(x => x.Flashcard)));
         }
     }
 }

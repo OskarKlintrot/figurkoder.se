@@ -403,5 +403,11 @@ namespace Figurkoder.UnitTests.Domain
             Assert.InRange(gameFinishedEventArgs?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(240), TimeSpan.FromMilliseconds(280)); // Allow ±20ms
         }
         #endregion
+
+        #region Pause
+        #endregion
+
+        #region Stop
+        #endregion
     }
 }

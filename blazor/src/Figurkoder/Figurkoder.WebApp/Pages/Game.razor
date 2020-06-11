@@ -1,0 +1,97 @@
+﻿@page "/game"
+
+<h1>Game</h1>
+
+<p>Current count: @currentCount</p>
+<p>Current key: @key</p>
+<p>Current value: @value</p>
+<p>Current state: @state</p>
+<p>Result: @result</p>
+<p>Average: @average</p>
+
+<button class="btn btn-primary" @onclick="Start">Start</button>
+<button class="btn btn-primary" @onclick="Next">Next</button>
+<button class="btn btn-primary" @onclick="Pause">Pause</button>
+<button class="btn btn-primary" @onclick="Stop">Stop</button>
+
+@code {
+    private Figurkoder.Domain.Game? game;
+    private Figurkoder.Domain.GameEngine? gameEngine;
+    private int currentCount = 0;
+    private string key = string.Empty;
+    private string value = string.Empty;
+    private string result = string.Empty;
+    private TimeSpan? average = null;
+    private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.None;
+
+    protected override void OnInitialized()
+    {
+
+        base.OnInitialized();
+
+        game = new Figurkoder.Domain.Game(
+            TimeSpan.FromSeconds(6),
+            new[]
+            {
+                KeyValuePair.Create("2", "Hår"),
+                KeyValuePair.Create("3", "Ben"),
+                KeyValuePair.Create("4", "Ben")},
+            false);
+
+        gameEngine = new Figurkoder.Domain.GameEngine(game);
+
+        gameEngine.Current += OnCurrentHandler;
+        gameEngine.CurrentState += OnStateChangedHandler;
+        gameEngine.GameFinished += OnGameFinishedHandler;
+    }
+
+    private void OnCurrentHandler(object _, Figurkoder.Domain.CurrentEventArgs e)
+    {
+        currentCount = e.Count;
+        key = e.Current.Key;
+        value = e.Current.Value;
+
+        StateHasChanged();
+    }
+
+    private void OnStateChangedHandler(object _, Figurkoder.Domain.StateEventArgs e)
+    {
+        if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
+        {
+            result = string.Empty;
+            average = null;
+        }
+
+        state = e.CurrentState;
+
+        StateHasChanged();
+    }
+
+    private void OnGameFinishedHandler(object _, Figurkoder.Domain.GameFinishedEventArgs e)
+    {
+        result = System.Text.Json.JsonSerializer.Serialize(e.Result, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        average = e.Average;
+
+        StateHasChanged();
+    }
+
+    private void Start()
+    {
+        gameEngine.Start();
+    }
+
+    private void Next()
+    {
+        gameEngine.Next();
+    }
+
+    private void Pause()
+    {
+        gameEngine.Pause();
+    }
+
+    private void Stop()
+    {
+        gameEngine.Stop();
+    }
+}

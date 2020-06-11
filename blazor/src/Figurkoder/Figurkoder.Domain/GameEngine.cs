@@ -69,7 +69,6 @@ namespace Figurkoder.Domain
             switch (_state)
             {
                 case None:
-                    ChangeState(Running);
                     _stopwatch.Restart();
                     _timer.Start();
                     Next(TimeSpan.Zero);
@@ -120,7 +119,10 @@ namespace Figurkoder.Domain
         public void Next(TimeSpan? time = null)
         {
             // TODO: If pressing next when paused the game should just trigger next and resume
-            ChangeState(Running);
+            if (_state != Running)
+            {
+                ChangeState(Running);
+            }
 
             // Reset interval if it was changed
             _timer.Interval = _interval;

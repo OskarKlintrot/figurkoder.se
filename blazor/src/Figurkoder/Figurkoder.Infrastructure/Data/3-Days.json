@@ -1,0 +1,13 @@
+{
+  "title": "Veckodagar",
+  "description": "",
+  "pairs": [
+    ["MåNdag", "MoNitor"],
+    ["TiSdag", "TiStel"],
+    ["oNSdag", "iNSekt"],
+    ["ToRsdag", "ToRped (ubåts-)"],
+    ["FRedag", "Fredssymbol (på halsband)"],
+    ["LöRdag", "LeRkruka"],
+    ["SöNdag", "SaNdslott"]
+  ]
+}

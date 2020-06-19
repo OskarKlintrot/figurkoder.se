@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Data\1-TwoDigits.json" />
+    <None Remove="Data\2-ThreeDigits.json" />
+    <None Remove="Data\3-Days.json" />
+    <None Remove="Data\4-Months.json" />
+    <None Remove="Data\5-Alphabet.json" />
+    <None Remove="Data\6-Names.json" />
+    <None Remove="Data\7-FemaleNames.json" />
+    <None Remove="Data\8-MaleNames.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\2-ThreeDigits.json" />
+    <EmbeddedResource Include="Data\1-TwoDigits.json" />
+    <EmbeddedResource Include="Data\3-Days.json" />
+    <EmbeddedResource Include="Data\4-Months.json" />
+    <EmbeddedResource Include="Data\5-Alphabet.json" />
+    <EmbeddedResource Include="Data\6-Names.json" />
+    <EmbeddedResource Include="Data\7-FemaleNames.json" />
+    <EmbeddedResource Include="Data\8-MaleNames.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
+    <PackageReference Include="System.Text.Json" Version="4.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Figurkoder.Application\Figurkoder.Application.csproj" />
+    <ProjectReference Include="..\Figurkoder.Domain\Figurkoder.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

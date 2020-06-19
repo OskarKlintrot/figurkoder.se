@@ -13,12 +13,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DA6C4E5B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.UnitTests", "Tests\Figurkoder.UnitTests\Figurkoder.UnitTests.csproj", "{FD656A64-9776-40F2-A22D-24555843EA9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.ComponentTests", "Tests\Figurkoder.ComponentTests\Figurkoder.ComponentTests.csproj", "{9BF02AB6-63DD-4FF7-A38E-2C530EE8FF14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.ComponentTests", "Tests\Figurkoder.ComponentTests\Figurkoder.ComponentTests.csproj", "{9BF02AB6-63DD-4FF7-A38E-2C530EE8FF14}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D4752295-E03B-4D58-9C35-30252CCE65C9}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.Infrastructure", "Figurkoder.Infrastructure\Figurkoder.Infrastructure.csproj", "{1C7CD01A-0943-4A79-AC12-847B9C20E15E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.IntegrationTests", "Tests\Figurkoder.IntegrationTests\Figurkoder.IntegrationTests.csproj", "{029E8BBB-011C-4036-B47B-9520E2CB162A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +50,14 @@ Global
 		{9BF02AB6-63DD-4FF7-A38E-2C530EE8FF14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BF02AB6-63DD-4FF7-A38E-2C530EE8FF14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BF02AB6-63DD-4FF7-A38E-2C530EE8FF14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C7CD01A-0943-4A79-AC12-847B9C20E15E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C7CD01A-0943-4A79-AC12-847B9C20E15E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C7CD01A-0943-4A79-AC12-847B9C20E15E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C7CD01A-0943-4A79-AC12-847B9C20E15E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{029E8BBB-011C-4036-B47B-9520E2CB162A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{029E8BBB-011C-4036-B47B-9520E2CB162A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{029E8BBB-011C-4036-B47B-9520E2CB162A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{029E8BBB-011C-4036-B47B-9520E2CB162A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +65,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FD656A64-9776-40F2-A22D-24555843EA9B} = {DA6C4E5B-C771-436A-8E05-F2958583C158}
 		{9BF02AB6-63DD-4FF7-A38E-2C530EE8FF14} = {DA6C4E5B-C771-436A-8E05-F2958583C158}
+		{029E8BBB-011C-4036-B47B-9520E2CB162A} = {DA6C4E5B-C771-436A-8E05-F2958583C158}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {377E7C12-B5D4-4724-A338-93F40F653C93}

@@ -1,7 +1,31 @@
-﻿@page "/"
+﻿@using Figurkoder.Application.Queries;
+
+@page "/"
+@inject IMnemonicQueries MnemonicQueries
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+@if (mnemonicInfos is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    foreach (var mnemonicInfo in mnemonicInfos)
+    {
+        <p>@mnemonicInfo.Title (@mnemonicInfo.First - @mnemonicInfo.Last)</p>
+    }
+}
+
+@code {
+    private ICollection<Figurkoder.Domain.MnemonicInfo>? mnemonicInfos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        mnemonicInfos = await MnemonicQueries.GetMnemonicsInfoAsync();
+    }
+}

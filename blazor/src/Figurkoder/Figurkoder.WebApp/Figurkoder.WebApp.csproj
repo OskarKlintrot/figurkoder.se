@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Figurkoder.Application\Figurkoder.Application.csproj" />
+    <ProjectReference Include="..\Figurkoder.Infrastructure\Figurkoder.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

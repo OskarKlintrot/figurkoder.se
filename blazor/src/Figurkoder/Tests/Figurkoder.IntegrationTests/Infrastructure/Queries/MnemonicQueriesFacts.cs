@@ -18,7 +18,7 @@ namespace Figurkoder.IntegrationTests.Infrastructure.Queries
 
             // Assert
             Assert.Equal(8, all.Count);
-            Assert.Equal("1-TwoDigits", all.First().Id);
+            Assert.Equal("TwoDigits", all.First().Id);
             Assert.Equal("Siffror", all.First().Title);
             Assert.Equal(string.Empty, all.First().Description);
             Assert.Equal("00", all.First().First);
@@ -33,7 +33,7 @@ namespace Figurkoder.IntegrationTests.Infrastructure.Queries
             var repository = new MnemonicQueries();
 
             // Act
-            var mnemonic = await repository.GetMnemonicAsync("1-TwoDigits");
+            var mnemonic = await repository.GetMnemonicAsync("TwoDigits");
 
             // Assert
             Assert.NotNull(mnemonic);
@@ -43,6 +43,22 @@ namespace Figurkoder.IntegrationTests.Infrastructure.Queries
             Assert.Equal(100, mnemonic.Pairs.Length);
             Assert.Equal("00", mnemonic.Pairs[0].Key);
             Assert.Equal("99", mnemonic.Pairs[^1].Key);
+        }
+
+        [Fact]
+        public async Task GetMnemonicAsync_LowerCase_ReturnMnemonic()
+        {
+            // Arrange
+            var repository = new MnemonicQueries();
+            var mnemonic = await repository.GetMnemonicAsync("TwoDigits");
+
+            // Act
+            var lowerCasedMnemonic = await repository.GetMnemonicAsync("twodigits");
+
+            // Assert
+            Assert.NotNull(mnemonic);
+            Assert.NotNull(lowerCasedMnemonic);
+            Assert.Equal(mnemonic, lowerCasedMnemonic);
         }
 
         [Fact]

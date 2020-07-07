@@ -1,5 +1,6 @@
 ﻿using Figurkoder.Application.Queries;
 using Figurkoder.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -41,7 +42,7 @@ namespace Figurkoder.Infrastructure.Queries
         {
             var assembly = typeof(MnemonicQueries).Assembly;
 
-            var mnemonics = new Dictionary<string, Mnemonic>();
+            var mnemonics = new Dictionary<string, Mnemonic>(StringComparer.InvariantCultureIgnoreCase);
 
             await foreach (var item in GetMnemonicsAsync(assembly, assembly
                 .GetManifestResourceNames()
@@ -68,7 +69,7 @@ namespace Figurkoder.Infrastructure.Queries
                     var mnemonic = await JsonSerializer.DeserializeAsync<MnemonicDto>(stream, options);
 
                     yield return (
-                        name.Split('.')[^2],
+                        string.Concat(name.Split('.')[^2].Split('-')[1..]),
                         new Mnemonic(mnemonic.Title, mnemonic.Description, mnemonic.Pairs.Select(x => KeyValuePair.Create(x[0], x[1])).ToArray())
                     );
                 }

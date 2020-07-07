@@ -1,6 +1,8 @@
 ﻿@using Figurkoder.Application.Queries;
+@using Microsoft.AspNetCore.WebUtilities;
+@using System.Linq;
 
-@page "/game/{gameId}"
+@page "/game/{gameId}/play"
 @inject IMnemonicQueries MnemonicQueries
 @inject NavigationManager NavigationManager
 
@@ -33,6 +35,8 @@ else
     private Figurkoder.Domain.Mnemonic? mnemonic;
     private Figurkoder.Domain.Game? game;
     private Figurkoder.Domain.GameEngine? gameEngine;
+    private string? from;
+    private string? to;
     private int currentCount = 0;
     private string key = string.Empty;
     private string value = string.Empty;
@@ -53,16 +57,49 @@ else
             return;
         }
 
+        if (!TryGetValueFromQueryString("from", out from))
+        {
+            from = mnemonic.Pairs.First().Key;
+        }
+
+        if (!TryGetValueFromQueryString("to", out to))
+        {
+            to = mnemonic.Pairs.Last().Key;
+        }
+
+        var keys = mnemonic.Pairs.Select(x => x.Key).ToArray();
+
+        var range = Array.IndexOf(keys, from)..Array.IndexOf(keys, to);
+
         game = new Figurkoder.Domain.Game(
-            TimeSpan.FromSeconds(6),
-            mnemonic.Pairs,
-            false);
+        TimeSpan.FromSeconds(6),
+        mnemonic.Pairs[range],
+        false);
 
         gameEngine = new Figurkoder.Domain.GameEngine(game);
 
         gameEngine.Current += OnCurrentHandler;
         gameEngine.CurrentState += OnStateChangedHandler;
         gameEngine.GameFinished += OnGameFinishedHandler;
+
+    }
+
+    private bool TryGetValueFromQueryString(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(returnValue: true)] out string? value)
+    {
+        var query = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).Query;
+
+        if (QueryHelpers.ParseQuery(query).TryGetValue(key, out var values))
+        {
+            value = values.FirstOrDefault();
+
+            return true;
+        }
+        else
+        {
+            value = null;
+
+            return false;
+        }
     }
 
     private void OnCurrentHandler(object _, Figurkoder.Domain.CurrentEventArgs e)

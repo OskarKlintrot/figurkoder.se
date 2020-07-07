@@ -1,0 +1,92 @@
+﻿@using Figurkoder.Application.Queries;
+@using System.Linq;
+
+@page "/game/{gameId}/settings"
+@inject IMnemonicQueries MnemonicQueries
+@inject NavigationManager NavigationManager
+
+@if (mnemonic is null)
+{
+    <p>Loading game...</p>
+}
+else
+{
+    <h1>@mnemonic.Title</h1>
+    <h2>@mnemonic.Description</h2>
+
+    <EditForm Model="@settings" OnValidSubmit="Play">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        @if (mnemonic.Numerical)
+        {
+            <label for="From">Från</label>
+            <InputText @bind-Value="@settings.From" @oninput="OnFromChange" id="from" />
+            <label for="to">Till</label>
+            <InputText @bind-Value="@settings.To" id="to" />
+        }
+        else
+        {
+            <p>Not yet implemented, sorry...</p>
+        }
+
+        <button class="btn btn-primary" type="submit">Spela</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public string GameId { get; set; } = null!;
+
+    private SettingsVM settings = new SettingsVM();
+
+    private Figurkoder.Domain.Mnemonic? mnemonic;
+    private string[] mnemonicKeys = Array.Empty<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
+
+        if (mnemonic is null)
+        {
+            NavigationManager.NavigateTo("/");
+
+            return;
+        }
+
+        mnemonicKeys = mnemonic.Pairs.Select(x => x.Key).ToArray();
+
+        settings.From = mnemonic.Pairs[0].Key;
+        settings.To = mnemonic.Pairs[9].Key;
+    }
+
+    private void OnFromChange(ChangeEventArgs e)
+    {
+        var index = Array.IndexOf(mnemonicKeys, e.Value);
+
+        if (index != -1)
+        {
+            var toIndex = index + 9;
+
+            if (toIndex > mnemonicKeys.Length - 1)
+            {
+                toIndex = mnemonicKeys.Length - 1;
+            }
+
+            settings.To = mnemonicKeys[toIndex];
+        }
+    }
+
+    private void Play()
+    {
+        NavigationManager.NavigateTo($"game/{GameId}/play?from={settings.From}&to={settings.To}");
+    }
+
+    private class SettingsVM
+    {
+        public string? From { get; set; }
+        public string? To { get; set; }
+    }
+}

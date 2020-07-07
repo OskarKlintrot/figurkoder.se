@@ -20,9 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.Infrastructure", "Figurkoder.Infrastructure\Figurkoder.Infrastructure.csproj", "{1C7CD01A-0943-4A79-AC12-847B9C20E15E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.Infrastructure", "Figurkoder.Infrastructure\Figurkoder.Infrastructure.csproj", "{1C7CD01A-0943-4A79-AC12-847B9C20E15E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.IntegrationTests", "Tests\Figurkoder.IntegrationTests\Figurkoder.IntegrationTests.csproj", "{029E8BBB-011C-4036-B47B-9520E2CB162A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.IntegrationTests", "Tests\Figurkoder.IntegrationTests\Figurkoder.IntegrationTests.csproj", "{029E8BBB-011C-4036-B47B-9520E2CB162A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

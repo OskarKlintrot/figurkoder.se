@@ -17,7 +17,9 @@ else
 {
     foreach (var mnemonicInfo in mnemonicInfos)
     {
-        <p>@mnemonicInfo.Title (@mnemonicInfo.First - @mnemonicInfo.Last)</p>
+        <NavLink class="nav-link" href="@Url(mnemonicInfo.Id)">
+            @mnemonicInfo.Title (@mnemonicInfo.First - @mnemonicInfo.Last)
+        </NavLink>
     }
 }
 
@@ -28,4 +30,6 @@ else
     {
         mnemonicInfos = await MnemonicQueries.GetMnemonicsInfoAsync();
     }
+
+    private static string Url(string id) => $"game/{id.ToLower()}";
 }

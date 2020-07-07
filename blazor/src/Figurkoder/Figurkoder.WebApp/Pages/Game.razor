@@ -1,20 +1,36 @@
-﻿@page "/game"
+﻿@using Figurkoder.Application.Queries;
 
-<h1>Game</h1>
+@page "/game/{gameId}"
+@inject IMnemonicQueries MnemonicQueries
+@inject NavigationManager NavigationManager
 
-<p>Current count: @currentCount</p>
-<p>Current key: @key</p>
-<p>Current value: @value</p>
-<p>Current state: @state</p>
-<p>Result: @result</p>
-<p>Average: @average</p>
+@if (mnemonic is null)
+{
+    <p>Loading game...</p>
+}
+else
+{
+    <h1>@mnemonic.Title</h1>
+    <h2>@mnemonic.Description</h2>
 
-<button class="btn btn-primary" @onclick="Start">Start</button>
-<button class="btn btn-primary" @onclick="Next">Next</button>
-<button class="btn btn-primary" @onclick="Pause">Pause</button>
-<button class="btn btn-primary" @onclick="Stop">Stop</button>
+    <p>Current count: @currentCount</p>
+    <p>Current key: @key</p>
+    <p>Current value: @value</p>
+    <p>Current state: @state</p>
+    <p>Result: @result</p>
+    <p>Average: @average</p>
+
+    <button class="btn btn-primary" @onclick="Start">Start</button>
+    <button class="btn btn-primary" @onclick="Next">Next</button>
+    <button class="btn btn-primary" @onclick="Pause">Pause</button>
+    <button class="btn btn-primary" @onclick="Stop">Stop</button>
+}
 
 @code {
+    [Parameter]
+    public string GameId { get; set; } = null!;
+
+    private Figurkoder.Domain.Mnemonic? mnemonic;
     private Figurkoder.Domain.Game? game;
     private Figurkoder.Domain.GameEngine? gameEngine;
     private int currentCount = 0;
@@ -24,18 +40,22 @@
     private TimeSpan? average = null;
     private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.None;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
 
-        base.OnInitialized();
+        mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
+
+        if (mnemonic is null)
+        {
+            NavigationManager.NavigateTo("/");
+
+            return;
+        }
 
         game = new Figurkoder.Domain.Game(
             TimeSpan.FromSeconds(6),
-            new[]
-            {
-                KeyValuePair.Create("2", "Hår"),
-                KeyValuePair.Create("3", "Ben"),
-                KeyValuePair.Create("4", "Ben")},
+            mnemonic.Pairs,
             false);
 
         gameEngine = new Figurkoder.Domain.GameEngine(game);
@@ -77,21 +97,21 @@
 
     private void Start()
     {
-        gameEngine.Start();
+        gameEngine?.Start();
     }
 
     private void Next()
     {
-        gameEngine.Next();
+        gameEngine?.Next();
     }
 
     private void Pause()
     {
-        gameEngine.Pause();
+        gameEngine?.Pause();
     }
 
     private void Stop()
     {
-        gameEngine.Stop();
+        gameEngine?.Stop();
     }
 }

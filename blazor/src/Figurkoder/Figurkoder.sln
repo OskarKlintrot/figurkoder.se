@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.WebApp", "Figurkoder.WebApp\Figurkoder.WebApp.csproj", "{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.Domain", "Figurkoder.Domain\Figurkoder.Domain.csproj", "{831966A5-0706-4F19-AD28-E4757FD0CE49}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.Application", "Figurkoder.Application\Figurkoder.Application.csproj", "{C58741E3-F4CA-4A6F-9515-95E23B8B2454}"
@@ -24,16 +22,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.Infrastructure",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Figurkoder.IntegrationTests", "Tests\Figurkoder.IntegrationTests\Figurkoder.IntegrationTests.csproj", "{029E8BBB-011C-4036-B47B-9520E2CB162A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Figurkoder.WebApp", "Figurkoder.WebApp\Figurkoder.WebApp.csproj", "{A12BB4AC-2385-421B-BB10-44B53BD5A6EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B72A5A7B-5891-43DB-AEFD-5F3FF2E4A1F3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{831966A5-0706-4F19-AD28-E4757FD0CE49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{831966A5-0706-4F19-AD28-E4757FD0CE49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{831966A5-0706-4F19-AD28-E4757FD0CE49}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -58,6 +54,10 @@ Global
 		{029E8BBB-011C-4036-B47B-9520E2CB162A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{029E8BBB-011C-4036-B47B-9520E2CB162A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{029E8BBB-011C-4036-B47B-9520E2CB162A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A12BB4AC-2385-421B-BB10-44B53BD5A6EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A12BB4AC-2385-421B-BB10-44B53BD5A6EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A12BB4AC-2385-421B-BB10-44B53BD5A6EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A12BB4AC-2385-421B-BB10-44B53BD5A6EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

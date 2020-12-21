@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace Figurkoder.WebApp
 {
-    public static class Program
+    public class Program
     {
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            builder.RootComponents.Add<App>("app");
+            builder.RootComponents.Add<App>("#app");
 
             builder.Services
                 .AddDomain()
                 .AddApplication()
                 .AddInfrastructure()
-                .AddTransient(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+                .AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             await builder.Build().RunAsync();
         }

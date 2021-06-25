@@ -28,23 +28,24 @@ else
         else
         {
             <label for="From">Från</label>
-            <select @bind="@settings.From" @oninput="OnFromChange" id="from">
+            <InputSelect @bind-Value="@settings.From" @oninput="OnFromChange" id="from">
                 @foreach (var (key, _) in mnemonic.Pairs)
-                {
+                        {
                     <option value="@key">@key</option>
-                }
-            </select>
+                        }
+            </InputSelect>
 
             <label for="To">Till</label>
-            <select @bind="@settings.To" id="to">
+            <InputSelect @bind-Value="@settings.To" id="to">
                 @foreach (var (key, _) in mnemonic.Pairs)
-                {
+                        {
                     <option value="@key">@key</option>
-                }
-            </select>
+                        }
+            </InputSelect>
         }
 
-        <button class="btn btn-primary" type="submit">Spela</button>
+        <button class="btn btn-primary" type="submit" value="Play">Spela</button>
+        <button class="btn btn-primary" type="submit" value="Practice" @onclick="@(()=> settings.Practice = true)">Träna</button>
     </EditForm>
 }
 
@@ -102,12 +103,13 @@ else
 
     private void Play()
     {
-        NavigationManager.NavigateTo($"game/{GameId}/play?from={settings.From}&to={settings.To}");
+        NavigationManager.NavigateTo($"game/{GameId}/play?from={settings.From}&to={settings.To}&practice={settings.Practice}");
     }
 
     private class SettingsVM
     {
         public string? From { get; set; }
         public string? To { get; set; }
+        public bool Practice { get; set; }
     }
 }

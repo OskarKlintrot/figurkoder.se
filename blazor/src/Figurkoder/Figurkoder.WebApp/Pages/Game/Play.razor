@@ -37,6 +37,7 @@ else
     private Figurkoder.Domain.GameEngine? gameEngine;
     private string? from;
     private string? to;
+    private bool practice;
     private int currentCount = 0;
     private string key = string.Empty;
     private string value = string.Empty;
@@ -67,6 +68,11 @@ else
             to = mnemonic.Pairs.Last().Key;
         }
 
+        if (QueryHelpers.ParseQuery(NavigationManager.ToAbsoluteUri(NavigationManager.Uri).Query).TryGetValue("practice", out var __practice))
+        {
+            practice = Convert.ToBoolean(__practice);
+        }
+
         var keys = mnemonic.Pairs.Select(x => x.Key).ToArray();
 
         var range = Array.IndexOf(keys, from)..Array.IndexOf(keys, to);
@@ -74,7 +80,7 @@ else
         game = new Figurkoder.Domain.Game(
         TimeSpan.FromSeconds(6),
         mnemonic.Pairs[range],
-        false);
+        !practice);
 
         gameEngine = new Figurkoder.Domain.GameEngine(game);
 

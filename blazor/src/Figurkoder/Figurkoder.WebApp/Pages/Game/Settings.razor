@@ -27,7 +27,21 @@ else
         }
         else
         {
-            <p>Not yet implemented, sorry...</p>
+            <label for="From">Från</label>
+            <select @bind="@settings.From" @oninput="OnFromChange" id="from">
+                @foreach (var (key, _) in mnemonic.Pairs)
+                {
+                    <option value="@key">@key</option>
+                }
+            </select>
+
+            <label for="To">Till</label>
+            <select @bind="@settings.To" id="to">
+                @foreach (var (key, _) in mnemonic.Pairs)
+                {
+                    <option value="@key">@key</option>
+                }
+            </select>
         }
 
         <button class="btn btn-primary" type="submit">Spela</button>
@@ -59,7 +73,7 @@ else
         mnemonicKeys = mnemonic.Pairs.Select(x => x.Key).ToArray();
 
         settings.From = mnemonic.Pairs[0].Key;
-        settings.To = mnemonic.Pairs[9].Key;
+        settings.To = mnemonic.Pairs.Length < 10 ? mnemonic.Pairs[^1].Key : mnemonic.Pairs[9].Key;
     }
 
     private void OnFromChange(ChangeEventArgs e)

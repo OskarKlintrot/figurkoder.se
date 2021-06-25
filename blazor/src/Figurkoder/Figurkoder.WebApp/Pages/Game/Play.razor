@@ -32,129 +32,107 @@ else
     [Parameter]
     public string GameId { get; set; } = null!;
 
-    private Figurkoder.Domain.Mnemonic? mnemonic;
-    private Figurkoder.Domain.Game? game;
-    private Figurkoder.Domain.GameEngine? gameEngine;
-    private string? from;
-    private string? to;
-    private bool practice;
-    private int currentCount = 0;
-    private string key = string.Empty;
-    private string value = string.Empty;
-    private string result = string.Empty;
-    private TimeSpan? average = null;
-    private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.None;
+private Figurkoder.Domain.Mnemonic? mnemonic;
+private Figurkoder.Domain.Game? game;
+private Figurkoder.Domain.GameEngine? gameEngine;
+private string? from;
+private string? to;
+private bool practice;
+private int currentCount = 0;
+private string key = string.Empty;
+private string value = string.Empty;
+private string result = string.Empty;
+private TimeSpan? average = null;
+private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.None;
 
-    protected override async Task OnInitializedAsync()
+protected override async Task OnInitializedAsync()
+{
+    await base.OnInitializedAsync();
+
+    mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
+
+    if (mnemonic is null)
     {
-        await base.OnInitializedAsync();
+        NavigationManager.NavigateTo("/");
 
-        mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
-
-        if (mnemonic is null)
-        {
-            NavigationManager.NavigateTo("/");
-
-            return;
-        }
-
-        if (!TryGetValueFromQueryString("from", out from))
-        {
-            from = mnemonic.Pairs.First().Key;
-        }
-
-        if (!TryGetValueFromQueryString("to", out to))
-        {
-            to = mnemonic.Pairs.Last().Key;
-        }
-
-        if (QueryHelpers.ParseQuery(NavigationManager.ToAbsoluteUri(NavigationManager.Uri).Query).TryGetValue("practice", out var __practice))
-        {
-            practice = Convert.ToBoolean(__practice);
-        }
-
-        var keys = mnemonic.Pairs.Select(x => x.Key).ToArray();
-
-        var range = Array.IndexOf(keys, from)..Array.IndexOf(keys, to);
-
-        game = new Figurkoder.Domain.Game(
-        TimeSpan.FromSeconds(6),
-        mnemonic.Pairs[range],
-        !practice);
-
-        gameEngine = new Figurkoder.Domain.GameEngine(game);
-
-        gameEngine.Current += OnCurrentHandler;
-        gameEngine.CurrentState += OnStateChangedHandler;
-        gameEngine.GameFinished += OnGameFinishedHandler;
-
+        return;
     }
 
-    private bool TryGetValueFromQueryString(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(returnValue: true)] out string? value)
+    if (!NavigationManager.TryGetQueryString<string>("from", out from))
     {
-        var query = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).Query;
-
-        if (QueryHelpers.ParseQuery(query).TryGetValue(key, out var values))
-        {
-            value = values.First();
-
-            return true;
-        }
-        else
-        {
-            value = null;
-
-            return false;
-        }
+        from = mnemonic.Pairs.First().Key;
     }
 
-    private void OnCurrentHandler(object? _, Figurkoder.Domain.CurrentEventArgs e)
+    if (!NavigationManager.TryGetQueryString<string>("to", out to))
     {
-        currentCount = e.Count;
-        key = e.Current.Key;
-        value = e.Current.Value;
-
-        StateHasChanged();
+        to = mnemonic.Pairs.Last().Key;
     }
 
-    private void OnStateChangedHandler(object? _, Figurkoder.Domain.StateEventArgs e)
+    NavigationManager.TryGetQueryString<bool>("practice", out practice);
+
+    var keys = mnemonic.Pairs.Select(x => x.Key).ToArray();
+
+    var range = Array.IndexOf(keys, from)..Array.IndexOf(keys, to);
+
+    game = new Figurkoder.Domain.Game(
+    TimeSpan.FromSeconds(6),
+    mnemonic.Pairs[range],
+    !practice);
+
+    gameEngine = new Figurkoder.Domain.GameEngine(game);
+
+    gameEngine.Current += OnCurrentHandler;
+    gameEngine.CurrentState += OnStateChangedHandler;
+    gameEngine.GameFinished += OnGameFinishedHandler;
+}
+
+private void OnCurrentHandler(object? _, Figurkoder.Domain.CurrentEventArgs e)
+{
+    currentCount = e.Count;
+    key = e.Current.Key;
+    value = e.Current.Value;
+
+    StateHasChanged();
+}
+
+private void OnStateChangedHandler(object? _, Figurkoder.Domain.StateEventArgs e)
+{
+    if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
     {
-        if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
-        {
-            result = string.Empty;
-            average = null;
-        }
-
-        state = e.CurrentState;
-
-        StateHasChanged();
+        result = string.Empty;
+        average = null;
     }
 
-    private void OnGameFinishedHandler(object? _, Figurkoder.Domain.GameFinishedEventArgs e)
-    {
-        result = System.Text.Json.JsonSerializer.Serialize(e.Result, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-        average = e.Average;
+    state = e.CurrentState;
 
-        StateHasChanged();
-    }
+    StateHasChanged();
+}
 
-    private void Start()
-    {
-        gameEngine?.Start();
-    }
+private void OnGameFinishedHandler(object? _, Figurkoder.Domain.GameFinishedEventArgs e)
+{
+    result = System.Text.Json.JsonSerializer.Serialize(e.Result, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    average = e.Average;
 
-    private void Next()
-    {
-        gameEngine?.Next();
-    }
+    StateHasChanged();
+}
 
-    private void Pause()
-    {
-        gameEngine?.Pause();
-    }
+private void Start()
+{
+    gameEngine?.Start();
+}
 
-    private void Stop()
-    {
-        gameEngine?.Stop();
-    }
+private void Next()
+{
+    gameEngine?.Next();
+}
+
+private void Pause()
+{
+    gameEngine?.Pause();
+}
+
+private void Stop()
+{
+    gameEngine?.Stop();
+}
 }

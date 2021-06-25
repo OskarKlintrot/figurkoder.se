@@ -90,7 +90,7 @@ else
 
         if (QueryHelpers.ParseQuery(query).TryGetValue(key, out var values))
         {
-            value = values.FirstOrDefault();
+            value = values.First();
 
             return true;
         }
@@ -102,7 +102,7 @@ else
         }
     }
 
-    private void OnCurrentHandler(object _, Figurkoder.Domain.CurrentEventArgs e)
+    private void OnCurrentHandler(object? _, Figurkoder.Domain.CurrentEventArgs e)
     {
         currentCount = e.Count;
         key = e.Current.Key;
@@ -111,7 +111,7 @@ else
         StateHasChanged();
     }
 
-    private void OnStateChangedHandler(object _, Figurkoder.Domain.StateEventArgs e)
+    private void OnStateChangedHandler(object? _, Figurkoder.Domain.StateEventArgs e)
     {
         if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
         {
@@ -124,7 +124,7 @@ else
         StateHasChanged();
     }
 
-    private void OnGameFinishedHandler(object _, Figurkoder.Domain.GameFinishedEventArgs e)
+    private void OnGameFinishedHandler(object? _, Figurkoder.Domain.GameFinishedEventArgs e)
     {
         result = System.Text.Json.JsonSerializer.Serialize(e.Result, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
         average = e.Average;

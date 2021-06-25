@@ -279,17 +279,5 @@ namespace Figurkoder.Domain
         }
     }
 
-    public sealed class Game
-    {
-        public Game(TimeSpan flashTime, KeyValuePair<string, string>[] flashcards, bool randomize)
-        {
-            FlashTime = flashTime;
-            Flashcards = flashcards;
-            Randomize = randomize;
-        }
-
-        public TimeSpan FlashTime { get; }
-        public KeyValuePair<string, string>[] Flashcards { get; }
-        public bool Randomize { get; }
-    }
+    public sealed record Game(TimeSpan FlashTime, KeyValuePair<string, string>[] Flashcards, bool Randomize);
 }

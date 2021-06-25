@@ -57,9 +57,14 @@ else
     private Figurkoder.Domain.Mnemonic? mnemonic;
     private string[] mnemonicKeys = Array.Empty<string>();
 
-    protected override async Task OnInitializedAsync()
+    protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnInitializedAsync();
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (!firstRender)
+        {
+            return;
+        }
 
         mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
 
@@ -74,6 +79,8 @@ else
 
         settings.From = mnemonic.Pairs[0].Key;
         settings.To = mnemonic.Pairs.Length < 10 ? mnemonic.Pairs[^1].Key : mnemonic.Pairs[9].Key;
+
+        StateHasChanged();
     }
 
     private void OnFromChange(ChangeEventArgs e)

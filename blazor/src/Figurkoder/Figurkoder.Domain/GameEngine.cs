@@ -12,9 +12,9 @@ namespace Figurkoder.Domain
         private readonly Stopwatch _stopwatch;
         private readonly Timer _timer;
         private readonly double _intervalInMilliseconds;
-        private readonly IList<(KeyValuePair<string, string> Flashcard, TimeSpan Time)> _showedFlashcards;
-        private readonly KeyValuePair<string, string>[] _originalFlashcards = Array.Empty<KeyValuePair<string, string>>();
-        private readonly KeyValuePair<string, string>[] _flashcards = Array.Empty<KeyValuePair<string, string>>();
+        private readonly IList<(Flashcard Flashcard, TimeSpan Time)> _showedFlashcards;
+        private readonly Flashcard[] _originalFlashcards = Array.Empty<Flashcard>();
+        private readonly Flashcard[] _flashcards = Array.Empty<Flashcard>();
 
         private int _counter;
         private State _state;
@@ -41,10 +41,15 @@ namespace Figurkoder.Domain
                 throw new ArgumentException("Missing flashcards!", nameof(settings));
             }
 
+            if (settings.Flashcards.Length != settings.Flashcards.Distinct().Count())
+            {
+                throw new ArgumentException("Duplicated flashcards!", nameof(settings));
+            }
+
             _stopwatch = new();
             _timer = new();
             _counter = 0;
-            _showedFlashcards = new List<(KeyValuePair<string, string> Flashcard, TimeSpan Time)>();
+            _showedFlashcards = new List<(Flashcard Flashcard, TimeSpan Time)>();
 
             _timer.Elapsed += TimerElapsed;
             CurrentState += OnStateChanged;
@@ -52,8 +57,8 @@ namespace Figurkoder.Domain
             _intervalInMilliseconds = settings.FlashTime.TotalMilliseconds;
             _timer.Interval = _intervalInMilliseconds;
 
-            _originalFlashcards = new KeyValuePair<string, string>[settings.Flashcards.Length];
-            _flashcards = new KeyValuePair<string, string>[settings.Flashcards.Length];
+            _originalFlashcards = new Flashcard[settings.Flashcards.Length];
+            _flashcards = new Flashcard[settings.Flashcards.Length];
 
             settings.Flashcards.CopyTo(_originalFlashcards, 0);
             settings.Flashcards.CopyTo(_flashcards, 0);
@@ -175,16 +180,16 @@ namespace Figurkoder.Domain
             _timer.Stop();
             _stopwatch.Stop();
 
-            var orderedResult = new (KeyValuePair<string, string> Flashcard, TimeSpan? Time)[_originalFlashcards.Length];
+            var orderedResult = new Result[_originalFlashcards.Length];
 
-            foreach (var item in _showedFlashcards)
+            foreach (var (flashcard, time) in _showedFlashcards)
             {
-                orderedResult[Array.IndexOf(_originalFlashcards, item.Flashcard)] = item;
+                orderedResult[Array.IndexOf(_originalFlashcards, flashcard)] = new(flashcard, time);
             }
 
-            foreach (var item in _flashcards.Except(_showedFlashcards.Select(x => x.Flashcard)))
+            foreach (var pair in _flashcards.Except(_showedFlashcards.Select(x => x.Flashcard)))
             {
-                orderedResult[Array.IndexOf(_originalFlashcards, item)] = (item, null);
+                orderedResult[Array.IndexOf(_originalFlashcards, pair)] = new(pair, null);
             }
 
             GameFinished?.Invoke(this, new GameFinishedEventArgs(orderedResult));
@@ -249,9 +254,9 @@ namespace Figurkoder.Domain
     public sealed class CurrentEventArgs : EventArgs
     {
         public int Count { get; }
-        public KeyValuePair<string, string> Current { get; }
+        public Flashcard Current { get; }
 
-        public CurrentEventArgs(int count, KeyValuePair<string, string> current)
+        public CurrentEventArgs(int count, Flashcard current)
         {
             Count = count;
             Current = current;
@@ -261,13 +266,13 @@ namespace Figurkoder.Domain
     public sealed class GameFinishedEventArgs : EventArgs
     {
         public TimeSpan? Average { get; }
-        public (KeyValuePair<string, string> Flashcard, TimeSpan? Time)[] Result { get; }
+        public Result[] Results { get; }
 
-        public GameFinishedEventArgs((KeyValuePair<string, string> Flashcard, TimeSpan? Time)[] result)
+        public GameFinishedEventArgs(Result[] results)
         {
-            Result = result;
+            Results = results;
 
-            var times = result
+            var times = results
                 .Where(x => x.Time.HasValue)
                 .Select(x => x.Time!.Value);
 
@@ -278,5 +283,7 @@ namespace Figurkoder.Domain
         }
     }
 
-    public sealed record Game(TimeSpan FlashTime, KeyValuePair<string, string>[] Flashcards, bool Randomize);
+    public sealed record Flashcard(string Key, string Mnemonic);
+    public sealed record Result(Flashcard Flashcard, TimeSpan? Time);
+    public sealed record Game(TimeSpan FlashTime, Flashcard[] Flashcards, bool Randomize);
 }

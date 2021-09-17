@@ -80,7 +80,7 @@ namespace Figurkoder.Infrastructure.Queries
 
                     yield return (
                         string.Concat(name.Split('.')[^2].Split('-')[1..]),
-                        new Mnemonic(mnemonic.Title, mnemonic.Description, mnemonic.Pairs.Select(x => KeyValuePair.Create(x[0], x[1])).ToArray())
+                        new Mnemonic(mnemonic.Title, mnemonic.Description, mnemonic.Pairs.Select(x => new Flashcard(x[0], x[1])).ToArray())
                     );
                 }
             }

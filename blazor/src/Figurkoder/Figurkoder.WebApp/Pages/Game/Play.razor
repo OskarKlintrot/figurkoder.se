@@ -31,13 +31,22 @@ else
 @code {
     [Parameter]
     public string GameId { get; set; } = null!;
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? From { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? To { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Practice { get; set; }
 
 private Figurkoder.Domain.Mnemonic? mnemonic;
 private Figurkoder.Domain.Game? game;
 private Figurkoder.Domain.GameEngine? gameEngine;
-private string? from;
-private string? to;
-private bool practice;
 private int currentCount = 0;
 private string key = string.Empty;
 private string value = string.Empty;
@@ -51,33 +60,21 @@ protected override async Task OnInitializedAsync()
 
     mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
 
-    if (mnemonic is null)
+    if (mnemonic is null || From is null || To is null)
     {
         NavigationManager.NavigateTo("/");
 
         return;
     }
 
-    if (!NavigationManager.TryGetQueryString<string>("from", out from))
-    {
-        from = mnemonic.Pairs.First().Key;
-    }
-
-    if (!NavigationManager.TryGetQueryString<string>("to", out to))
-    {
-        to = mnemonic.Pairs.Last().Key;
-    }
-
-    NavigationManager.TryGetQueryString<bool>("practice", out practice);
-
     var keys = mnemonic.Pairs.Select(x => x.Key).ToArray();
 
-    var range = Array.IndexOf(keys, from)..Array.IndexOf(keys, to);
+    var range = Array.IndexOf(keys, From)..Array.IndexOf(keys, To);
 
     game = new Figurkoder.Domain.Game(
     TimeSpan.FromSeconds(6),
     mnemonic.Pairs[range],
-    !practice);
+    !Practice);
 
     gameEngine = new Figurkoder.Domain.GameEngine(game);
 

@@ -11,7 +11,7 @@ namespace Figurkoder.Domain
     {
         private readonly Stopwatch _stopwatch;
         private readonly Timer _timer;
-        private readonly double _interval;
+        private readonly double _intervalInMilliseconds;
         private readonly IList<(KeyValuePair<string, string> Flashcard, TimeSpan Time)> _showedFlashcards;
         private readonly KeyValuePair<string, string>[] _originalFlashcards = Array.Empty<KeyValuePair<string, string>>();
         private readonly KeyValuePair<string, string>[] _flashcards = Array.Empty<KeyValuePair<string, string>>();
@@ -41,16 +41,16 @@ namespace Figurkoder.Domain
                 throw new ArgumentException("Missing flashcards!", nameof(settings));
             }
 
-            _stopwatch = new Stopwatch();
-            _timer = new Timer();
+            _stopwatch = new();
+            _timer = new();
             _counter = 0;
             _showedFlashcards = new List<(KeyValuePair<string, string> Flashcard, TimeSpan Time)>();
 
             _timer.Elapsed += TimerElapsed;
             CurrentState += OnStateChanged;
 
-            _interval = settings.FlashTime.TotalMilliseconds;
-            _timer.Interval = _interval;
+            _intervalInMilliseconds = settings.FlashTime.TotalMilliseconds;
+            _timer.Interval = _intervalInMilliseconds;
 
             _originalFlashcards = new KeyValuePair<string, string>[settings.Flashcards.Length];
             _flashcards = new KeyValuePair<string, string>[settings.Flashcards.Length];
@@ -109,7 +109,7 @@ namespace Figurkoder.Domain
                     ChangeState(Paused);
                     _stopwatch.Stop();
                     _timer.Stop();
-                    _timer.Interval = _interval - _stopwatch.ElapsedMilliseconds;
+                    _timer.Interval = _intervalInMilliseconds - _stopwatch.ElapsedMilliseconds;
                     break;
                 default:
                     throw new InvalidOperationException("Unknown state.");
@@ -125,7 +125,7 @@ namespace Figurkoder.Domain
             }
 
             // Reset interval if it was changed
-            _timer.Interval = _interval;
+            _timer.Interval = _intervalInMilliseconds;
 
             // Add previous, if any, to result
             if (_counter > 0)
@@ -200,7 +200,7 @@ namespace Figurkoder.Domain
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="array"></param>
-        private void Shuffle<T>(T[] array)
+        private static void Shuffle<T>(T[] array)
         {
             var rng = new Random();
             var n = array.Length;
@@ -225,7 +225,6 @@ namespace Figurkoder.Domain
         }
 
 #pragma warning disable IDE0055 // Fix formatting
-        [Flags]
         public enum State
         {
             None     = 0,

@@ -219,7 +219,7 @@ namespace Figurkoder.Domain
             CurrentState?.Invoke(this, new StateEventArgs(state));
         }
 
-        private void OnStateChanged(object _, StateEventArgs e)
+        private void OnStateChanged(object? _, StateEventArgs e)
         {
             _state = e.CurrentState;
         }

@@ -66,7 +66,17 @@ namespace Figurkoder.Infrastructure.Queries
                 {
                     using var stream = assembly.GetManifestResourceStream(name);
 
+                    if (stream is null)
+                    {
+                        throw new InvalidOperationException($"'{name}' is missing");
+                    }
+
                     var mnemonic = await JsonSerializer.DeserializeAsync<MnemonicDto>(stream, options);
+
+                    if (mnemonic is null)
+                    {
+                        throw new InvalidOperationException($"{name} can not be deserialized to {nameof(MnemonicDto)}");
+                    }
 
                     yield return (
                         string.Concat(name.Split('.')[^2].Split('-')[1..]),

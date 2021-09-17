@@ -302,7 +302,7 @@ namespace Figurkoder.UnitTests.Domain
             // Assert
             Assert.True(endReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
             Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Average);
-            Assert.True(flashcards.SequenceEqual(gameFinishedEventArgs?.Result.Select(x => x.Flashcard)));
+            Assert.True(flashcards.SequenceEqual(gameFinishedEventArgs?.Result.Select(x => x.Flashcard)!));
         }
         #endregion
 

@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Remove="Data\1-TwoDigits.json" />
     <None Remove="Data\2-ThreeDigits.json" />

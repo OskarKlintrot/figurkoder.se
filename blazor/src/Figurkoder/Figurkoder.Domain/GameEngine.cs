@@ -190,7 +190,7 @@ namespace Figurkoder.Domain
             GameFinished?.Invoke(this, new GameFinishedEventArgs(orderedResult));
         }
 
-        private void TimerElapsed(object sender, ElapsedEventArgs e)
+        private void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
             Next(TimeSpan.FromMilliseconds(_timer.Interval));
         }

@@ -1,7 +1,16 @@
-﻿<h3>Result</h3>
+﻿@using Figurkoder.Domain
+
+<h3>Result</h3>
 <p>@Results.Length</p>
 <p>Average: @Average</p>
-<button class="btn btn-primary" @onclick="async () => await OnPlayAgain.InvokeAsync()">Restart</button>
+<button
+	class="btn btn-primary"
+	@onclick=@RestartAll
+	>Starta om</button>
+<button
+	class="btn btn-primary"
+	@onclick=@RestartOver2Sec
+	>Repetera >2 sek</button>
 
 @code {
 	[Parameter]
@@ -11,5 +20,14 @@
     public TimeSpan Average { get; set; }
 
 	[Parameter]
-    public EventCallback OnPlayAgain { get; set; }
+    public EventCallback<Flashcard[]?> OnPlayAgain { get; set; }
+
+	private async Task RestartAll() => await OnPlayAgain.InvokeAsync();
+
+	private async Task RestartOver2Sec() =>
+		await OnPlayAgain.InvokeAsync(
+			Results
+				.Where(x => x.Time.GetValueOrDefault().TotalSeconds > 2)
+				.Select(x => x.Flashcard)
+				.ToArray());
 }

@@ -43,40 +43,55 @@ else
     [SupplyParameterFromQuery]
     public bool Practice { get; set; }
 
-private Figurkoder.Domain.Mnemonic? mnemonic;
+    private Figurkoder.Domain.Flashcard[] originalFlashcards = Array.Empty<Figurkoder.Domain.Flashcard>();
+    private Figurkoder.Domain.Mnemonic? mnemonic;
 
-private Figurkoder.Domain.Result[]? result;
-private TimeSpan? average = null;
+    private Figurkoder.Domain.Result[]? result;
+    private TimeSpan? average = null;
 
-protected override async Task OnInitializedAsync()
-{
-    await base.OnInitializedAsync();
-
-    var originalMnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
-
-    if (originalMnemonic is null || From is null || To is null)
+    protected override async Task OnInitializedAsync()
     {
-        NavigationManager.NavigateTo("/");
+        await base.OnInitializedAsync();
 
-        return;
+        var originalMnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
+
+        if (originalMnemonic is null || From is null || To is null)
+        {
+            NavigationManager.NavigateTo("/");
+
+            return;
+        }
+
+        var keys = originalMnemonic.Pairs.Select(x => x.Key).ToArray();
+
+        var range = Array.IndexOf(keys, From)..Array.IndexOf(keys, To);
+
+        originalFlashcards = originalMnemonic.Pairs[range];
+
+        mnemonic = originalMnemonic with { Pairs = originalFlashcards };
     }
 
-    var keys = originalMnemonic.Pairs.Select(x => x.Key).ToArray();
-
-    var range = Array.IndexOf(keys, From)..Array.IndexOf(keys, To);
-
-    mnemonic = originalMnemonic with { Pairs = originalMnemonic.Pairs[range] };
+    private void OnGameFinishedHandler(GameFinished game)
+    {
+        result = game.Results;
+        average = game.Average;
     }
 
-private void OnGameFinishedHandler(GameFinished game)
-{
-    result = game.Results;
-    average = game.Average;
-}
+    private void OnPlayAgainHandler(Figurkoder.Domain.Flashcard[]? flashcards)
+    {
+        result = null;
+        average = null;
 
-private void OnPlayAgainHandler()
-{
-    result = null;
-    average = null;
-}
+        if (mnemonic is not null)
+        {
+            mnemonic = mnemonic with
+            {
+                Pairs = flashcards switch
+                {
+                    not null => flashcards,
+                    _ => originalFlashcards,
+                }
+            };
+        }
+    }
 }

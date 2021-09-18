@@ -34,82 +34,82 @@ else
     [Parameter]
     public EventCallback<GameFinished> OnGameFinished { get; set; }
 
-private Figurkoder.Domain.Game? game;
-private Figurkoder.Domain.GameEngine? gameEngine;
-private int currentCount = 0;
-private string key = string.Empty;
-private string value = string.Empty;
-private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.None;
+    private Figurkoder.Domain.Game? game;
+    private Figurkoder.Domain.GameEngine? gameEngine;
+    private int currentCount = 0;
+    private string key = string.Empty;
+    private string value = string.Empty;
+    private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.None;
 
-protected override async Task OnInitializedAsync()
-{
-    await base.OnInitializedAsync();
-
-    if (Mnemonic is null)
+    protected override async Task OnInitializedAsync()
     {
-        NavigationManager.NavigateTo("/");
+        await base.OnInitializedAsync();
 
-        return;
+        if (Mnemonic is null)
+        {
+            NavigationManager.NavigateTo("/");
+
+            return;
+        }
+
+        game = new Figurkoder.Domain.Game(
+            TimeSpan.FromSeconds(6),
+            Mnemonic.Pairs,
+            !Practice);
+
+        gameEngine = new Figurkoder.Domain.GameEngine(game);
+
+        gameEngine.Current += OnCurrentHandler;
+        gameEngine.CurrentState += OnStateChangedHandler;
+        gameEngine.GameFinished += OnGameFinishedHandler;
     }
 
-    game = new Figurkoder.Domain.Game(
-        TimeSpan.FromSeconds(6),
-        Mnemonic.Pairs,
-        !Practice);
-
-    gameEngine = new Figurkoder.Domain.GameEngine(game);
-
-    gameEngine.Current += OnCurrentHandler;
-    gameEngine.CurrentState += OnStateChangedHandler;
-    gameEngine.GameFinished += OnGameFinishedHandler;
-}
-
-private void OnCurrentHandler(object? _, Figurkoder.Domain.CurrentEventArgs e)
-{
-    currentCount = e.Count;
-    key = e.Current.Key;
-    value = e.Current.Mnemonic;
-
-    StateHasChanged();
-}
-
-private void OnStateChangedHandler(object? _, Figurkoder.Domain.StateEventArgs e)
-{
-    if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
+    private void OnCurrentHandler(object? _, Figurkoder.Domain.CurrentEventArgs e)
     {
-        //result = null;
-        //average = null;
+        currentCount = e.Count;
+        key = e.Current.Key;
+        value = e.Current.Mnemonic;
+
+        StateHasChanged();
     }
 
-    state = e.CurrentState;
+    private void OnStateChangedHandler(object? _, Figurkoder.Domain.StateEventArgs e)
+    {
+        if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
+        {
+            //result = null;
+            //average = null;
+        }
 
-    StateHasChanged();
-}
+        state = e.CurrentState;
 
-private void OnGameFinishedHandler(object? _, Figurkoder.Domain.GameFinishedEventArgs e)
-{
-    OnGameFinished.InvokeAsync(new (e.Results, e.Average)).Wait();
-}
+        StateHasChanged();
+    }
 
-private void Start()
-{
-    gameEngine?.Start();
-}
+    private void OnGameFinishedHandler(object? _, Figurkoder.Domain.GameFinishedEventArgs e)
+    {
+        OnGameFinished.InvokeAsync(new (e.Results, e.Average)).Wait();
+    }
 
-private void Next()
-{
-    gameEngine?.Next();
-}
+    private void Start()
+    {
+        gameEngine?.Start();
+    }
 
-private void Pause()
-{
-    gameEngine?.Pause();
-}
+    private void Next()
+    {
+        gameEngine?.Next();
+    }
 
-private void Stop()
-{
-    gameEngine?.Stop();
-}
+    private void Pause()
+    {
+        gameEngine?.Pause();
+    }
 
-public record GameFinished(Figurkoder.Domain.Result[] Results, TimeSpan? Average);
+    private void Stop()
+    {
+        gameEngine?.Stop();
+    }
+
+    public record GameFinished(Figurkoder.Domain.Result[] Results, TimeSpan? Average);
 }

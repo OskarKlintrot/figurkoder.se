@@ -27,12 +27,6 @@ else
 @code {
     [Parameter]
     public Figurkoder.Domain.Mnemonic? Mnemonic { get; set; } = null!;
-    
-    [Parameter]
-    public string? From { get; set; }
-
-    [Parameter]
-    public string? To { get; set; }
 
     [Parameter]
     public bool Practice { get; set; }
@@ -51,20 +45,16 @@ protected override async Task OnInitializedAsync()
 {
     await base.OnInitializedAsync();
 
-    if (Mnemonic is null || From is null || To is null)
+    if (Mnemonic is null)
     {
         NavigationManager.NavigateTo("/");
 
         return;
     }
 
-    var keys = Mnemonic.Pairs.Select(x => x.Key).ToArray();
-
-    var range = Array.IndexOf(keys, From)..Array.IndexOf(keys, To);
-
     game = new Figurkoder.Domain.Game(
         TimeSpan.FromSeconds(6),
-        Mnemonic.Pairs[range],
+        Mnemonic.Pairs,
         !Practice);
 
     gameEngine = new Figurkoder.Domain.GameEngine(game);

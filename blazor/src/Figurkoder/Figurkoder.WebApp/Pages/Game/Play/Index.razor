@@ -23,8 +23,6 @@ else
 {
     <Game 
         Mnemonic=@mnemonic
-        From=@From
-        To=@To
         Practice=@Practice
         OnGameFinished=@OnGameFinishedHandler />
 }
@@ -54,15 +52,21 @@ protected override async Task OnInitializedAsync()
 {
     await base.OnInitializedAsync();
 
-    mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
+    var originalMnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
 
-    if (mnemonic is null || From is null || To is null)
+    if (originalMnemonic is null || From is null || To is null)
     {
         NavigationManager.NavigateTo("/");
 
         return;
     }
-}
+
+    var keys = originalMnemonic.Pairs.Select(x => x.Key).ToArray();
+
+    var range = Array.IndexOf(keys, From)..Array.IndexOf(keys, To);
+
+    mnemonic = originalMnemonic with { Pairs = originalMnemonic.Pairs[range] };
+    }
 
 private void OnGameFinishedHandler(GameFinished game)
 {

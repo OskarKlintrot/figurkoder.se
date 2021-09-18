@@ -2,25 +2,21 @@
 @using Microsoft.AspNetCore.WebUtilities;
 @using System.Linq;
 
-@page "/game/{gameId}/play"
-@inject IMnemonicQueries MnemonicQueries
 @inject NavigationManager NavigationManager
 
-@if (mnemonic is null)
+@if (Mnemonic is null)
 {
     <p>Loading game...</p>
 }
 else
 {
-    <h1>@mnemonic.Title</h1>
-    <h2>@mnemonic.Description</h2>
+    <h1>@Mnemonic.Title</h1>
+    <h2>@Mnemonic.Description</h2>
 
     <p>Current count: @currentCount</p>
     <p>Current key: @key</p>
     <p>Current value: @value</p>
     <p>Current state: @state</p>
-    <p>Result: @result</p>
-    <p>Average: @average</p>
 
     <button class="btn btn-primary" @onclick="Start">Start</button>
     <button class="btn btn-primary" @onclick="Next">Next</button>
@@ -30,51 +26,46 @@ else
 
 @code {
     [Parameter]
-    public string GameId { get; set; } = null!;
+    public Figurkoder.Domain.Mnemonic? Mnemonic { get; set; } = null!;
     
     [Parameter]
-    [SupplyParameterFromQuery]
     public string? From { get; set; }
 
     [Parameter]
-    [SupplyParameterFromQuery]
     public string? To { get; set; }
 
     [Parameter]
-    [SupplyParameterFromQuery]
     public bool Practice { get; set; }
 
-private Figurkoder.Domain.Mnemonic? mnemonic;
+    [Parameter]
+    public EventCallback<GameFinished> OnGameFinished { get; set; }
+
 private Figurkoder.Domain.Game? game;
 private Figurkoder.Domain.GameEngine? gameEngine;
 private int currentCount = 0;
 private string key = string.Empty;
 private string value = string.Empty;
-private string result = string.Empty;
-private TimeSpan? average = null;
 private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.None;
 
 protected override async Task OnInitializedAsync()
 {
     await base.OnInitializedAsync();
 
-    mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
-
-    if (mnemonic is null || From is null || To is null)
+    if (Mnemonic is null || From is null || To is null)
     {
         NavigationManager.NavigateTo("/");
 
         return;
     }
 
-    var keys = mnemonic.Pairs.Select(x => x.Key).ToArray();
+    var keys = Mnemonic.Pairs.Select(x => x.Key).ToArray();
 
     var range = Array.IndexOf(keys, From)..Array.IndexOf(keys, To);
 
     game = new Figurkoder.Domain.Game(
-    TimeSpan.FromSeconds(6),
-    mnemonic.Pairs[range],
-    !Practice);
+        TimeSpan.FromSeconds(6),
+        Mnemonic.Pairs[range],
+        !Practice);
 
     gameEngine = new Figurkoder.Domain.GameEngine(game);
 
@@ -96,8 +87,8 @@ private void OnStateChangedHandler(object? _, Figurkoder.Domain.StateEventArgs e
 {
     if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
     {
-        result = string.Empty;
-        average = null;
+        //result = null;
+        //average = null;
     }
 
     state = e.CurrentState;
@@ -107,10 +98,7 @@ private void OnStateChangedHandler(object? _, Figurkoder.Domain.StateEventArgs e
 
 private void OnGameFinishedHandler(object? _, Figurkoder.Domain.GameFinishedEventArgs e)
 {
-    result = System.Text.Json.JsonSerializer.Serialize(e.Results, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-    average = e.Average;
-
-    StateHasChanged();
+    OnGameFinished.InvokeAsync(new (e.Results, e.Average)).Wait();
 }
 
 private void Start()
@@ -132,4 +120,6 @@ private void Stop()
 {
     gameEngine?.Stop();
 }
+
+public record GameFinished(Figurkoder.Domain.Result[] Results, TimeSpan? Average);
 }

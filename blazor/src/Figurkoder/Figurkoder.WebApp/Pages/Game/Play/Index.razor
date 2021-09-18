@@ -1,0 +1,78 @@
+﻿@using Figurkoder.Application.Queries;
+@using Microsoft.AspNetCore.WebUtilities;
+@using System.Linq;
+@using Figurkoder.WebApp.Pages.Game.Play.Components;
+@using static Figurkoder.WebApp.Pages.Game.Play.Components.Game
+
+@page "/game/{gameId}/play"
+@inject IMnemonicQueries MnemonicQueries
+@inject NavigationManager NavigationManager
+
+@if (mnemonic is null)
+{
+    <p>Loading game...</p>
+}
+else @if (result is not null && average.HasValue)
+{
+    <Result
+        Results=@result
+        Average=@average.Value
+        OnPlayAgain=@OnPlayAgainHandler />
+}
+else
+{
+    <Game 
+        Mnemonic=@mnemonic
+        From=@From
+        To=@To
+        Practice=@Practice
+        OnGameFinished=@OnGameFinishedHandler />
+}
+
+@code {
+    [Parameter]
+    public string GameId { get; set; } = null!;
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? From { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? To { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Practice { get; set; }
+
+private Figurkoder.Domain.Mnemonic? mnemonic;
+
+private Figurkoder.Domain.Result[]? result;
+private TimeSpan? average = null;
+
+protected override async Task OnInitializedAsync()
+{
+    await base.OnInitializedAsync();
+
+    mnemonic = await MnemonicQueries.GetMnemonicAsync(GameId);
+
+    if (mnemonic is null || From is null || To is null)
+    {
+        NavigationManager.NavigateTo("/");
+
+        return;
+    }
+}
+
+private void OnGameFinishedHandler(GameFinished game)
+{
+    result = game.Results;
+    average = game.Average;
+}
+
+private void OnPlayAgainHandler()
+{
+    result = null;
+    average = null;
+}
+}

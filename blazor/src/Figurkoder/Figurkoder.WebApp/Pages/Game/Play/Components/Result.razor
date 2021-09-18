@@ -1,0 +1,15 @@
+﻿<h3>Result</h3>
+<p>@Results.Length</p>
+<p>Average: @Average</p>
+<button class="btn btn-primary" @onclick="async () => await OnPlayAgain.InvokeAsync()">Restart</button>
+
+@code {
+	[Parameter]
+    public Figurkoder.Domain.Result[] Results { get; set; } = null!;
+
+	[Parameter]
+    public TimeSpan Average { get; set; }
+
+	[Parameter]
+    public EventCallback OnPlayAgain { get; set; }
+}

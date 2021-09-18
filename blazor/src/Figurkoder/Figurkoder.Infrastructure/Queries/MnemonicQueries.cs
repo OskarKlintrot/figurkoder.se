@@ -20,12 +20,12 @@ namespace Figurkoder.Infrastructure.Queries
 
             return mnemonics
                 .Select(x => new MnemonicInfo(
-                    id: x.Key,
-                    title: x.Value.Title,
-                    description: x.Value.Description,
-                    first: x.Value.Pairs[0].Key,
-                    last: x.Value.Pairs[^1].Key,
-                    numerical: x.Value.Pairs.All(y => int.TryParse(y.Key, out var _))))
+                    Id: x.Key,
+                    Title: x.Value.Title,
+                    Description: x.Value.Description,
+                    First: x.Value.Pairs[0].Key,
+                    Last: x.Value.Pairs[^1].Key,
+                    Numerical: x.Value.Pairs.All(y => int.TryParse(y.Key, out var _))))
                 .ToList();
         }
 

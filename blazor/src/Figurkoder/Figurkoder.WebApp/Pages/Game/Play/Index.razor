@@ -15,6 +15,7 @@
 else @if (result is not null && average.HasValue)
 {
     <Result
+        Title=@mnemonic.Title
         Results=@result
         Average=@average.Value
         OnPlayAgain=@OnPlayAgainHandler />
@@ -64,7 +65,7 @@ else
 
         var keys = originalMnemonic.Pairs.Select(x => x.Key).ToArray();
 
-        var range = Array.IndexOf(keys, From)..Array.IndexOf(keys, To);
+        var range = Array.IndexOf(keys, From)..(Array.IndexOf(keys, To) + 1);
 
         originalFlashcards = originalMnemonic.Pairs[range];
 

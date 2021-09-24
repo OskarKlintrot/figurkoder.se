@@ -104,13 +104,15 @@ namespace Figurkoder.ComponentTests.Domain
 
             // Act
             gameEngine.Pause();
-            await Task.Delay(200);
+            await Task.Delay(200); // This should not count
             gameEngine.Start();
+            await Task.Delay(100);
+            gameEngine.Next();
 
             // Assert
             Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(200)));
             Assert.Equal(1, gameFinishedEvent?.Results.Length);
-            Assert.Equal(TimeSpan.FromMilliseconds(100), gameFinishedEvent?.Average);
+            Assert.InRange(gameFinishedEvent?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
         }
 
         [Fact]

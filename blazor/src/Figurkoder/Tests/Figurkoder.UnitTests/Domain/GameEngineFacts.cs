@@ -125,13 +125,13 @@ namespace Figurkoder.UnitTests.Domain
 
             Assert.Equal("Foo", gameFinishedEventArgs?.Results[0].Flashcard.Key);
             Assert.Equal("Bar", gameFinishedEventArgs?.Results[0].Flashcard.Mnemonic);
-            Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Results[0].Time);
+            Assert.Null(gameFinishedEventArgs?.Results[0].Time);
 
             Assert.Equal("Bar", gameFinishedEventArgs?.Results[1].Flashcard.Key);
             Assert.Equal("Foo", gameFinishedEventArgs?.Results[1].Flashcard.Mnemonic);
-            Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Results[1].Time);
+            Assert.Null(gameFinishedEventArgs?.Results[1].Time);
 
-            Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Average);
+            Assert.Null(gameFinishedEventArgs?.Average);
         }
 
         [Fact]
@@ -301,7 +301,7 @@ namespace Figurkoder.UnitTests.Domain
 
             // Assert
             Assert.True(endReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
-            Assert.Equal(TimeSpan.FromMilliseconds(10), gameFinishedEventArgs?.Average);
+            Assert.Null(gameFinishedEventArgs?.Average);
             Assert.True(flashcards.SequenceEqual(gameFinishedEventArgs?.Results.Select(x => x.Flashcard)!));
         }
         #endregion
@@ -401,9 +401,9 @@ namespace Figurkoder.UnitTests.Domain
 
             Assert.Equal("Fuu", gameFinishedEventArgs?.Results[2].Flashcard.Key);
             Assert.Equal("bar", gameFinishedEventArgs?.Results[2].Flashcard.Mnemonic);
-            Assert.Equal(TimeSpan.FromMilliseconds(500), gameFinishedEventArgs?.Results[2].Time);
+            Assert.Null(gameFinishedEventArgs?.Results[2].Time);
 
-            Assert.InRange(gameFinishedEventArgs?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(240), TimeSpan.FromMilliseconds(280)); // Allow ±20ms
+            Assert.InRange(gameFinishedEventArgs?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(130), TimeSpan.FromMilliseconds(170)); // Allow ±20ms
         }
         #endregion
 

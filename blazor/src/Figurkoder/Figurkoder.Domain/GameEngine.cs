@@ -12,7 +12,7 @@ namespace Figurkoder.Domain
         private readonly Stopwatch _stopwatch;
         private readonly Timer _timer;
         private readonly double _intervalInMilliseconds;
-        private readonly IList<(Flashcard Flashcard, TimeSpan Time)> _showedFlashcards;
+        private readonly IList<(Flashcard Flashcard, TimeSpan? Time)> _showedFlashcards;
         private readonly Flashcard[] _originalFlashcards = Array.Empty<Flashcard>();
         private readonly Flashcard[] _flashcards = Array.Empty<Flashcard>();
 
@@ -49,7 +49,7 @@ namespace Figurkoder.Domain
             _stopwatch = new();
             _timer = new();
             _counter = 0;
-            _showedFlashcards = new List<(Flashcard Flashcard, TimeSpan Time)>();
+            _showedFlashcards = new List<(Flashcard Flashcard, TimeSpan? Time)>();
 
             _timer.Elapsed += TimerElapsed;
             CurrentState += OnStateChanged;
@@ -121,7 +121,7 @@ namespace Figurkoder.Domain
             }
         }
 
-        public void Next(TimeSpan? time = null)
+        public void Next(TimeSpan? time = null, bool failed = false)
         {
             // TODO: If pressing next when paused the game should just trigger next and resume
             if (_state != Running)
@@ -135,7 +135,9 @@ namespace Figurkoder.Domain
             // Add previous, if any, to result
             if (_counter > 0)
             {
-                _showedFlashcards.Add((_flashcards[_counter - 1], time ?? _stopwatch.Elapsed));
+                _showedFlashcards.Add((
+                    _flashcards[_counter - 1],
+                    failed ? null : time ?? _stopwatch.Elapsed));
             }
 
             // Check if we have any flashcards left
@@ -197,7 +199,7 @@ namespace Figurkoder.Domain
 
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            Next(TimeSpan.FromMilliseconds(_timer.Interval));
+            Next(failed: true);
         }
 
         /// <summary>
@@ -235,8 +237,9 @@ namespace Figurkoder.Domain
             None     = 0,
             Running  = 1,
             Paused   = 1 << 1,
-            Resumed  = 1 << 2,
-            Finished = 1 << 3
+            Revealed = 1 << 2,
+            Resumed  = 1 << 3,
+            Finished = 1 << 4
         }
 #pragma warning restore IDE0055
     }

@@ -3,18 +3,33 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Timers;
+using Microsoft.Extensions.Logging;
 using static Figurkoder.Domain.GameEngine.State;
 
 namespace Figurkoder.Domain
 {
+    public sealed class GameEngineFactory
+    {
+        private readonly ILoggerFactory _loggerFactory;
+
+        public GameEngineFactory(ILoggerFactory loggerFactory)
+        {
+            ArgumentNullException.ThrowIfNull(loggerFactory);
+
+            _loggerFactory = loggerFactory;
+        }
+
+        public GameEngine Create(Game game) => new(_loggerFactory.CreateLogger<GameEngine>(), game);
+    }
+
     public sealed class GameEngine
     {
-        private readonly Stopwatch _stopwatch;
-        private readonly Timer _timer;
+        private readonly Stopwatch _stopwatch = new();
+        private readonly Timer _timer = new();
+        private readonly List<(Flashcard Flashcard, TimeSpan? Time)> _showedFlashcards = new();
+        private readonly ILogger<GameEngine> _logger;
         private readonly double _intervalInMilliseconds;
-        private readonly IList<(Flashcard Flashcard, TimeSpan? Time)> _showedFlashcards;
-        private readonly Flashcard[] _originalFlashcards = Array.Empty<Flashcard>();
-        private readonly Flashcard[] _flashcards = Array.Empty<Flashcard>();
+        private readonly Flashcard[] _flashcards;
 
         private int _counter;
         private State _state;
@@ -34,8 +49,12 @@ namespace Figurkoder.Domain
         /// </summary>
         public event EventHandler<GameFinishedEventArgs>? GameFinished;
 
-        public GameEngine(Game settings)
+        public GameEngine(ILogger<GameEngine> logger, Game settings)
         {
+            ArgumentNullException.ThrowIfNull(logger);
+            
+            _logger = logger;
+
             if (settings.Flashcards.Length == 0)
             {
                 throw new ArgumentException("Missing flashcards!", nameof(settings));
@@ -46,21 +65,14 @@ namespace Figurkoder.Domain
                 throw new ArgumentException("Duplicated flashcards!", nameof(settings));
             }
 
-            _stopwatch = new();
-            _timer = new();
-            _counter = 0;
-            _showedFlashcards = new List<(Flashcard Flashcard, TimeSpan? Time)>();
-
             _timer.Elapsed += TimerElapsed;
             CurrentState += OnStateChanged;
 
             _intervalInMilliseconds = settings.FlashTime.TotalMilliseconds;
             _timer.Interval = _intervalInMilliseconds;
 
-            _originalFlashcards = new Flashcard[settings.Flashcards.Length];
             _flashcards = new Flashcard[settings.Flashcards.Length];
 
-            settings.Flashcards.CopyTo(_originalFlashcards, 0);
             settings.Flashcards.CopyTo(_flashcards, 0);
 
             if (settings.Randomize)
@@ -71,30 +83,26 @@ namespace Figurkoder.Domain
 
         public void Start()
         {
+            _logger.LogDebug(nameof(Start) + ": State is currently {State}", _state);
+
             switch (_state)
             {
-                case None:
-                    _stopwatch.Restart();
-                    _timer.Start();
-                    Next(TimeSpan.Zero);
+                case NotStarted:
+                    Advance(TimeSpan.Zero);
                     break;
                 case Paused:
-                    ChangeState(Resumed);
+                    ChangeState(Running);
                     _timer.Start();
                     _stopwatch.Start();
                     break;
                 case Running:
+                case Revealed:
                     return;
-                case Resumed: // TODO: Avoid issue if double tapping start here
-                    Next(TimeSpan.Zero);
-                    break;
                 case Finished:
                     ChangeState(Running);
-                    _stopwatch.Restart();
-                    _timer.Start();
                     _counter = 0;
                     _showedFlashcards.Clear();
-                    Next(TimeSpan.Zero);
+                    Advance(TimeSpan.Zero);
                     break;
                 default:
                     throw new InvalidOperationException("Unknown state.");
@@ -103,14 +111,16 @@ namespace Figurkoder.Domain
 
         public void Pause()
         {
+            _logger.LogDebug(nameof(Pause) + ": State is currently {State}", _state);
+
             switch (_state)
             {
-                case None:
+                case NotStarted:
                 case Paused:
                 case Finished:
+                case Revealed:
                     return;
                 case Running:
-                case Resumed:
                     ChangeState(Paused);
                     _stopwatch.Stop();
                     _timer.Stop();
@@ -121,8 +131,103 @@ namespace Figurkoder.Domain
             }
         }
 
-        public void Next(TimeSpan? time = null, bool failed = false)
+        public void Reveale()
         {
+            _logger.LogDebug(nameof(Reveale) + ": State is currently {State}", _state);
+
+            switch (_state)
+            {
+                case NotStarted:
+                case Revealed:
+                case Finished:
+                    return;
+                case Paused:
+                case Running:
+                    ChangeState(Revealed);
+                    _stopwatch.Stop();
+                    _timer.Stop();
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown state.");
+            }
+        }
+
+        public void Next()
+        {
+            _logger.LogDebug(nameof(Next) + ": State is currently {State}", _state);
+
+            switch (_state)
+            {
+                case Finished:
+                    return;
+                case NotStarted:
+                case Revealed:
+                case Paused:
+                case Running:
+                    Advance(null, false);
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown state.");
+            }
+        }
+
+        public void Stop()
+        {
+            _logger.LogDebug(nameof(Stop) + ": State is currently {State}", _state);
+
+            switch (_state)
+            {
+                case Running:
+                case Paused:
+                case Revealed:
+                    break;
+                case NotStarted:
+                case Finished:
+                    return;
+                default:
+                    throw new InvalidOperationException("Unknown state.");
+            }
+
+            ChangeState(Finished);
+
+            _timer.Stop();
+            _stopwatch.Stop();
+
+            _logger.LogDebug("Will collect result");
+
+
+            var orderedResult = new Result[_flashcards.Length];
+
+            _logger.LogDebug("We showed {FlashCardCount} flash cards", _showedFlashcards.Count);
+
+            foreach (var (flashcard, time) in _showedFlashcards)
+            {
+                _logger.LogDebug("Adding {Flashcard} with time {Time} to result", flashcard.Key, time);
+                orderedResult[Array.IndexOf(_flashcards, flashcard)] = new(flashcard, time);
+            }
+
+            foreach (var pair in _flashcards.Except(_showedFlashcards.Select(x => x.Flashcard)))
+            {
+                _logger.LogDebug("Adding {Flashcard} to result", pair.Key);
+                orderedResult[Array.IndexOf(_flashcards, pair)] = new(pair, null);
+            }
+
+            _logger.LogDebug("Invoking {Event} with a result of {FlashCardCount}", nameof(GameFinished), orderedResult.Where(x => x is not null).Count());
+            GameFinished?.Invoke(this, new GameFinishedEventArgs(orderedResult));
+        }
+
+        private void Advance(TimeSpan? time = null, bool failed = false)
+        {
+            _logger.LogDebug(nameof(Advance) + ": State is currently {State}", _state);
+
+            _timer.Stop();
+            _stopwatch.Stop();
+
+            if (_state is Revealed)
+            {
+                failed = true;
+            }
+
             // TODO: If pressing next when paused the game should just trigger next and resume
             if (_state != Running)
             {
@@ -152,9 +257,10 @@ namespace Figurkoder.Domain
             _counter++;
 
             var e = new CurrentEventArgs(_counter, _flashcards[_counter - 1]);
+            Current?.Invoke(this, e);
+            _logger.LogDebug("Updated current flashcard to {Flashcard}", e.Current.Key);
 
             // Reset timer and stopwatch
-            Current?.Invoke(this, e);
             if (!_timer.Enabled)
             {
                 _timer.Start();
@@ -162,44 +268,11 @@ namespace Figurkoder.Domain
             _stopwatch.Restart();
         }
 
-        public void Stop()
-        {
-            switch (_state)
-            {
-                case Running:
-                case Paused:
-                case Resumed:
-                    break;
-                case None:
-                case Finished:
-                    return;
-                default:
-                    throw new InvalidOperationException("Unknown state.");
-            }
-
-            ChangeState(Finished);
-
-            _timer.Stop();
-            _stopwatch.Stop();
-
-            var orderedResult = new Result[_originalFlashcards.Length];
-
-            foreach (var (flashcard, time) in _showedFlashcards)
-            {
-                orderedResult[Array.IndexOf(_originalFlashcards, flashcard)] = new(flashcard, time);
-            }
-
-            foreach (var pair in _flashcards.Except(_showedFlashcards.Select(x => x.Flashcard)))
-            {
-                orderedResult[Array.IndexOf(_originalFlashcards, pair)] = new(pair, null);
-            }
-
-            GameFinished?.Invoke(this, new GameFinishedEventArgs(orderedResult));
-        }
-
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            Next(failed: true);
+            _logger.LogDebug(nameof(TimerElapsed));
+
+            Advance(failed: true);
         }
 
         /// <summary>
@@ -223,23 +296,26 @@ namespace Figurkoder.Domain
 
         private void ChangeState(State state)
         {
+            _logger.LogDebug("Changing state to {state}", state);
+
             CurrentState?.Invoke(this, new StateEventArgs(state));
         }
 
         private void OnStateChanged(object? _, StateEventArgs e)
         {
             _state = e.CurrentState;
+
+            _logger.LogDebug("Changed state to {state}", _state);
         }
 
 #pragma warning disable IDE0055 // Fix formatting
         public enum State
         {
-            None     = 0,
-            Running  = 1,
-            Paused   = 1 << 1,
-            Revealed = 1 << 2,
-            Resumed  = 1 << 3,
-            Finished = 1 << 4
+            NotStarted = 0,
+            Running    = 1,
+            Paused     = 1 << 1,
+            Revealed   = 1 << 2,
+            Finished   = 1 << 3
         }
 #pragma warning restore IDE0055
     }

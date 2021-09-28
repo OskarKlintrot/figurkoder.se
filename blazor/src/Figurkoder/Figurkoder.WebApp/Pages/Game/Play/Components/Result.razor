@@ -19,7 +19,7 @@
             }
                 else
                 {
-                    <th>-</th>
+                    <th>@flashcard.Mnemonic</th>
                 }
             </tr>
         }
@@ -56,7 +56,7 @@
     private async Task RestartOver2Sec() =>
         await OnPlayAgain.InvokeAsync(
             Results
-                .Where(x => x.Time.GetValueOrDefault().TotalSeconds > 2)
+                .Where(x => !x.Time.HasValue || x.Time.GetValueOrDefault().TotalSeconds > 2)
                 .Select(x => x.Flashcard)
                 .ToArray());
 }

@@ -3,6 +3,7 @@
 @using System.Linq;
 
 @inject NavigationManager NavigationManager
+@inject Figurkoder.Domain.GameEngineFactory GameEngineFactory
 
 @if (Mnemonic is null)
 {
@@ -15,13 +16,15 @@ else
 
     <p>Current count: @currentCount</p>
     <p>Current key: @key</p>
-    <p>Current value: @value</p>
+    <p>Current value: @(state is Domain.GameEngine.State.Revealed ? value : "-")</p>
     <p>Current state: @state</p>
 
     <button class="btn btn-primary" @onclick="Start">Start</button>
     <button class="btn btn-primary" @onclick="Next">Next</button>
+    <button class="btn btn-primary" @onclick="Reveale">Reveale</button>
+    <br />
     <button class="btn btn-primary" @onclick="Pause">Pause</button>
-    <button class="btn btn-primary" @onclick="Stop">Stop</button>
+    <button class="btn btn-primary" @onclick="Stop">Stop</button>   
 }
 
 @code {
@@ -39,7 +42,7 @@ else
     private int currentCount = 0;
     private string key = string.Empty;
     private string value = string.Empty;
-    private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.None;
+    private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.NotStarted;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,7 +60,7 @@ else
             Mnemonic.Pairs,
             !Practice);
 
-        gameEngine = new Figurkoder.Domain.GameEngine(game);
+        gameEngine = GameEngineFactory.Create(game);
 
         gameEngine.Current += OnCurrentHandler;
         gameEngine.CurrentState += OnStateChangedHandler;
@@ -99,6 +102,11 @@ else
     private void Next()
     {
         gameEngine?.Next();
+    }
+
+    private void Reveale()
+    {
+        gameEngine?.Reveale();
     }
 
     private void Pause()

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Timers;
 using Microsoft.Extensions.Logging;
 using static Figurkoder.Domain.GameEngine.State;
@@ -22,7 +24,7 @@ namespace Figurkoder.Domain
         public GameEngine Create(Game game) => new(_loggerFactory.CreateLogger<GameEngine>(), game);
     }
 
-    public sealed class GameEngine
+    public sealed class GameEngine : IDisposable
     {
         private readonly Stopwatch _stopwatch = new();
         private readonly Timer _timer = new();
@@ -33,21 +35,25 @@ namespace Figurkoder.Domain
 
         private int _counter;
         private State _state;
+        private bool disposedValue;
+        private readonly Subject<GameEventBase> _eventDispatched = new();
 
-        /// <summary>
-        /// Shows the current flashcard
-        /// </summary>
-        public event EventHandler<CurrentEventArgs>? Current;
+        public IObservable<GameEventBase> Events => _eventDispatched.AsObservable();
 
-        /// <summary>
-        /// Triggers when the game changes state
-        /// </summary>
-        public event EventHandler<StateEventArgs>? CurrentState;
+        private void DispatchGameEvent(GameEventBase @event)
+        {
+            if (_eventDispatched.IsDisposed)
+            {
+                throw new InvalidOperationException("Game is finished.");
+            }
 
-        /// <summary>
-        /// Triggers when the game has finished
-        /// </summary>
-        public event EventHandler<GameFinishedEventArgs>? GameFinished;
+            _eventDispatched.OnNext(@event);
+
+            if (@event is GameFinishedEvent)
+            {
+                _eventDispatched.OnCompleted();
+            }
+        }
 
         public GameEngine(ILogger<GameEngine> logger, Game settings)
         {
@@ -66,7 +72,10 @@ namespace Figurkoder.Domain
             }
 
             _timer.Elapsed += TimerElapsed;
-            CurrentState += OnStateChanged;
+
+            Events
+                .OfType<StateChangedEvent>()
+                .Subscribe(OnStateChanged);
 
             _intervalInMilliseconds = settings.FlashTime.TotalMilliseconds;
             _timer.Interval = _intervalInMilliseconds;
@@ -99,11 +108,7 @@ namespace Figurkoder.Domain
                 case Revealed:
                     return;
                 case Finished:
-                    ChangeState(Running);
-                    _counter = 0;
-                    _showedFlashcards.Clear();
-                    Advance(TimeSpan.Zero);
-                    break;
+                    throw new InvalidOperationException("Game is finished.");
                 default:
                     throw new InvalidOperationException("Unknown state.");
             }
@@ -117,7 +122,6 @@ namespace Figurkoder.Domain
             {
                 case NotStarted:
                 case Paused:
-                case Finished:
                 case Revealed:
                     return;
                 case Running:
@@ -126,6 +130,8 @@ namespace Figurkoder.Domain
                     _timer.Stop();
                     _timer.Interval = _intervalInMilliseconds - _stopwatch.ElapsedMilliseconds;
                     break;
+                case Finished:
+                    throw new InvalidOperationException("Game is finished.");
                 default:
                     throw new InvalidOperationException("Unknown state.");
             }
@@ -139,7 +145,6 @@ namespace Figurkoder.Domain
             {
                 case NotStarted:
                 case Revealed:
-                case Finished:
                     return;
                 case Paused:
                 case Running:
@@ -147,6 +152,8 @@ namespace Figurkoder.Domain
                     _stopwatch.Stop();
                     _timer.Stop();
                     break;
+                case Finished:
+                    throw new InvalidOperationException("Game is finished.");
                 default:
                     throw new InvalidOperationException("Unknown state.");
             }
@@ -158,14 +165,14 @@ namespace Figurkoder.Domain
 
             switch (_state)
             {
-                case Finished:
-                    return;
                 case NotStarted:
                 case Revealed:
                 case Paused:
                 case Running:
                     Advance(null, false);
                     break;
+                case Finished:
+                    throw new InvalidOperationException("Game is finished.");
                 default:
                     throw new InvalidOperationException("Unknown state.");
             }
@@ -212,8 +219,12 @@ namespace Figurkoder.Domain
                 orderedResult[Array.IndexOf(_flashcards, pair)] = new(pair, null);
             }
 
-            _logger.LogDebug("Invoking {Event} with a result of {FlashCardCount}", nameof(GameFinished), orderedResult.Where(x => x is not null).Count());
-            GameFinished?.Invoke(this, new GameFinishedEventArgs(orderedResult));
+            _logger.LogDebug(
+                "Dispatched {Event} with a result of {FlashCardCount}",
+                nameof(GameFinishedEvent),
+                orderedResult.Where(x => x is not null).Count());
+
+            DispatchGameEvent(new GameFinishedEvent(orderedResult));
         }
 
         private void Advance(TimeSpan? time = null, bool failed = false)
@@ -256,9 +267,9 @@ namespace Figurkoder.Domain
             // Next flashcard
             _counter++;
 
-            var e = new CurrentEventArgs(_counter, _flashcards[_counter - 1]);
-            Current?.Invoke(this, e);
-            _logger.LogDebug("Updated current flashcard to {Flashcard}", e.Current.Key);
+            var flashcard = _flashcards[_counter - 1];
+            DispatchGameEvent(new NextFlashcardEvent(_counter, flashcard));
+            _logger.LogDebug("Updated current flashcard to {Flashcard}", flashcard.Key);
 
             // Reset timer and stopwatch
             if (!_timer.Enabled)
@@ -298,12 +309,12 @@ namespace Figurkoder.Domain
         {
             _logger.LogDebug("Changing state to {state}", state);
 
-            CurrentState?.Invoke(this, new StateEventArgs(state));
+            DispatchGameEvent(new StateChangedEvent(state));
         }
 
-        private void OnStateChanged(object? _, StateEventArgs e)
+        private void OnStateChanged(StateChangedEvent stateChanged)
         {
-            _state = e.CurrentState;
+            _state = stateChanged.CurrentState;
 
             _logger.LogDebug("Changed state to {state}", _state);
         }
@@ -317,37 +328,61 @@ namespace Figurkoder.Domain
             Revealed   = 1 << 2,
             Finished   = 1 << 3
         }
+
+        private void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _timer.Dispose();
+                    _eventDispatched.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
 #pragma warning restore IDE0055
     }
 
-    public sealed class StateEventArgs : EventArgs
+    public abstract class GameEventBase { }
+
+    public sealed class StateChangedEvent : GameEventBase
     {
         public GameEngine.State CurrentState { get; }
 
-        public StateEventArgs(GameEngine.State state)
+        public StateChangedEvent(GameEngine.State state)
         {
             CurrentState = state;
         }
     }
 
-    public sealed class CurrentEventArgs : EventArgs
+    public sealed class NextFlashcardEvent: GameEventBase
     {
         public int Count { get; }
         public Flashcard Current { get; }
 
-        public CurrentEventArgs(int count, Flashcard current)
+        public NextFlashcardEvent(int count, Flashcard current)
         {
             Count = count;
             Current = current;
         }
     }
 
-    public sealed class GameFinishedEventArgs : EventArgs
+    public sealed class GameFinishedEvent: GameEventBase
     {
         public TimeSpan? Average { get; }
         public Result[] Results { get; }
 
-        public GameFinishedEventArgs(Result[] results)
+        public GameFinishedEvent(Result[] results)
         {
             Results = results;
 

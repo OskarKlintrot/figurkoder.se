@@ -1,10 +1,12 @@
 using Figurkoder.Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Reactive.Testing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -37,75 +39,62 @@ namespace Figurkoder.UnitTests.Domain
         }
 
         [Fact]
-        public void Start_GameStarts_StateChangesToRunning()
+        public void Start_GameStarts_StateChangesToRunningAsync()
         {
             // Arrange
-            var gameEngine = CreateGameEnginge(100, new[] { new Flashcard("Foo", "Bar") });
-            GameEngine.State state = GameEngine.State.NotStarted;
-            var stateChangedReceived = new AutoResetEvent(false);
-            gameEngine.CurrentState += StateChangedHandler;
+            var observer = new TestScheduler().CreateObserver<StateChangedEvent>();
 
-            void StateChangedHandler(object? _, StateEventArgs e)
-            {
-                state = e.CurrentState;
-                stateChangedReceived.Set();
-            }
+            var gameEngine = CreateGameEnginge(100, new[] { new Flashcard("Foo", "Bar") });
+
+            gameEngine.Events.OfType<StateChangedEvent>().Subscribe(observer);
 
             // Act
             gameEngine.Start();
 
             // Assert
-            Assert.True(stateChangedReceived.WaitOne(TimeSpan.FromMilliseconds(10)));
-            Assert.Equal(GameEngine.State.Running, state);
+            var stateChangedEvent = observer.Messages.Single().Value.Value;
+            Assert.Equal(GameEngine.State.Running, stateChangedEvent.CurrentState);
         }
 
         [Fact]
-        public void Start_GameStarts_CurrentEventTriggers()
+        public void Start_GameStarts_NextFlashcardEventIsDispatched()
         {
             // Arrange
-            var gameEngine = CreateGameEnginge(100, new[] { new Flashcard("Foo", "Bar") });
-            var currentReceived = new AutoResetEvent(false);
-            CurrentEventArgs? currentEventArgs = null;
-            gameEngine.Current += CurrentHandler;
+            var observer = new TestScheduler().CreateObserver<GameEventBase>();
 
-            void CurrentHandler(object? _, CurrentEventArgs e)
-            {
-                currentEventArgs = e;
-                currentReceived.Set();
-            }
+            var gameEngine = CreateGameEnginge(100, new[] { new Flashcard("Foo", "Bar") });
+
+            gameEngine.Events.Subscribe(observer);
 
             // Act
             gameEngine.Start();
 
             // Assert
-            Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(10))); // 10 ms to make sure the enginge never have a chance to trigger Current based on timer elapsed
-            Assert.Equal(1, currentEventArgs?.Count);
-            Assert.Equal("Foo", currentEventArgs?.Current.Key);
-            Assert.Equal("Bar", currentEventArgs?.Current.Mnemonic);
+            var nextFlashcardEvent = (NextFlashcardEvent)observer.Messages.Last().Value.Value;
+            Assert.Equal(1, nextFlashcardEvent.Count);
+            Assert.Equal("Foo", nextFlashcardEvent.Current.Key);
+            Assert.Equal("Bar", nextFlashcardEvent.Current.Mnemonic);
         }
 
         [Fact]
-        public void Start_GameEnds_GameFinishedEventTriggers()
+        public async Task Start_GameEnds_GameFinishedEventTriggersAsync()
         {
             // Arrange
             var gameEngine = CreateGameEnginge(50, new[] { new Flashcard("Foo", "Bar") });
-            var finishedReceived = new AutoResetEvent(false);
-            gameEngine.GameFinished += GameFinishedHandler;
 
-            void GameFinishedHandler(object? _, EventArgs e)
-            {
-                finishedReceived.Set();
-            }
+            var events = gameEngine.Events.OfType<GameFinishedEvent>().Replay();
+
+            events.Connect();
 
             // Act
             gameEngine.Start();
 
             // Assert
-            Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(75)));
+            _ = await events.SingleAsync();
         }
 
         [Fact]
-        public void Start_GameEnds_Result()
+        public async Task Start_GameEnds_ResultAsync()
         {
             // Arrange
             var gameEngine = CreateGameEnginge(10,
@@ -114,39 +103,34 @@ namespace Figurkoder.UnitTests.Domain
                     new Flashcard("Foo", "Bar"),
                     new Flashcard("Bar", "Foo")
                 });
-            var finishedReceived = new AutoResetEvent(false);
-            gameEngine.GameFinished += GameFinishedHandler;
-            GameFinishedEventArgs? gameFinishedEventArgs = null;
 
-            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
-            {
-                gameFinishedEventArgs = e;
-                finishedReceived.Set();
-            }
+            var events = gameEngine.Events.OfType<GameFinishedEvent>().Replay();
+
+            events.Connect();
 
             // Act
             gameEngine.Start();
 
             // Assert
-            Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
-            Assert.Equal(2, gameFinishedEventArgs?.Results.Length);
+            var gameFinishedEvent = await events.SingleAsync();
+            Assert.Equal(2, gameFinishedEvent?.Results.Length);
 
-            Assert.Equal("Foo", gameFinishedEventArgs?.Results[0].Flashcard.Key);
-            Assert.Equal("Bar", gameFinishedEventArgs?.Results[0].Flashcard.Mnemonic);
-            Assert.Null(gameFinishedEventArgs?.Results[0].Time);
+            Assert.Equal("Foo", gameFinishedEvent?.Results[0].Flashcard.Key);
+            Assert.Equal("Bar", gameFinishedEvent?.Results[0].Flashcard.Mnemonic);
+            Assert.Null(gameFinishedEvent?.Results[0].Time);
 
-            Assert.Equal("Bar", gameFinishedEventArgs?.Results[1].Flashcard.Key);
-            Assert.Equal("Foo", gameFinishedEventArgs?.Results[1].Flashcard.Mnemonic);
-            Assert.Null(gameFinishedEventArgs?.Results[1].Time);
+            Assert.Equal("Bar", gameFinishedEvent?.Results[1].Flashcard.Key);
+            Assert.Equal("Foo", gameFinishedEvent?.Results[1].Flashcard.Mnemonic);
+            Assert.Null(gameFinishedEvent?.Results[1].Time);
 
-            Assert.Null(gameFinishedEventArgs?.Average);
+            Assert.Null(gameFinishedEvent?.Average);
         }
 
         [Fact]
         public void Start_TimesUp_CurrentEventTriggers()
         {
             // Arrange
-            var currentCounter = 0;
+            var counter = 0;
             var gameEngine = CreateGameEnginge(100,
                 new[]
                 {
@@ -154,25 +138,24 @@ namespace Figurkoder.UnitTests.Domain
                     new Flashcard("Foo", "bAr")
                 });
             var sw = new Stopwatch();
-            var currentReceived = new AutoResetEvent(false);
-            gameEngine.Current += CurrentHandler;
 
-            void CurrentHandler(object? _, EventArgs e)
+            gameEngine.Events.OfType<NextFlashcardEvent>().Subscribe(NextFlashcardEventHandler);
+
+            void NextFlashcardEventHandler(NextFlashcardEvent @event)
             {
-                currentCounter++;
+                counter++;
 
-                if (currentCounter == 1)
+                if (counter == 1)
                 {
                     sw.Start();
                 }
-                else if (currentCounter == 2)
+                else if (counter == 2)
                 {
                     sw.Stop();
-                    currentReceived.Set();
                 }
                 else
                 {
-                    throw new NotSupportedException($"Current should only be triggered 2 times, not {currentCounter}.");
+                    throw new NotSupportedException($"Current should only be triggered 2 times, not {counter}.");
                 }
             }
 
@@ -180,7 +163,7 @@ namespace Figurkoder.UnitTests.Domain
             gameEngine.Start();
 
             // Assert
-            currentReceived.WaitOne(TimeSpan.FromMilliseconds(115));
+            gameEngine.Events.Wait();
             Assert.InRange(sw.Elapsed, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
         }
 
@@ -196,38 +179,40 @@ namespace Figurkoder.UnitTests.Domain
         [InlineData(8)]
         [InlineData(9)]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1026:Theory methods should use all of their parameters", Justification = "Run test 10 times to make sure order is respected")]
-        public void Start_TwoFlashcard_CurrentEventTriggersTwoTimes(int _)
+        public void Start_TwoFlashcard_NextFlashcardEventDispatchedTwoTimes(int _)
         {
             // Arrange
+            var observer = new TestScheduler().CreateObserver<NextFlashcardEvent>();
+
             var gameEngine = CreateGameEnginge(10,
                 new[]
                 {
                     new Flashcard("FirstKey", "FirstValue"),
                     new Flashcard("SecondKey", "SecondValue")
                 });
-            CurrentEventArgs? currentEventArgs = null;
-            var currentReceived = new AutoResetEvent(false);
-            gameEngine.Current += CurrentHandler;
 
-            void CurrentHandler(object? _, CurrentEventArgs e)
-            {
-                currentEventArgs = e;
-                currentReceived.Set();
-            }
+            gameEngine.Events
+                .OfType<NextFlashcardEvent>()
+                .Subscribe(observer);
 
             // Act
             gameEngine.Start();
 
             // Assert
-            Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(30)));
-            Assert.Equal(1, currentEventArgs?.Count);
-            Assert.Equal("FirstKey", currentEventArgs?.Current.Key);
-            Assert.Equal("FirstValue", currentEventArgs?.Current.Mnemonic);
+            gameEngine.Events.Wait();
 
-            Assert.True(currentReceived.WaitOne(TimeSpan.FromMilliseconds(30)));
-            Assert.Equal(2, currentEventArgs?.Count);
-            Assert.Equal("SecondKey", currentEventArgs?.Current.Key);
-            Assert.Equal("SecondValue", currentEventArgs?.Current.Mnemonic);
+            var events = observer.Messages
+                .Where(x => x.Value.HasValue)
+                .Select(x => x.Value.Value)
+                .ToArray();
+
+            Assert.Equal(1, events[0].Count);
+            Assert.Equal("FirstKey", events[0].Current.Key);
+            Assert.Equal("FirstValue", events[0].Current.Mnemonic);
+
+            Assert.Equal(2, events[1].Count);
+            Assert.Equal("SecondKey", events[1].Current.Key);
+            Assert.Equal("SecondValue", events[1].Current.Mnemonic);
         }
 
         [Theory]
@@ -245,96 +230,81 @@ namespace Figurkoder.UnitTests.Domain
 
             var gameEngine = CreateGameEnginge(10, flashcards, randomize);
 
-            var endReceived = new AutoResetEvent(false);
-            gameEngine.Current += CurrentHandler;
-            gameEngine.GameFinished += GameFinishedHandler;
-
-            void CurrentHandler(object? _, CurrentEventArgs e)
-            {
-                showedFlashcards.Add(e.Current);
-            }
-
-            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
-            {
-                endReceived.Set();
-            }
+            gameEngine.Events
+                .OfType<NextFlashcardEvent>()
+                .Subscribe(e => showedFlashcards.Add(e.Current));
 
             // Act
             gameEngine.Start();
 
             // Assert
-            Assert.True(endReceived.WaitOne(TimeSpan.FromMilliseconds(2000)));
+            gameEngine.Events.Wait();
             Assert.Equal(flashcards.Length, showedFlashcards.Count);
             Assert.NotEqual(randomize, flashcards.SequenceEqual(showedFlashcards));
         }
 
-        //[Theory]
-        //[InlineData(true)]
-        //[InlineData(false)]
-        //public void Start_Randomize_DoNotRandomizeResult(bool randomize)
-        //{
-        //    // Arrange
-        //    var flashcards = new[]
-        //    {
-        //        new Flashcard("FirstKey", "FirstValue"),
-        //        new Flashcard("SecondKey", "SecondValue"),
-        //        new Flashcard("ThirdKey", "ThirdValue"),
-        //        new Flashcard("FourthKey", "FourthValue")
-        //    };
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Start_Randomize_ResultInSameOrderAsShowedFlashcards(bool randomize)
+        {
+            // Arrange
+            var flashcards = Enumerable
+                .Range(0, 49)
+                .Select(x => new Flashcard(x.ToString(), x.ToString()))
+                .ToArray();
 
-        //    var gameEngine = new GameEngine(new Game(
-        //        TimeSpan.FromMilliseconds(10),
-        //        flashcards,
-        //        randomize));
+            var showedFlashcards = new List<Flashcard>(flashcards.Length);
 
-        //    GameFinishedEventArgs? gameFinishedEventArgs = null;
-        //    var endReceived = new AutoResetEvent(false);
-        //    gameEngine.GameFinished += GameFinishedHandler;
+            var gameEngine = CreateGameEnginge(10, flashcards, randomize);
 
-        //    void GameFinishedHandler(object? _, GameFinishedEventArgs e)
-        //    {
-        //        gameFinishedEventArgs = e;
-        //        endReceived.Set();
-        //    }
+            gameEngine.Events
+                .OfType<NextFlashcardEvent>()
+                .Subscribe(e => showedFlashcards.Add(e.Current));
 
-        //    // Act
-        //    gameEngine.Start();
+            var results = Array.Empty<Result>();
 
-        //    // Assert
-        //    Assert.True(endReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
-        //    Assert.Null(gameFinishedEventArgs?.Average);
-        //    Assert.True(flashcards.SequenceEqual(gameFinishedEventArgs?.Results.Select(x => x.Flashcard)!));
-        //}
+            gameEngine.Events
+                .OfType<GameFinishedEvent>()
+                .Subscribe(e => results = e.Results);
+
+            // Act
+            gameEngine.Start();
+
+            // Assert
+            gameEngine.Events.Wait();
+            Assert.True(showedFlashcards.SequenceEqual(results.Select(x => x.Flashcard)));
+        }
         #endregion
 
         #region Next
         [Fact]
-        public async Task Next_BeforeTimesUp_CurrentEventTriggers()
+        public async Task Next_BeforeTimesUp_NextFlashcardEventDispatched()
         {
             // Arrange
             var gameEngine = CreateGameEnginge(1000, new[] { new Flashcard("Foo", "Bar"), new Flashcard("Foo", "bAr") });
 
-            var currentCounter = 0;
+            var counter = 0;
             var sw = new Stopwatch();
-            var currentReceived = new AutoResetEvent(false);
-            gameEngine.Current += CurrentHandler;
+            gameEngine.Events
+                .OfType<NextFlashcardEvent>()
+                .Subscribe(NextFlashcardEventHandler);
 
-            void CurrentHandler(object? _, EventArgs e)
+            void NextFlashcardEventHandler(NextFlashcardEvent e)
             {
-                currentCounter++;
+                counter++;
 
-                if (currentCounter == 1)
+                if (counter == 1)
                 {
                     sw.Start();
                 }
-                else if (currentCounter == 2)
+                else if (counter == 2)
                 {
                     sw.Stop();
-                    currentReceived.Set();
                 }
                 else
                 {
-                    throw new NotSupportedException($"Current should only be triggered 2 times, not {currentCounter}.");
+                    throw new NotSupportedException($"Current should only be triggered 2 times, not {counter}.");
                 }
             }
 
@@ -345,7 +315,8 @@ namespace Figurkoder.UnitTests.Domain
             gameEngine.Next();
 
             // Assert
-            currentReceived.WaitOne(TimeSpan.FromMilliseconds(115));
+            gameEngine.Events.Wait();
+            Assert.False(sw.IsRunning);
             Assert.InRange(sw.Elapsed, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(120)); // Allow ±20ms
         }
 
@@ -355,15 +326,11 @@ namespace Figurkoder.UnitTests.Domain
             // Arrange
             var gameEngine = CreateGameEnginge(500, new[] { new Flashcard("Foo", "Bar"), new Flashcard("Bar", "Foo"), new Flashcard("Fuu", "bar") });
 
-            var finishedReceived = new AutoResetEvent(false);
-            gameEngine.GameFinished += GameFinishedHandler;
-            GameFinishedEventArgs? gameFinishedEventArgs = null;
+            var eventStream = gameEngine.Events
+                .OfType<GameFinishedEvent>()
+                .Replay();
 
-            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
-            {
-                gameFinishedEventArgs = e;
-                finishedReceived.Set();
-            }
+            eventStream.Connect();
 
             gameEngine.Start();
 
@@ -374,22 +341,22 @@ namespace Figurkoder.UnitTests.Domain
             gameEngine.Next();
 
             // Assert
-            Assert.True(finishedReceived.WaitOne(TimeSpan.FromMilliseconds(1000)));
-            Assert.Equal(3, gameFinishedEventArgs?.Results.Length);
+            var gameFinishedEvent = await eventStream.SingleAsync();
+            Assert.Equal(3, gameFinishedEvent?.Results.Length);
 
-            Assert.Equal("Foo", gameFinishedEventArgs?.Results[0].Flashcard.Key);
-            Assert.Equal("Bar", gameFinishedEventArgs?.Results[0].Flashcard.Mnemonic);
-            Assert.InRange(gameFinishedEventArgs?.Results[0].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(170), TimeSpan.FromMilliseconds(230)); // Allow ±30ms
+            Assert.Equal("Foo", gameFinishedEvent?.Results[0].Flashcard.Key);
+            Assert.Equal("Bar", gameFinishedEvent?.Results[0].Flashcard.Mnemonic);
+            Assert.InRange(gameFinishedEvent?.Results[0].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(170), TimeSpan.FromMilliseconds(230)); // Allow ±30ms
 
-            Assert.Equal("Bar", gameFinishedEventArgs?.Results[1].Flashcard.Key);
-            Assert.Equal("Foo", gameFinishedEventArgs?.Results[1].Flashcard.Mnemonic);
-            Assert.InRange(gameFinishedEventArgs?.Results[1].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(130)); // Allow ±30ms
+            Assert.Equal("Bar", gameFinishedEvent?.Results[1].Flashcard.Key);
+            Assert.Equal("Foo", gameFinishedEvent?.Results[1].Flashcard.Mnemonic);
+            Assert.InRange(gameFinishedEvent?.Results[1].Time ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(80), TimeSpan.FromMilliseconds(130)); // Allow ±30ms
 
-            Assert.Equal("Fuu", gameFinishedEventArgs?.Results[2].Flashcard.Key);
-            Assert.Equal("bar", gameFinishedEventArgs?.Results[2].Flashcard.Mnemonic);
-            Assert.Null(gameFinishedEventArgs?.Results[2].Time);
+            Assert.Equal("Fuu", gameFinishedEvent?.Results[2].Flashcard.Key);
+            Assert.Equal("bar", gameFinishedEvent?.Results[2].Flashcard.Mnemonic);
+            Assert.Null(gameFinishedEvent?.Results[2].Time);
 
-            Assert.InRange(gameFinishedEventArgs?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(120), TimeSpan.FromMilliseconds(180)); // Allow ±30ms
+            Assert.InRange(gameFinishedEvent?.Average ?? TimeSpan.Zero, TimeSpan.FromMilliseconds(120), TimeSpan.FromMilliseconds(180)); // Allow ±30ms
         }
         #endregion
 
@@ -398,24 +365,20 @@ namespace Figurkoder.UnitTests.Domain
         public void Reveale_GameStartedRevealeCard_StateIsRevealed()
         {
             // Arrange
-            var gameEngine = CreateGameEnginge(10, new[] { new Flashcard("Foo", "Bar") });
-            GameEngine.State state = GameEngine.State.NotStarted;
-            var stateChangedReceived = new AutoResetEvent(false);
-            gameEngine.CurrentState += StateChangedHandler;
+            var observer = new TestScheduler().CreateObserver<StateChangedEvent>();
 
-            void StateChangedHandler(object? _, StateEventArgs e)
-            {
-                state = e.CurrentState;
-                stateChangedReceived.Set();
-            }
+            var gameEngine = CreateGameEnginge(100, new[] { new Flashcard("Foo", "Bar") });
+
+            gameEngine.Events.OfType<StateChangedEvent>().Subscribe(observer);
+
             gameEngine.Start();
 
             // Act
             gameEngine.Reveale();
 
             // Assert
-            Assert.True(stateChangedReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
-            Assert.Equal(GameEngine.State.Revealed, state);
+            var stateChangedEvent = observer.Messages.Last().Value.Value;
+            Assert.Equal(GameEngine.State.Revealed, stateChangedEvent.CurrentState);
         }
         #endregion
         
@@ -424,24 +387,21 @@ namespace Figurkoder.UnitTests.Domain
         public void Pause_GameStartedPauseGame_StateIsPaused()
         {
             // Arrange
-            var gameEngine = CreateGameEnginge(10, new[] { new Flashcard("Foo", "Bar") });
-            GameEngine.State state = GameEngine.State.NotStarted;
-            var stateChangedReceived = new AutoResetEvent(false);
-            gameEngine.CurrentState += StateChangedHandler;
+            var observer = new TestScheduler().CreateObserver<StateChangedEvent>();
 
-            void StateChangedHandler(object? _, StateEventArgs e)
-            {
-                state = e.CurrentState;
-                stateChangedReceived.Set();
-            }
+            var gameEngine = CreateGameEnginge(100, new[] { new Flashcard("Foo", "Bar") });
+
+            gameEngine.Events.OfType<StateChangedEvent>().Subscribe(observer);
+
             gameEngine.Start();
 
             // Act
             gameEngine.Pause();
 
             // Assert
-            Assert.True(stateChangedReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
-            Assert.Equal(GameEngine.State.Paused, state);
+            var states = observer.Messages.Select(x => x.Value.Value.CurrentState).ToArray();
+            Assert.Equal(GameEngine.State.Running, states[0]);
+            Assert.Equal(GameEngine.State.Paused, states[1]);
         }
         #endregion
 
@@ -450,16 +410,12 @@ namespace Figurkoder.UnitTests.Domain
         public void Start_GamePaused_StateIsRunning()
         {
             // Arrange
-            var gameEngine = CreateGameEnginge(1000, new[] { new Flashcard("Foo", "Bar") });
-            GameEngine.State state = GameEngine.State.NotStarted;
-            var stateChangedReceived = new AutoResetEvent(false);
-            gameEngine.CurrentState += StateChangedHandler;
+            var observer = new TestScheduler().CreateObserver<StateChangedEvent>();
 
-            void StateChangedHandler(object? _, StateEventArgs e)
-            {
-                state = e.CurrentState;
-                stateChangedReceived.Set();
-            }
+            var gameEngine = CreateGameEnginge(100, new[] { new Flashcard("Foo", "Bar") });
+
+            gameEngine.Events.OfType<StateChangedEvent>().Subscribe(observer);
+
             gameEngine.Start();
             gameEngine.Pause();
 
@@ -467,8 +423,10 @@ namespace Figurkoder.UnitTests.Domain
             gameEngine.Start();
 
             // Assert
-            Assert.True(stateChangedReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
-            Assert.Equal(GameEngine.State.Running, state);
+            var states = observer.Messages.Select(x => x.Value.Value.CurrentState).ToArray();
+            Assert.Equal(GameEngine.State.Running, states[0]);
+            Assert.Equal(GameEngine.State.Paused, states[1]);
+            Assert.Equal(GameEngine.State.Running, states[2]);
         }
         #endregion
 
@@ -477,24 +435,21 @@ namespace Figurkoder.UnitTests.Domain
         public void Stop_GameStartedStopGame_StateIsFinished()
         {
             // Arrange
-            var gameEngine = CreateGameEnginge(10, new[] { new Flashcard("Foo", "Bar") });
-            GameEngine.State state = GameEngine.State.NotStarted;
-            var stateChangedReceived = new AutoResetEvent(false);
-            gameEngine.CurrentState += StateChangedHandler;
+            var observer = new TestScheduler().CreateObserver<StateChangedEvent>();
 
-            void StateChangedHandler(object? _, StateEventArgs e)
-            {
-                state = e.CurrentState;
-                stateChangedReceived.Set();
-            }
+            var gameEngine = CreateGameEnginge(100, new[] { new Flashcard("Foo", "Bar") });
+
+            gameEngine.Events.OfType<StateChangedEvent>().Subscribe(observer);
+
             gameEngine.Start();
 
             // Act
             gameEngine.Stop();
 
             // Assert
-            Assert.True(stateChangedReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
-            Assert.Equal(GameEngine.State.Finished, state);
+            var states = observer.Messages.Where(x => x.Value.HasValue).Select(x => x.Value.Value.CurrentState).ToArray();
+            Assert.Equal(GameEngine.State.Running, states[0]);
+            Assert.Equal(GameEngine.State.Finished, states[1]);
         }
 
         [Fact]
@@ -508,83 +463,65 @@ namespace Figurkoder.UnitTests.Domain
                     new Flashcard("Foo", "bAr"),
                     new Flashcard("Foo", "baR")
                 });
+            
             var result = Array.Empty<Result>();
-            var resultReceived = new AutoResetEvent(false);
-            gameEngine.GameFinished += GameFinishedHandler;
+            
+            gameEngine.Events.OfType<GameFinishedEvent>().Subscribe(e => result = e.Results);
 
-            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
-            {
-                result = e.Results;
-                resultReceived.Set();
-            }
             gameEngine.Start();
 
             // Act
             gameEngine.Stop();
 
             // Assert
-            Assert.True(resultReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
             Assert.Equal(3, result.Length);
         }
 
         [Fact]
         public void Stop_StopGame_TimeIsNullOnResult()
         {
-            // Arrange
             var gameEngine = CreateGameEnginge(10,
                 new[]
                 {
                     new Flashcard("Foo", "Bar"),
-                    new Flashcard("Foo", "BAr"),
+                    new Flashcard("Foo", "bAr"),
                     new Flashcard("Foo", "baR")
                 });
-            var result = Array.Empty<Result>();
-            var resultReceived = new AutoResetEvent(false);
-            gameEngine.GameFinished += GameFinishedHandler;
 
-            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
-            {
-                result = e.Results;
-                resultReceived.Set();
-            }
+            var result = Array.Empty<Result>();
+
+            gameEngine.Events.OfType<GameFinishedEvent>().Subscribe(e => result = e.Results);
+
             gameEngine.Start();
 
             // Act
             gameEngine.Stop();
 
             // Assert
-            Assert.True(resultReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
             Assert.All(result, x => Assert.Null(x.Time));
         }
 
         [Fact]
         public void Stop_StopGameBeforeAnyNext_AvarageIsNull()
         {
-            // Arrange
             var gameEngine = CreateGameEnginge(10,
                 new[]
                 {
                     new Flashcard("Foo", "Bar"),
-                    new Flashcard("Foo", "BAr"),
+                    new Flashcard("Foo", "bAr"),
                     new Flashcard("Foo", "baR")
                 });
 
             TimeSpan? average = TimeSpan.Zero;
-            var resultReceived = new AutoResetEvent(false);
-            gameEngine.GameFinished += GameFinishedHandler;
 
-            void GameFinishedHandler(object? _, GameFinishedEventArgs e)
-            {
-                average = e.Average;
-                resultReceived.Set();
-            }
+            gameEngine.Events.OfType<GameFinishedEvent>().Subscribe(e => average = e.Average);
+
             gameEngine.Start();
 
             // Act
             gameEngine.Stop();
 
             // Assert
-            Assert.True(resultReceived.WaitOne(TimeSpan.FromMilliseconds(100)));
             Assert.Null(average);
         }
         #endregion

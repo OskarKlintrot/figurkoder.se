@@ -1,6 +1,7 @@
 ﻿@using Figurkoder.Application.Queries;
 @using Microsoft.AspNetCore.WebUtilities;
 @using System.Linq;
+@using System.Reactive.Linq;
 
 @inject NavigationManager NavigationManager
 @inject Figurkoder.Domain.GameEngineFactory GameEngineFactory
@@ -62,12 +63,20 @@ else
 
         gameEngine = GameEngineFactory.Create(game);
 
-        gameEngine.Current += OnCurrentHandler;
-        gameEngine.CurrentState += OnStateChangedHandler;
-        gameEngine.GameFinished += OnGameFinishedHandler;
+        gameEngine.Events
+            .OfType<Figurkoder.Domain.StateChangedEvent>()
+            .Subscribe(OnStateChangedHandler);
+
+        gameEngine.Events
+            .OfType<Figurkoder.Domain.NextFlashcardEvent>()
+            .Subscribe(OnNextFlashcardHandler);
+
+        gameEngine.Events
+            .OfType<Figurkoder.Domain.GameFinishedEvent>()
+            .Subscribe(OnGameFinishedHandler);
     }
 
-    private void OnCurrentHandler(object? _, Figurkoder.Domain.CurrentEventArgs e)
+    private void OnNextFlashcardHandler(Figurkoder.Domain.NextFlashcardEvent e)
     {
         currentCount = e.Count;
         key = e.Current.Key;
@@ -76,7 +85,7 @@ else
         StateHasChanged();
     }
 
-    private void OnStateChangedHandler(object? _, Figurkoder.Domain.StateEventArgs e)
+    private void OnStateChangedHandler(Figurkoder.Domain.StateChangedEvent e)
     {
         if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
         {
@@ -89,35 +98,20 @@ else
         StateHasChanged();
     }
 
-    private void OnGameFinishedHandler(object? _, Figurkoder.Domain.GameFinishedEventArgs e)
+    private void OnGameFinishedHandler(Figurkoder.Domain.GameFinishedEvent e)
     {
         OnGameFinished.InvokeAsync(new (e.Results, e.Average)).Wait();
     }
 
-    private void Start()
-    {
-        gameEngine?.Start();
-    }
+    private void Start() => gameEngine?.Start();
 
-    private void Next()
-    {
-        gameEngine?.Next();
-    }
+    private void Next() => gameEngine?.Next();
 
-    private void Reveale()
-    {
-        gameEngine?.Reveale();
-    }
+    private void Reveale() => gameEngine?.Reveale();
 
-    private void Pause()
-    {
-        gameEngine?.Pause();
-    }
+    private void Pause() => gameEngine?.Pause();
 
-    private void Stop()
-    {
-        gameEngine?.Stop();
-    }
+    private void Stop() => gameEngine?.Stop();
 
     public record GameFinished(Figurkoder.Domain.Result[] Results, TimeSpan? Average);
 }

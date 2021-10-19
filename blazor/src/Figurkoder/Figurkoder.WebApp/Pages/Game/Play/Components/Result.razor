@@ -25,7 +25,12 @@
         }
         <tr>
             <th>Genomsnittlig tid:</th>
-            <th>@Average.ToString(@"%s\.f") sek</th>
+            <th>
+                @if (Average.HasValue)
+                {
+                    @(Average.Value.ToString(@"%s\.f") + "sek")
+                }
+            </th>
         </tr>
     </tbody>
 </table>
@@ -46,7 +51,7 @@
     public string Title { get; set; } = null!;
 
     [Parameter]
-    public TimeSpan Average { get; set; }
+    public TimeSpan? Average { get; set; }
 
     [Parameter]
     public EventCallback<Flashcard[]?> OnPlayAgain { get; set; }

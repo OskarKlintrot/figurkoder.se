@@ -12,12 +12,12 @@
 {
     <p>Loading game...</p>
 }
-else @if (result is not null && average.HasValue)
+else @if (result is not null)
 {
     <Result
         Title=@mnemonic.Title
         Results=@result
-        Average=@average.Value
+        Average=@average
         OnPlayAgain=@OnPlayAgainHandler />
 }
 else

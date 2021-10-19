@@ -19,6 +19,7 @@ else
     <p>Current key: @key</p>
     <p>Current value: @(state is Domain.GameEngine.State.Revealed ? value : "-")</p>
     <p>Current state: @state</p>
+    <p>Seconds left: @(timeLeft is null ? "-" : timeLeft.ToString())</p>
 
     <button class="btn btn-primary" @onclick="Start">Start</button>
     <button class="btn btn-primary" @onclick="Next">Next</button>
@@ -43,6 +44,7 @@ else
     private int currentCount = 0;
     private string key = string.Empty;
     private string value = string.Empty;
+    private int? timeLeft;
     private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.NotStarted;
 
     protected override async Task OnInitializedAsync()
@@ -74,6 +76,15 @@ else
         gameEngine.Events
             .OfType<Figurkoder.Domain.GameFinishedEvent>()
             .Subscribe(OnGameFinishedHandler);
+
+        gameEngine.SecondsLeft
+            .Subscribe(OnTimeLeftHandler);
+    }
+
+    private void OnTimeLeftHandler(int secondsLeft)
+    {
+        timeLeft = secondsLeft;
+        StateHasChanged();
     }
 
     private void OnNextFlashcardHandler(Figurkoder.Domain.NextFlashcardEvent e)

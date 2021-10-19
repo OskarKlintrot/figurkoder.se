@@ -28,63 +28,57 @@ namespace Figurkoder.Domain
     {
         private readonly Stopwatch _stopwatch = new();
         private readonly Timer _timer = new();
+        private readonly Timer _timerForCountdown = new();
         private readonly List<(Flashcard Flashcard, TimeSpan? Time)> _showedFlashcards = new();
         private readonly ILogger<GameEngine> _logger;
         private readonly double _intervalInMilliseconds;
+        private readonly double _intervalInMillisecondsForCountdown;
         private readonly Flashcard[] _flashcards;
 
+        private int _secondsLeft;
         private int _counter;
         private State _state;
         private bool disposedValue;
         private readonly Subject<GameEventBase> _eventDispatched = new();
+        private readonly Subject<int> _timeLeft = new();
 
         public IObservable<GameEventBase> Events => _eventDispatched.AsObservable();
+        public IObservable<int> SecondsLeft => _timeLeft.AsObservable();
 
-        private void DispatchGameEvent(GameEventBase @event)
-        {
-            if (_eventDispatched.IsDisposed)
-            {
-                throw new InvalidOperationException("Game is finished.");
-            }
-
-            _eventDispatched.OnNext(@event);
-
-            if (@event is GameFinishedEvent)
-            {
-                _eventDispatched.OnCompleted();
-            }
-        }
-
-        public GameEngine(ILogger<GameEngine> logger, Game settings)
+        public GameEngine(ILogger<GameEngine> logger, Game game)
         {
             ArgumentNullException.ThrowIfNull(logger);
-            
+
             _logger = logger;
 
-            if (settings.Flashcards.Length == 0)
+            if (game.Flashcards.Length == 0)
             {
-                throw new ArgumentException("Missing flashcards!", nameof(settings));
+                throw new ArgumentException("Missing flashcards!", nameof(game));
             }
 
-            if (settings.Flashcards.Length != settings.Flashcards.Distinct().Count())
+            if (game.Flashcards.Length != game.Flashcards.Distinct().Count())
             {
-                throw new ArgumentException("Duplicated flashcards!", nameof(settings));
+                throw new ArgumentException("Duplicated flashcards!", nameof(game));
             }
-
-            _timer.Elapsed += TimerElapsed;
 
             Events
                 .OfType<StateChangedEvent>()
                 .Subscribe(OnStateChanged);
 
-            _intervalInMilliseconds = settings.FlashTime.TotalMilliseconds;
-            _timer.Interval = _intervalInMilliseconds;
+            _intervalInMilliseconds = game.FlashTime.TotalMilliseconds;
+            _intervalInMillisecondsForCountdown = 100;
 
-            _flashcards = new Flashcard[settings.Flashcards.Length];
+            ResetIntervalForTimers();
 
-            settings.Flashcards.CopyTo(_flashcards, 0);
+            _timer.Elapsed += TimerElapsed;
 
-            if (settings.Randomize)
+            _timerForCountdown.Elapsed += (_, _) => TryDispatchCountdown();
+
+            _flashcards = new Flashcard[game.Flashcards.Length];
+
+            game.Flashcards.CopyTo(_flashcards, 0);
+
+            if (game.Randomize)
             {
                 Shuffle(_flashcards);
             }
@@ -92,16 +86,17 @@ namespace Figurkoder.Domain
 
         public void Start()
         {
-            _logger.LogDebug(nameof(Start) + ": State is currently {State}", _state);
+            _logger.LogTrace(nameof(Start) + ": State is currently {State}", _state);
 
             switch (_state)
             {
                 case NotStarted:
                     Advance(TimeSpan.Zero);
+                    TryDispatchCountdown();
                     break;
                 case Paused:
                     ChangeState(Running);
-                    _timer.Start();
+                    StartTimers();
                     _stopwatch.Start();
                     break;
                 case Running:
@@ -116,7 +111,7 @@ namespace Figurkoder.Domain
 
         public void Pause()
         {
-            _logger.LogDebug(nameof(Pause) + ": State is currently {State}", _state);
+            _logger.LogTrace(nameof(Pause) + ": State is currently {State}", _state);
 
             switch (_state)
             {
@@ -139,7 +134,7 @@ namespace Figurkoder.Domain
 
         public void Reveale()
         {
-            _logger.LogDebug(nameof(Reveale) + ": State is currently {State}", _state);
+            _logger.LogTrace(nameof(Reveale) + ": State is currently {State}", _state);
 
             switch (_state)
             {
@@ -161,7 +156,7 @@ namespace Figurkoder.Domain
 
         public void Next()
         {
-            _logger.LogDebug(nameof(Next) + ": State is currently {State}", _state);
+            _logger.LogTrace(nameof(Next) + ": State is currently {State}", _state);
 
             switch (_state)
             {
@@ -180,7 +175,7 @@ namespace Figurkoder.Domain
 
         public void Stop()
         {
-            _logger.LogDebug(nameof(Stop) + ": State is currently {State}", _state);
+            _logger.LogTrace(nameof(Stop) + ": State is currently {State}", _state);
 
             switch (_state)
             {
@@ -200,26 +195,26 @@ namespace Figurkoder.Domain
             _timer.Stop();
             _stopwatch.Stop();
 
-            _logger.LogDebug("Will collect result");
+            _logger.LogTrace("Will collect result");
 
 
             var orderedResult = new Result[_flashcards.Length];
 
-            _logger.LogDebug("We showed {FlashCardCount} flash cards", _showedFlashcards.Count);
+            _logger.LogTrace("We showed {FlashCardCount} flash cards", _showedFlashcards.Count);
 
             foreach (var (flashcard, time) in _showedFlashcards)
             {
-                _logger.LogDebug("Adding {Flashcard} with time {Time} to result", flashcard.Key, time);
+                _logger.LogTrace("Adding {Flashcard} with time {Time} to result", flashcard.Key, time);
                 orderedResult[Array.IndexOf(_flashcards, flashcard)] = new(flashcard, time);
             }
 
             foreach (var pair in _flashcards.Except(_showedFlashcards.Select(x => x.Flashcard)))
             {
-                _logger.LogDebug("Adding {Flashcard} to result", pair.Key);
+                _logger.LogTrace("Adding {Flashcard} to result", pair.Key);
                 orderedResult[Array.IndexOf(_flashcards, pair)] = new(pair, null);
             }
 
-            _logger.LogDebug(
+            _logger.LogTrace(
                 "Dispatched {Event} with a result of {FlashCardCount}",
                 nameof(GameFinishedEvent),
                 orderedResult.Where(x => x is not null).Count());
@@ -229,7 +224,7 @@ namespace Figurkoder.Domain
 
         private void Advance(TimeSpan? time = null, bool failed = false)
         {
-            _logger.LogDebug(nameof(Advance) + ": State is currently {State}", _state);
+            _logger.LogTrace(nameof(Advance) + ": State is currently {State}", _state);
 
             _timer.Stop();
             _stopwatch.Stop();
@@ -246,7 +241,7 @@ namespace Figurkoder.Domain
             }
 
             // Reset interval if it was changed
-            _timer.Interval = _intervalInMilliseconds;
+            ResetIntervalForTimers();
 
             // Add previous, if any, to result
             if (_counter > 0)
@@ -269,21 +264,83 @@ namespace Figurkoder.Domain
 
             var flashcard = _flashcards[_counter - 1];
             DispatchGameEvent(new NextFlashcardEvent(_counter, flashcard));
-            _logger.LogDebug("Updated current flashcard to {Flashcard}", flashcard.Key);
+            _logger.LogTrace("Updated current flashcard to {Flashcard}", flashcard.Key);
 
-            // Reset timer and stopwatch
+            // Restart timer and stopwatch
+            StartTimers();
+            _stopwatch.Restart();
+        }
+
+        private void DispatchGameEvent(GameEventBase @event)
+        {
+            if (_eventDispatched.IsDisposed)
+            {
+                throw new InvalidOperationException("Game is finished.");
+            }
+
+            _eventDispatched.OnNext(@event);
+
+            if (@event is GameFinishedEvent)
+            {
+                _eventDispatched.OnCompleted();
+                _timeLeft.OnCompleted();
+            }
+        }
+
+        private void TryDispatchCountdown()
+        {
+            if (_timeLeft.IsDisposed)
+            {
+                throw new InvalidOperationException("Game is finished.");
+            }
+
+            var elapsed = _stopwatch.Elapsed;
+
+            var timeSpan = TimeSpan
+                .FromMilliseconds(_intervalInMilliseconds)
+                .Subtract(elapsed);
+
+            var secondsLeft = (int)timeSpan.TotalSeconds + 1; // Countdown from ie 6 -> 1 -> 6 -> 1
+
+            // Bodge to make sure seconds left is never more than max
+            if (TimeSpan.FromSeconds(secondsLeft) > TimeSpan.FromMilliseconds(_intervalInMilliseconds))
+            {
+                secondsLeft = (int)TimeSpan.FromMilliseconds(_intervalInMilliseconds).TotalSeconds;
+            }
+
+            if (_secondsLeft != secondsLeft)
+            {
+                _secondsLeft = secondsLeft;
+                _timeLeft.OnNext(secondsLeft);
+            }
+        }
+
+        private void StartTimers()
+        {
             if (!_timer.Enabled)
             {
                 _timer.Start();
             }
-            _stopwatch.Restart();
+
+            if (!_timerForCountdown.Enabled)
+            {
+                _timerForCountdown.Start();
+            }
+        }
+
+        private void ResetIntervalForTimers()
+        {
+            _timer.Interval = _intervalInMilliseconds;
+            _timerForCountdown.Interval = _intervalInMillisecondsForCountdown;
         }
 
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            _logger.LogDebug(nameof(TimerElapsed));
+            _logger.LogTrace(nameof(TimerElapsed));
 
             Advance(failed: true);
+
+            TryDispatchCountdown();
         }
 
         /// <summary>
@@ -307,7 +364,7 @@ namespace Figurkoder.Domain
 
         private void ChangeState(State state)
         {
-            _logger.LogDebug("Changing state to {state}", state);
+            _logger.LogTrace("Changing state to {state}", state);
 
             DispatchGameEvent(new StateChangedEvent(state));
         }
@@ -316,7 +373,7 @@ namespace Figurkoder.Domain
         {
             _state = stateChanged.CurrentState;
 
-            _logger.LogDebug("Changed state to {state}", _state);
+            _logger.LogTrace("Changed state to {state}", _state);
         }
 
 #pragma warning disable IDE0055 // Fix formatting
@@ -336,6 +393,7 @@ namespace Figurkoder.Domain
                 if (disposing)
                 {
                     _timer.Dispose();
+                    _timerForCountdown.Dispose();
                     _eventDispatched.Dispose();
                 }
 

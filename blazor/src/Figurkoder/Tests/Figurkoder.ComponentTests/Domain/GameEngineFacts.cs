@@ -27,7 +27,6 @@ namespace Figurkoder.ComponentTests.Domain
             _outputHelper = outputHelper;
         }
 
-        #region Legacy?
         [Fact]
         public async Task Given_GameIsPausedLongerThanTimer_When_GameIsRunning_Then_TimerNeverElapses()
         {
@@ -129,7 +128,24 @@ namespace Figurkoder.ComponentTests.Domain
             Assert.Null(gameFinishedEvent?.Results[1].Time);
             Assert.Null(gameFinishedEvent?.Results[2].Time);
         }
-        #endregion
+
+        [Fact]
+        public void Given_SubscribedToSecondsLeft_When_GameIsRunning_Then_TickTock()
+        {
+            // Arrange
+            var observer = new TestScheduler().CreateObserver<int>();
+            var gameEngine = CreateGameEnginge(3000, new[] { new Flashcard("Foo", "Bar") });
+            gameEngine.SecondsLeft.Subscribe(observer);
+
+            // Act
+            gameEngine.Start();
+
+            // Assert
+            gameEngine.SecondsLeft.Wait();
+            Assert.True(observer.Messages.Where(x => x.Value.HasValue).Select(x => x.Value.Value).SequenceEqual(new[] {3, 2, 1}));
+        }
+
+        // Changing state
 
         #region Game is Not Started
         [Fact]

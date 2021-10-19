@@ -35,7 +35,7 @@ namespace Figurkoder.UnitTests.Domain
 
             // Assert
             Assert.IsType<ArgumentException>(exception);
-            Assert.Equal("Missing flashcards! (Parameter 'settings')", exception.Message);
+            Assert.Equal("Missing flashcards! (Parameter 'game')", exception.Message);
         }
 
         [Fact]
@@ -127,7 +127,7 @@ namespace Figurkoder.UnitTests.Domain
         }
 
         [Fact]
-        public void Start_TimesUp_CurrentEventTriggers()
+        public void Start_TimesUp_NextFlashcardEventIsDispatched()
         {
             // Arrange
             var counter = 0;

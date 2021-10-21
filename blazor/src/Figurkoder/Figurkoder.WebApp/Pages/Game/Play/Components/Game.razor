@@ -3,6 +3,8 @@
 @using System.Linq;
 @using System.Reactive.Linq;
 
+@implements IDisposable
+
 @inject NavigationManager NavigationManager
 @inject Figurkoder.Domain.GameEngineFactory GameEngineFactory
 
@@ -46,6 +48,7 @@ else
     private string value = string.Empty;
     private int? timeLeft;
     private Figurkoder.Domain.GameEngine.State state = Domain.GameEngine.State.NotStarted;
+    private ICollection<IDisposable> disposables = new List<IDisposable>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,20 +68,26 @@ else
 
         gameEngine = GameEngineFactory.Create(game);
 
-        gameEngine.Events
-            .OfType<Figurkoder.Domain.StateChangedEvent>()
-            .Subscribe(OnStateChangedHandler);
+        disposables.Add(gameEngine);
 
-        gameEngine.Events
-            .OfType<Figurkoder.Domain.NextFlashcardEvent>()
-            .Subscribe(OnNextFlashcardHandler);
+        disposables.Add(
+            gameEngine.Events
+                .OfType<Figurkoder.Domain.StateChangedEvent>()
+                .Subscribe(OnStateChangedHandler));
 
-        gameEngine.Events
-            .OfType<Figurkoder.Domain.GameFinishedEvent>()
-            .Subscribe(OnGameFinishedHandler);
+        disposables.Add(
+            gameEngine.Events
+                .OfType<Figurkoder.Domain.NextFlashcardEvent>()
+                .Subscribe(OnNextFlashcardHandler));
 
-        gameEngine.SecondsLeft
-            .Subscribe(OnTimeLeftHandler);
+        disposables.Add(
+            gameEngine.Events
+                .OfType<Figurkoder.Domain.GameFinishedEvent>()
+                .Subscribe(OnGameFinishedHandler));
+
+        disposables.Add(
+            gameEngine.SecondsLeft
+                .Subscribe(OnTimeLeftHandler));
     }
 
     private void OnTimeLeftHandler(int secondsLeft)
@@ -125,4 +134,12 @@ else
     private void Stop() => gameEngine?.Stop();
 
     public record GameFinished(Figurkoder.Domain.Result[] Results, TimeSpan? Average);
+
+    public void Dispose()
+    {
+        foreach (var disposable in disposables)
+        {
+            disposable.Dispose();
+        }
+    }
 }

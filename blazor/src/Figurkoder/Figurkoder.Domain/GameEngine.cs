@@ -46,6 +46,7 @@ namespace Figurkoder.Domain
         public GameEngine(ILogger<GameEngine> logger, Game game)
         {
             ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(game);
 
             _logger = logger;
 

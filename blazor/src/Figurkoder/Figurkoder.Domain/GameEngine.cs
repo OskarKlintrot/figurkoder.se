@@ -28,11 +28,9 @@ namespace Figurkoder.Domain
     {
         private readonly Stopwatch _stopwatch = new();
         private readonly Timer _timer = new();
-        private readonly Timer _timerForCountdown = new();
         private readonly List<(Flashcard Flashcard, TimeSpan? Time)> _showedFlashcards = new();
         private readonly ILogger<GameEngine> _logger;
         private readonly double _intervalInMilliseconds;
-        private readonly double _intervalInMillisecondsForCountdown;
         private readonly Flashcard[] _flashcards;
 
         private int _secondsLeft;
@@ -40,10 +38,10 @@ namespace Figurkoder.Domain
         private State _state;
         private bool disposedValue;
         private readonly Subject<GameEventBase> _eventDispatched = new();
-        private readonly Subject<int> _timeLeft = new();
 
         public IObservable<GameEventBase> Events => _eventDispatched.AsObservable();
-        public IObservable<int> SecondsLeft => _timeLeft.AsObservable();
+
+        public IObservable<int> SecondsLeft { get; }
 
         public GameEngine(ILogger<GameEngine> logger, Game game)
         {
@@ -66,13 +64,10 @@ namespace Figurkoder.Domain
                 .Subscribe(OnStateChanged);
 
             _intervalInMilliseconds = game.FlashTime.TotalMilliseconds;
-            _intervalInMillisecondsForCountdown = 100;
 
             ResetIntervalForTimers();
 
             _timer.Elapsed += TimerElapsed;
-
-            _timerForCountdown.Elapsed += (_, _) => TryDispatchCountdown();
 
             _flashcards = new Flashcard[game.Flashcards.Length];
 
@@ -82,6 +77,46 @@ namespace Figurkoder.Domain
             {
                 Shuffle(_flashcards);
             }
+
+            SecondsLeft = Observable.Create<int>(
+                observer =>
+                {
+                    var timer = new Timer
+                    {
+                        Interval = 100
+                    };
+
+                    timer.Elapsed += (_, _) => TryDispatchCountdown(observer, timer);
+
+                    Events.Subscribe(_ => TryDispatchCountdown(observer, timer), observer.OnCompleted);
+
+                    timer.Start();
+
+                    return timer;
+
+                    void TryDispatchCountdown(IObserver<int> observer, Timer timer)
+                    {
+                        var elapsed = _stopwatch.Elapsed;
+
+                        var timeSpan = TimeSpan
+                            .FromMilliseconds(_intervalInMilliseconds)
+                            .Subtract(elapsed);
+
+                        var secondsLeft = (int)timeSpan.TotalSeconds + 1; // Countdown from ie 6 -> 1 -> 6 -> 1
+
+                        // Bodge to make sure seconds left is never more than max
+                        if (TimeSpan.FromSeconds(secondsLeft) > TimeSpan.FromMilliseconds(_intervalInMilliseconds))
+                        {
+                            secondsLeft = (int)TimeSpan.FromMilliseconds(_intervalInMilliseconds).TotalSeconds;
+                        }
+
+                        if (_secondsLeft != secondsLeft)
+                        {
+                            _secondsLeft = secondsLeft;
+                            observer.OnNext(secondsLeft);
+                        }
+                    }
+                });
         }
 
         public void Start()
@@ -92,7 +127,6 @@ namespace Figurkoder.Domain
             {
                 case NotStarted:
                     Advance(TimeSpan.Zero);
-                    TryDispatchCountdown();
                     break;
                 case Paused:
                     ChangeState(Running);
@@ -283,35 +317,6 @@ namespace Figurkoder.Domain
             if (@event is GameFinishedEvent)
             {
                 _eventDispatched.OnCompleted();
-                _timeLeft.OnCompleted();
-            }
-        }
-
-        private void TryDispatchCountdown()
-        {
-            if (_timeLeft.IsDisposed)
-            {
-                throw new InvalidOperationException("Game is finished.");
-            }
-
-            var elapsed = _stopwatch.Elapsed;
-
-            var timeSpan = TimeSpan
-                .FromMilliseconds(_intervalInMilliseconds)
-                .Subtract(elapsed);
-
-            var secondsLeft = (int)timeSpan.TotalSeconds + 1; // Countdown from ie 6 -> 1 -> 6 -> 1
-
-            // Bodge to make sure seconds left is never more than max
-            if (TimeSpan.FromSeconds(secondsLeft) > TimeSpan.FromMilliseconds(_intervalInMilliseconds))
-            {
-                secondsLeft = (int)TimeSpan.FromMilliseconds(_intervalInMilliseconds).TotalSeconds;
-            }
-
-            if (_secondsLeft != secondsLeft)
-            {
-                _secondsLeft = secondsLeft;
-                _timeLeft.OnNext(secondsLeft);
             }
         }
 
@@ -321,17 +326,11 @@ namespace Figurkoder.Domain
             {
                 _timer.Start();
             }
-
-            if (!_timerForCountdown.Enabled)
-            {
-                _timerForCountdown.Start();
-            }
         }
 
         private void ResetIntervalForTimers()
         {
             _timer.Interval = _intervalInMilliseconds;
-            _timerForCountdown.Interval = _intervalInMillisecondsForCountdown;
         }
 
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
@@ -339,8 +338,6 @@ namespace Figurkoder.Domain
             _logger.LogTrace(nameof(TimerElapsed));
 
             Advance(failed: true);
-
-            TryDispatchCountdown();
         }
 
         /// <summary>
@@ -393,7 +390,6 @@ namespace Figurkoder.Domain
                 if (disposing)
                 {
                     _timer.Dispose();
-                    _timerForCountdown.Dispose();
                     _eventDispatched.Dispose();
                 }
 

@@ -141,8 +141,16 @@ namespace Figurkoder.ComponentTests.Domain
             gameEngine.Start();
 
             // Assert
-            gameEngine.SecondsLeft.Wait();
-            Assert.True(observer.Messages.Where(x => x.Value.HasValue).Select(x => x.Value.Value).SequenceEqual(new[] {3, 2, 1}));
+            // TODO: Why isn't SecondsLeft.Wait() working here?
+            //gameEngine.SecondsLeft.Wait();
+            gameEngine.Events.Wait();
+
+            var countdownSequence = observer.Messages
+                .Where(x => x.Value.HasValue)
+                .Select(x => x.Value.Value)
+                .ToArray();
+
+            Assert.Equal(new[] {3, 2, 1}, countdownSequence);
         }
 
         // Changing state

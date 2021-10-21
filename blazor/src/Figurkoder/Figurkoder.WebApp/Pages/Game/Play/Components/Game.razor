@@ -23,12 +23,12 @@ else
     <p>Current state: @state</p>
     <p>Seconds left: @(timeLeft is null ? "-" : timeLeft.ToString())</p>
 
-    <button class="btn btn-primary" @onclick="Start">Start</button>
-    <button class="btn btn-primary" @onclick="Next">Next</button>
-    <button class="btn btn-primary" @onclick="Reveale">Reveale</button>
+    <button class="btn btn-primary" @onclick="() => gameEngine?.Start()">Start</button>
+    <button class="btn btn-primary" @onclick="() => gameEngine?.Next()">Next</button>
+    <button class="btn btn-primary" @onclick="() => gameEngine?.Reveale()">Reveale</button>
     <br />
-    <button class="btn btn-primary" @onclick="Pause">Pause</button>
-    <button class="btn btn-primary" @onclick="Stop">Stop</button>   
+    <button class="btn btn-primary" @onclick="() => gameEngine?.Pause()">Pause</button>
+    <button class="btn btn-primary" @onclick="() => gameEngine?.Stop()">Stop</button>   
 }
 
 @code {
@@ -107,12 +107,6 @@ else
 
     private void OnStateChangedHandler(Figurkoder.Domain.StateChangedEvent e)
     {
-        if (state == Domain.GameEngine.State.Finished && e.CurrentState != Domain.GameEngine.State.Finished)
-        {
-            //result = null;
-            //average = null;
-        }
-
         state = e.CurrentState;
 
         StateHasChanged();
@@ -120,18 +114,8 @@ else
 
     private void OnGameFinishedHandler(Figurkoder.Domain.GameFinishedEvent e)
     {
-        OnGameFinished.InvokeAsync(new (e.Results, e.Average)).Wait();
+        OnGameFinished.InvokeAsync(new(e.Results, e.Average)).Wait();
     }
-
-    private void Start() => gameEngine?.Start();
-
-    private void Next() => gameEngine?.Next();
-
-    private void Reveale() => gameEngine?.Reveale();
-
-    private void Pause() => gameEngine?.Pause();
-
-    private void Stop() => gameEngine?.Stop();
 
     public record GameFinished(Figurkoder.Domain.Result[] Results, TimeSpan? Average);
 

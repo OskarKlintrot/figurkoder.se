@@ -1,10 +1,9 @@
-﻿namespace Microsoft.Extensions.DependencyInjection
+﻿namespace Microsoft.Extensions.DependencyInjection;
+
+public static class ApplicationServiceCollectionExtensions
 {
-    public static class ApplicationServiceCollectionExtensions
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
-        {
-            return services;
-        }
+        return services;
     }
 }

@@ -1,16 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿namespace Figurkoder.Infrastructure.Queries;
 
-namespace Figurkoder.Infrastructure.Queries
+public class AsyncLazy<T> : Lazy<Task<T>>
 {
-    public class AsyncLazy<T> : Lazy<Task<T>>
-    {
-        public AsyncLazy(Func<T> valueFactory) :
-            base(() => Task.Factory.StartNew(valueFactory))
-        { }
+    public AsyncLazy(Func<T> valueFactory) :
+        base(() => Task.Factory.StartNew(valueFactory))
+    { }
 
-        public AsyncLazy(Func<Task<T>> taskFactory) :
-            base(() => Task.Factory.StartNew(() => taskFactory()).Unwrap())
-        { }
-    }
+    public AsyncLazy(Func<Task<T>> taskFactory) :
+        base(() => Task.Factory.StartNew(() => taskFactory()).Unwrap())
+    { }
 }

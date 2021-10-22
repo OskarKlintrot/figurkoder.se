@@ -21,6 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="Xunit"/>
+    <Using Include="Xunit.Abstractions"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Figurkoder.Application\Figurkoder.Application.csproj" />
     <ProjectReference Include="..\..\Figurkoder.Domain\Figurkoder.Domain.csproj" />
   </ItemGroup>

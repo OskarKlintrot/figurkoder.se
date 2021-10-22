@@ -1,14 +1,13 @@
 ﻿using Figurkoder.Application.Queries;
 using Figurkoder.Infrastructure.Queries;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+public static class InfrastructureCollectionExtensions
 {
-    public static class InfrastructureCollectionExtensions
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services)
-        {
-            return services
-                .AddTransient<IMnemonicQueries, MnemonicQueries>();
-        }
+        return services
+            .AddTransient<IMnemonicQueries, MnemonicQueries>();
     }
 }

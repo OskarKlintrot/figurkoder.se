@@ -1,96 +1,91 @@
 ﻿using Figurkoder.Application.Queries;
 using Figurkoder.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace Figurkoder.Infrastructure.Queries
+namespace Figurkoder.Infrastructure.Queries;
+
+public class MnemonicQueries : IMnemonicQueries
 {
-    public class MnemonicQueries : IMnemonicQueries
+    private static readonly AsyncLazy<IDictionary<string, Mnemonic>> _mnemonics
+        = new AsyncLazy<IDictionary<string, Mnemonic>>(LoadMnemonicsAsync);
+
+    public async Task<ICollection<MnemonicInfo>> GetMnemonicsInfoAsync()
     {
-        private static readonly AsyncLazy<IDictionary<string, Mnemonic>> _mnemonics
-            = new AsyncLazy<IDictionary<string, Mnemonic>>(LoadMnemonicsAsync);
+        var mnemonics = await _mnemonics.Value;
 
-        public async Task<ICollection<MnemonicInfo>> GetMnemonicsInfoAsync()
+        return mnemonics
+            .Select(x => new MnemonicInfo(
+                Id: x.Key,
+                Title: x.Value.Title,
+                Description: x.Value.Description,
+                First: x.Value.Pairs[0].Key,
+                Last: x.Value.Pairs[^1].Key,
+                Numerical: x.Value.Pairs.All(y => int.TryParse(y.Key, out var _))))
+            .ToList();
+    }
+
+    public async Task<Mnemonic?> GetMnemonicAsync(string id)
+    {
+        var mnemonics = await _mnemonics.Value;
+
+        return mnemonics.TryGetValue(id, out var mnemonic)
+            ? mnemonic
+            : null;
+    }
+
+    private static async Task<IDictionary<string, Mnemonic>> LoadMnemonicsAsync()
+    {
+        var assembly = typeof(MnemonicQueries).Assembly;
+
+        var mnemonics = new Dictionary<string, Mnemonic>(StringComparer.InvariantCultureIgnoreCase);
+
+        await foreach (var item in GetMnemonicsAsync(assembly, assembly
+            .GetManifestResourceNames()
+            .Where(x => x.StartsWith("Figurkoder.Infrastructure.Data.") && x.EndsWith(".json"))
+            .OrderBy(x => x.Split('.')[^2])))
         {
-            var mnemonics = await _mnemonics.Value;
-
-            return mnemonics
-                .Select(x => new MnemonicInfo(
-                    Id: x.Key,
-                    Title: x.Value.Title,
-                    Description: x.Value.Description,
-                    First: x.Value.Pairs[0].Key,
-                    Last: x.Value.Pairs[^1].Key,
-                    Numerical: x.Value.Pairs.All(y => int.TryParse(y.Key, out var _))))
-                .ToList();
+            mnemonics.Add(item.Id, item.Mnemonic);
         }
 
-        public async Task<Mnemonic?> GetMnemonicAsync(string id)
+        return mnemonics;
+
+        static async IAsyncEnumerable<(string Id, Mnemonic Mnemonic)> GetMnemonicsAsync(Assembly assembly, IEnumerable<string> resourceNames)
         {
-            var mnemonics = await _mnemonics.Value;
-
-            return mnemonics.TryGetValue(id, out var mnemonic)
-                ? mnemonic
-                : null;
-        }
-
-        private static async Task<IDictionary<string, Mnemonic>> LoadMnemonicsAsync()
-        {
-            var assembly = typeof(MnemonicQueries).Assembly;
-
-            var mnemonics = new Dictionary<string, Mnemonic>(StringComparer.InvariantCultureIgnoreCase);
-
-            await foreach (var item in GetMnemonicsAsync(assembly, assembly
-                .GetManifestResourceNames()
-                .Where(x => x.StartsWith("Figurkoder.Infrastructure.Data.") && x.EndsWith(".json"))
-                .OrderBy(x => x.Split('.')[^2])))
+            var options = new JsonSerializerOptions
             {
-                mnemonics.Add(item.Id, item.Mnemonic);
-            }
+                PropertyNameCaseInsensitive = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
 
-            return mnemonics;
-
-            static async IAsyncEnumerable<(string Id, Mnemonic Mnemonic)> GetMnemonicsAsync(Assembly assembly, IEnumerable<string> resourceNames)
+            foreach (var name in resourceNames)
             {
-                var options = new JsonSerializerOptions
+                using var stream = assembly.GetManifestResourceStream(name);
+
+                if (stream is null)
                 {
-                    PropertyNameCaseInsensitive = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-
-                foreach (var name in resourceNames)
-                {
-                    using var stream = assembly.GetManifestResourceStream(name);
-
-                    if (stream is null)
-                    {
-                        throw new InvalidOperationException($"'{name}' is missing");
-                    }
-
-                    var mnemonic = await JsonSerializer.DeserializeAsync<MnemonicDto>(stream, options);
-
-                    if (mnemonic is null)
-                    {
-                        throw new InvalidOperationException($"{name} can not be deserialized to {nameof(MnemonicDto)}");
-                    }
-
-                    yield return (
-                        string.Concat(name.Split('.')[^2].Split('-')[1..]),
-                        new Mnemonic(mnemonic.Title, mnemonic.Description, mnemonic.Pairs.Select(x => new Flashcard(x[0], x[1])).ToArray())
-                    );
+                    throw new InvalidOperationException($"'{name}' is missing");
                 }
+
+                var mnemonic = await JsonSerializer.DeserializeAsync<MnemonicDto>(stream, options);
+
+                if (mnemonic is null)
+                {
+                    throw new InvalidOperationException($"{name} can not be deserialized to {nameof(MnemonicDto)}");
+                }
+
+                yield return (
+                    string.Concat(name.Split('.')[^2].Split('-')[1..]),
+                    new Mnemonic(mnemonic.Title, mnemonic.Description, mnemonic.Pairs.Select(x => new Flashcard(x[0], x[1])).ToArray())
+                );
             }
         }
+    }
 
-        private class MnemonicDto
-        {
-            public string Title { get; set; } = null!;
-            public string Description { get; set; } = null!;
-            public string[][] Pairs { get; set; } = null!;
-        }
+    private class MnemonicDto
+    {
+        public string Title { get; set; } = null!;
+        public string Description { get; set; } = null!;
+        public string[][] Pairs { get; set; } = null!;
     }
 }

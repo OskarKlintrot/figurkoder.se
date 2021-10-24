@@ -1,10 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
+  <!-- <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="npx postcss $(ProjectDir)wwwroot\css\app.css -o $(ProjectDir)wwwroot\css\app.min.css" /> -->
+    <!--<Exec Command="npx postcss $(ProjectDir)obj\$(ConfigurationName)\$(TargetFramework)\scopedcss\bundle\$(ProjectName).styles.css -r" />-->
+  <!-- </Target> -->
+
+  <!-- Uncomment if using scoped css files -->
+  <!--<Target Name="ProcessScopedCssFilesWithPostCSS" AfterTargets="_GenerateScopedCssFiles">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+             Properties="CurrentScopedCssFile=%(_ScopedCssOutputs.Identity)"
+             Targets="ProcessScopedCssFileWithPostCSS">
+    </MSBuild>
+  </Target>
+
+  <Target Name="ProcessScopedCssFileWithPostCSS">
+    <Message Importance="high"
+             Text="Processing with PostCSS: $(CurrentScopedCssFile)" />
+    <Exec Command="npx postcss $(CurrentScopedCssFile) -r"
+          WorkingDirectory="$(MSBuildProjectDirectory)"
+          EnvironmentVariables="TAILWIND_MODE=build" />
+  </Target>-->
+
   <PropertyGroup>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.ClientAssets" Version="0.1.0-alpha.21528.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-rc.2.21480.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-rc.2.21480.10" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />

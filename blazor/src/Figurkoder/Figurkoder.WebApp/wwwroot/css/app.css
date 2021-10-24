@@ -1,33 +1,13 @@
-﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+a {
+    @apply text-cyan-600;
 }
 
-a, .btn-link {
-    color: #0366d6;
-}
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.content {
-    padding-top: 1.1rem;
-}
-
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
-}
-
-.invalid {
-    outline: 1px solid red;
-}
-
-.validation-message {
-    color: red;
+a:hover {
+    @apply text-cyan-700;
 }
 
 #blazor-error-ui {

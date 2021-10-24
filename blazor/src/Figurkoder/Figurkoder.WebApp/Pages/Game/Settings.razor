@@ -10,42 +10,49 @@
 }
 else
 {
-    <h1>@mnemonic.Title</h1>
-    <h2>@mnemonic.Description</h2>
+    <CardWithBackground Title="@($"Inställningar för {mnemonic.Title}")" Description=@mnemonic.Description>
+        <div class="w-full mt-16 md:mt-0 md:w-2/5 px-auto mx-auto pt-4">
+            <EditForm Model="@settings" OnValidSubmit="Play">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="pb-4">
+                    @if (mnemonic.Numerical)
+                    {
+                        <label for="from">Från</label>
+                        <InputText type="text" class=@CssInputText @bind-Value="@settings.From" @oninput="OnFromChange" id="from" />
 
-    <EditForm Model="@settings" OnValidSubmit="Play">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+                        <label for="to">Till</label>
+                        <InputText type="text" class=@CssInputText @bind-Value="@settings.To" id="to" />
+                    }
+                    else
+                    {
+                        <label for="from">Från</label>
+                        <InputSelect type="select" class=@CssInputText @bind-Value="@settings.From" @oninput="OnFromChange" id="from">
+                            @foreach (var (key, _) in mnemonic.Pairs)
+                            {
+                                <option value="@key">@key</option>
+                            }
+                        </InputSelect>
 
-        @if (mnemonic.Numerical)
-        {
-            <label for="From">Från</label>
-            <InputText @bind-Value="@settings.From" @oninput="OnFromChange" id="from" />
-            <label for="to">Till</label>
-            <InputText @bind-Value="@settings.To" id="to" />
-        }
-        else
-        {
-            <label for="From">Från</label>
-            <InputSelect @bind-Value="@settings.From" @oninput="OnFromChange" id="from">
-                @foreach (var (key, _) in mnemonic.Pairs)
-                        {
-                    <option value="@key">@key</option>
-                        }
-            </InputSelect>
+                        <label for="to">Till</label>
+                        <InputSelect type="select" class=@CssInputText @bind-Value="@settings.To" id="to">
+                            @foreach (var (key, _) in mnemonic.Pairs)
+                            {
+                                <option value="@key">@key</option>
+                            }
+                        </InputSelect>
+                    }
+                </div>
 
-            <label for="To">Till</label>
-            <InputSelect @bind-Value="@settings.To" id="to">
-                @foreach (var (key, _) in mnemonic.Pairs)
-                        {
-                    <option value="@key">@key</option>
-                        }
-            </InputSelect>
-        }
+                <div class="flex flex-row">
 
-        <button class="btn btn-primary" type="submit" value="Play">Spela</button>
-        <button class="btn btn-primary" type="submit" value="Practice" @onclick="@(()=> settings.Practice = true)">Träna</button>
-    </EditForm>
+                    <button class="w-full mx-3 px-3 py-4 font-medium text-white bg-blue-600 rounded-md" type="submit" value="Play">Spela</button>
+                    <button class="w-full mx-3 px-3 py-4 font-medium text-white bg-blue-600 rounded-md" type="submit" value="Practice" @onclick="@(()=> settings.Practice = true)">Träna</button>
+    
+                </div>
+            </EditForm>                
+        </div>
+    </CardWithBackground>
 }
 
 @code {
@@ -56,6 +63,15 @@ else
 
     private Figurkoder.Domain.Mnemonic? mnemonic;
     private string[] mnemonicKeys = Array.Empty<string>();
+
+    private const string CssInputText = 
+    @"mt-1
+    block
+    w-full
+    rounded-md
+    border-gray-300
+    shadow-sm
+    focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50";
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {

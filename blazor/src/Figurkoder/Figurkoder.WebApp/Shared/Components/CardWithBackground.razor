@@ -1,0 +1,47 @@
+<div class="min-h-screen py-6 flex flex-col justify-center sm:py-12">
+    <div class="relative py-3 sm:max-w-7xl sm:mx-24">
+    <div class="sm:absolute inset-0 bg-gradient-to-r from-cyan-400 to-sky-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
+    <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+        <div class="max-w-3xl mx-auto">
+        <div class="divide-y divide-gray-200">
+            <div class="pb-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                <section class="bg-white">
+                    <div class="container max-w-6xl mx-auto">
+                        <h2 class="text-4xl font-bold tracking-tight text-center">@Title</h2>
+                        <p class="mt-2 text-lg text-center text-gray-600">@Description</p>
+                        
+                        @ChildContent
+
+                    </div>
+                </section>
+            </div>
+            @if (Footer)
+            {
+                <div class="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7">
+                    <p>Vill du lära dig mer om minnesträning?</p>
+                    <p>
+                        <a href="https://www.mindacademy.se/" class="text-cyan-600 hover:text-cyan-700"> Läs mer här &rarr; </a>
+                    </p>
+                </div>
+            }
+        </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public bool Footer { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string Title { get; set; } = null!;
+
+    [Parameter]
+    [EditorRequired]
+    public string Description { get; set; } = null!;
+}

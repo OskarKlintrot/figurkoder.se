@@ -103,8 +103,8 @@ public sealed class GameEngine : IDisposable
 
                     var secondsLeft = (int)timeSpan.TotalSeconds + 1; // Countdown from ie 6 -> 1 -> 6 -> 1
 
-                        // Bodge to make sure seconds left is never more than max
-                        if (TimeSpan.FromSeconds(secondsLeft) > TimeSpan.FromMilliseconds(_intervalInMilliseconds))
+                    // Bodge to make sure seconds left is never more than max
+                    if (TimeSpan.FromSeconds(secondsLeft) > TimeSpan.FromMilliseconds(_intervalInMilliseconds))
                     {
                         secondsLeft = (int)TimeSpan.FromMilliseconds(_intervalInMilliseconds).TotalSeconds;
                     }

@@ -13,21 +13,42 @@
 }
 else
 {
-    <h1>@Mnemonic.Title</h1>
-    <h2>@Mnemonic.Description</h2>
+    <CardWithBackground Title=@Mnemonic.Title Description=@Mnemonic.Description>
+        <p>Par @(currentCount == 0 ? "-" : currentCount) av @Mnemonic.Pairs.Count()</p>
+        <p>Current key: @key</p>
+        <p>Current value: @(state is Domain.GameEngine.State.Revealed ? value : "-")</p>
+@if (IsDebug())
+{
+        <p>Current state: @state</p>
+}
+        <p>Seconds left: @(timeLeft is null ? "-" : timeLeft.ToString() + "...")</p>
 
-    <p>Current count: @currentCount</p>
-    <p>Current key: @key</p>
-    <p>Current value: @(state is Domain.GameEngine.State.Revealed ? value : "-")</p>
-    <p>Current state: @state</p>
-    <p>Seconds left: @(timeLeft is null ? "-" : timeLeft.ToString())</p>
+        <div class="flex flex-row pb-2 mb-2 border-b">
 
-    <button class="btn btn-primary" @onclick="() => gameEngine?.Start()">Start</button>
-    <button class="btn btn-primary" @onclick="() => gameEngine?.Next()">Next</button>
-    <button class="btn btn-primary" @onclick="() => gameEngine?.Reveale()">Reveale</button>
-    <br />
-    <button class="btn btn-primary" @onclick="() => gameEngine?.Pause()">Pause</button>
-    <button class="btn btn-primary" @onclick="() => gameEngine?.Stop()">Stop</button>   
+            <button class="w-full mx-3 px-3 py-4 font-medium text-white bg-blue-600 rounded-md" @onclick="() => gameEngine?.Next()">Nästa</button>
+            <button class="w-full mx-3 px-3 py-4 font-medium text-white bg-yellow-500 rounded-md" @onclick="() => gameEngine?.Reveale()">Visa</button>
+
+        </div>
+        <div class="flex flex-row">
+
+            <button class="w-full mx-3 px-3 py-4 font-medium text-white bg-blue-600 rounded-md" @onclick="() => gameEngine?.Start()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <button class="w-full mx-3 px-3 py-4 font-medium text-white bg-yellow-500 rounded-md" @onclick="() => gameEngine?.Pause()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <button class="w-full mx-3 px-3 py-4 font-medium text-white bg-red-600 rounded-md" @onclick="() => gameEngine?.Stop()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
+                </svg>
+            </button>
+
+        </div>
+    </CardWithBackground>
 }
 
 @code {
@@ -124,5 +145,14 @@ else
         {
             disposable.Dispose();
         }
+    }
+
+    public static bool IsDebug()
+    {
+#if DEBUG
+      return true;
+#else
+      return false;
+#endif
     }
 }

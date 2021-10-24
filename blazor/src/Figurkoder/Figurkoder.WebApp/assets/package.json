@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "name": "figurkoder",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run build:Release",
+    "build:Debug": "npx postcss --config . ../wwwroot/css/app.css -o ../wwwroot/css/app.min.css",
+    "build:Release": "npx postcss --env production --config . ../wwwroot/css/app.css -o ../wwwroot/css/app.min.css"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.3.4",
+    "autoprefixer": "^10.3.7",
+    "postcss": "^8.3.11",
+    "postcss-cli": "^9.0.1",
+    "tailwindcss": "^2.2.17"
+  }
+}

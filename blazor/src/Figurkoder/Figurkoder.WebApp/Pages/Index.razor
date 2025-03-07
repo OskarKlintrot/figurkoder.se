@@ -14,7 +14,18 @@ else
 
         @foreach (var mnemonicInfo in mnemonicInfos)
         {
-            <NavLink class="relative flex flex-col items-center justify-between col-span-4 px-8 py-12 space-y-4 overflow-hidden bg-gray-100 sm:rounded-xl" href="@Url(mnemonicInfo.Id)">
+            <NavLink class="
+                relative
+                flex flex-col
+                items-center
+                justify-between
+                col-span-4
+                px-8 py-12
+                space-y-4
+                overflow-hidden
+                bg-gray-100
+                sm:rounded-xl
+                shadow-xl" href="@Url(mnemonicInfo.Id)">
                 <h4 class="text-xl font-medium text-gray-700">@mnemonicInfo.Title</h4>
                 <p class="text-base text-center text-gray-500">@mnemonicInfo.First - @mnemonicInfo.Last</p>
             </NavLink>

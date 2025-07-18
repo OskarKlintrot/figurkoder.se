@@ -2606,6 +2606,12 @@
             clearInterval(gameState.countdownTimer);
 
             if (gameState.isGameRunning && !gameState.paused) {
+              // Vibrate immediately when countdown finishes in learning mode
+              const isLearningMode = document.getElementById("learning-mode").checked;
+              if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
+                navigator.vibrate(100);
+              }
+
               // Record timeout result before advancing with exact time limit
               if (
                 gameState.currentItemStartTime &&
@@ -2625,7 +2631,7 @@
               }
 
               // Advance directly to next item without showing answer (auto-advance)
-              nextItem(true);
+              nextItem(false); // Changed to false since we're handling vibration above
             }
             return;
           }

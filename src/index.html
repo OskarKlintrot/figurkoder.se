@@ -1566,7 +1566,7 @@
     </div>
 
     <script type="module">
-      import gameData from "./gameData.js";
+      import gameData from "/gameData.js";
 
       // Make gameData available globally for the existing code
       window.gameData = gameData;
@@ -1703,7 +1703,9 @@
             break;
           case "game-page":
             updateHeader(
-              currentGame ? gameData[currentGame].title : "Titel",
+              currentGame && gameData && gameData[currentGame]
+                ? gameData[currentGame].title
+                : "Spel",
               true
             );
             break;
@@ -1783,12 +1785,12 @@
             return { page: "game-page", game: null };
           }
           const gameType = segments[1];
-          if (gameData[gameType]) {
-            if (segments.length === 3 && segments[2] === "results") {
-              return { page: "results-page", game: gameType };
-            }
-            return { page: "game-page", game: gameType };
+          // Don't check gameData here since it might not be loaded yet
+          // Let initializeFromURL handle the validation
+          if (segments.length === 3 && segments[2] === "results") {
+            return { page: "results-page", game: gameType };
           }
+          return { page: "game-page", game: gameType };
         }
 
         switch (segments[0]) {
@@ -1809,25 +1811,46 @@
         // Hide loading spinner
         document.getElementById("loading-spinner").classList.remove("active");
 
-        if (game && gameData[game]) {
-          currentGame = game;
-          const gameDataObj = gameData[game];
+        if (game) {
+          // Check if gameData is available and if the game exists
+          if (gameData && gameData[game]) {
+            currentGame = game;
+            const gameDataObj = gameData[game];
 
-          // Safely set description if element exists
-          const descElement = document.getElementById("game-description-text");
-          if (descElement) {
-            descElement.textContent = gameDataObj.description;
-          }
+            // Safely set description if element exists
+            const descElement = document.getElementById(
+              "game-description-text"
+            );
+            if (descElement) {
+              descElement.textContent = gameDataObj.description;
+            }
 
-          // Initialize the game if we're on the game page
-          if (page === "game-page") {
+            // Initialize the game if we're on the game page
+            if (page === "game-page") {
+              setTimeout(() => {
+                initializeGame();
+              }, 50);
+            }
+
+            navigateToPage(page, false);
+
+            // Update header again now that currentGame and gameData are available
+            if (page === "game-page") {
+              updateHeader(gameDataObj.title, true);
+            }
+          } else if (gameData) {
+            // gameData is loaded but game doesn't exist - show 404
+            navigateToPage("404-page", false);
+          } else {
+            // gameData not loaded yet - wait a bit and try again
             setTimeout(() => {
-              initializeGame();
-            }, 50);
+              initializeFromURL();
+            }, 100);
+            return;
           }
+        } else {
+          navigateToPage(page, false);
         }
-
-        navigateToPage(page, false);
       }
 
       function navigateToGame(gameType) {

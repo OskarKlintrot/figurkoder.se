@@ -931,16 +931,20 @@
         position: relative;
         overflow: hidden;
         background: var(--color-text-light); /* Use disabled button color as depleted state */
+        border-color: var(--color-text-light); /* Match border to background */
+        color: #ffffff; /* Ensure text is always white for visibility */
       }
 
       .btn.primary.countdown-active::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 100%; /* Start at 100% and decrease to show countdown */
+        top: -1px; /* Account for border */
+        left: -1px; /* Account for border */
+        height: calc(100% + 2px); /* Include border height */
+        width: calc(100% + 2px); /* Start at full width including border and decrease to show countdown */
         background: var(--color-primary); /* Full color */
+        border: 1px solid var(--color-primary); /* Maintain primary border */
+        border-radius: inherit; /* Match button border radius */
         transition: width 0.1s linear;
         z-index: 0;
       }
@@ -949,6 +953,7 @@
       .btn.primary.countdown-active > span:not(.material-icons) {
         position: relative;
         z-index: 1;
+        color: #ffffff; /* Explicit white color for visibility */
       }
 
       .solution-container {
@@ -2719,7 +2724,7 @@
           
           styleElement.textContent = `
             .btn.primary.countdown-active::before {
-              width: ${percentage}% !important;
+              width: calc(${percentage}% + 2px) !important;
             }
           `;
         }

@@ -2535,12 +2535,12 @@
         }, 100);
       }
 
-      function nextItem(isAutoAdvance = false) {
+      function nextItem(vibrate = false) {
         if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
 
-        // Vibrate device for 100ms on auto advance in learning mode only (if enabled)
+        // Vibrate device for 100ms if enabled and in learning mode
         const isLearningMode = document.getElementById("learning-mode").checked;
-        if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode && isAutoAdvance) {
+        if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode && vibrate) {
           navigator.vibrate(100);
         }
 

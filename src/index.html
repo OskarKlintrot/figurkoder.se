@@ -2007,6 +2007,7 @@
         isReplayMode: false, // Flag to prevent initializeGame during replay
         usePresetData: false, // Flag to indicate we're using preset replay data, skip range filtering
         vibrationEnabled: true, // Flag to control vibration
+        pendingVibration: false, // Flag to trigger vibration on next safe opportunity
       };
 
       function toggleVibrationSetting() {
@@ -2468,6 +2469,7 @@
         gameState.hasStarted = false;
         gameState.paused = false;
         gameState.pausedCountdownValue = null;
+        gameState.pendingVibration = false; // Clear any pending vibration
         clearTimeout(gameState.gameTimer);
         clearInterval(gameState.countdownTimer);
         gameState.countdownTimer = null;
@@ -2501,6 +2503,13 @@
           stopGame();
           return;
         }
+
+        // Trigger pending vibration if set
+        if (gameState.pendingVibration && navigator.vibrate) {
+          navigator.vibrate(100);
+          gameState.pendingVibration = false;
+        }
+
         const currentItem =
           gameState.currentGameData[gameState.currentItemIndex];
         document.getElementById("current-item").textContent = currentItem[0];
@@ -2624,13 +2633,10 @@
                 gameState.currentItemStartTime = null;
               }
 
-              // Vibrate immediately when countdown finishes in learning mode
+              // Set vibration flag when countdown finishes in learning mode
               const isLearningMode = document.getElementById("learning-mode").checked;
               if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
-                // Use setTimeout to ensure vibration happens outside of timer callback
-                setTimeout(() => {
-                  navigator.vibrate(100);
-                }, 0);
+                gameState.pendingVibration = true;
               }
 
               // Advance directly to next item without showing answer (auto-advance)

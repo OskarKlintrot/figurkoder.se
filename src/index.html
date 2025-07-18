@@ -145,6 +145,10 @@
           border-top: var(--border-width-thin) solid rgba(255, 255, 255, 0.1);
         }
 
+        .tile-title {
+          text-shadow: 0 1px 2px rgba(255, 255, 255, 0.1);
+        }
+
         .nav-setting {
           background: linear-gradient(135deg, #1a1a1c 0%, #2c2c2e 100%);
           border: 1px solid #48484a;
@@ -201,7 +205,8 @@
         font-size: 1.125rem;
         cursor: pointer;
         padding: var(--spacing-md);
-        color: var(--color-text);
+        color: var(--color-text) !important;
+        opacity: 1;
       }
 
       .menu-btn {
@@ -212,7 +217,8 @@
         font-size: 1.125rem;
         cursor: pointer;
         padding: var(--spacing-md);
-        color: var(--color-text);
+        color: var(--color-text) !important;
+        opacity: 1;
       }
 
       h1 {
@@ -259,6 +265,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
       }
 
       .tile-category {
@@ -298,12 +305,20 @@
         border-radius: var(--radius-md);
         font-size: 1rem;
         background: var(--color-surface);
-        color: var(--color-text);
+        color: var(--color-text) !important;
       }
 
       .game-input:focus {
         outline: none;
         border-color: var(--color-primary);
+      }
+
+      /* Ensure autocomplete doesn't override text color */
+      .game-input:-webkit-autofill,
+      .game-input:-webkit-autofill:hover,
+      .game-input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--color-text) !important;
+        transition: background-color 5000s ease-in-out 0s;
       }
 
       .control-buttons {
@@ -971,7 +986,7 @@
         font-size: 1rem;
         text-align: center;
         background: var(--color-surface);
-        color: var(--color-text);
+        color: var(--color-text) !important;
         transition: all var(--transition-normal) ease;
         font-weight: 500;
         box-sizing: border-box;
@@ -982,6 +997,14 @@
         border-color: var(--color-primary);
         box-shadow: 0 0 0 3px var(--color-primary-hover);
         background: var(--color-surface);
+      }
+
+      /* Ensure autocomplete doesn't override text color */
+      .control-input:-webkit-autofill,
+      .control-input:-webkit-autofill:hover,
+      .control-input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--color-text) !important;
+        transition: background-color 5000s ease-in-out 0s;
       }
 
       .control-input:disabled {

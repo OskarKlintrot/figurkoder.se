@@ -2606,12 +2606,6 @@
             clearInterval(gameState.countdownTimer);
 
             if (gameState.isGameRunning && !gameState.paused) {
-              // Vibrate immediately when countdown finishes in learning mode
-              const isLearningMode = document.getElementById("learning-mode").checked;
-              if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
-                navigator.vibrate(100);
-              }
-
               // Record timeout result before advancing with exact time limit
               if (
                 gameState.currentItemStartTime &&
@@ -2630,8 +2624,17 @@
                 gameState.currentItemStartTime = null;
               }
 
+              // Vibrate immediately when countdown finishes in learning mode
+              const isLearningMode = document.getElementById("learning-mode").checked;
+              if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
+                // Use setTimeout to ensure vibration happens outside of timer callback
+                setTimeout(() => {
+                  navigator.vibrate(100);
+                }, 0);
+              }
+
               // Advance directly to next item without showing answer (auto-advance)
-              nextItem(false); // Changed to false since we're handling vibration above
+              nextItem(true);
             }
             return;
           }
@@ -2648,12 +2651,12 @@
         }, 100);
       }
 
-      function nextItem(vibrate = false) {
+      function nextItem(fromCountdown = false) {
         if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
 
-        // Vibrate device for 100ms if enabled and in learning mode
+        // Vibrate when manually advancing in learning mode (not when auto-advancing from countdown)
         const isLearningMode = document.getElementById("learning-mode").checked;
-        if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode && vibrate) {
+        if (!fromCountdown && gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
           navigator.vibrate(100);
         }
 

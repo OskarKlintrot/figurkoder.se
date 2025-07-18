@@ -2012,6 +2012,7 @@
       function toggleVibrationSetting() {
         gameState.vibrationEnabled =
           document.getElementById("vibration-setting").checked;
+        console.log('Vibration setting toggled to:', gameState.vibrationEnabled);
         // Save setting to localStorage
         localStorage.setItem("vibrationEnabled", gameState.vibrationEnabled);
       }
@@ -2318,6 +2319,8 @@
       }
 
       function startGame() {
+        console.log('Starting game - vibrationEnabled:', gameState.vibrationEnabled, 'navigator.vibrate available:', !!navigator.vibrate);
+        
         if (gameState.paused) {
           // Resume paused game
           gameState.isGameRunning = true;
@@ -2627,7 +2630,9 @@
 
               // Set vibration flag when countdown finishes in learning mode
               const isLearningMode = document.getElementById("learning-mode").checked;
+              console.log('Countdown finished - vibrationEnabled:', gameState.vibrationEnabled, 'navigator.vibrate available:', !!navigator.vibrate, 'isLearningMode:', isLearningMode);
               if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
+                console.log('Triggering vibration on countdown finish');
                 navigator.vibrate(100);
               }
 
@@ -2651,6 +2656,14 @@
 
       function nextItem() {
         if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
+
+        // Add vibration for manual advancing in learning mode
+        const isLearningMode = document.getElementById("learning-mode").checked;
+        console.log('Manual nextItem - vibrationEnabled:', gameState.vibrationEnabled, 'navigator.vibrate available:', !!navigator.vibrate, 'isLearningMode:', isLearningMode);
+        if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
+          console.log('Triggering vibration on manual advance');
+          navigator.vibrate(100);
+        }
 
         // Record result for current item if not already recorded (i.e., user pressed NEXT)
         if (

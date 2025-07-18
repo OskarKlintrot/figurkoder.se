@@ -881,6 +881,7 @@
         top: -1.8em;
         right: 1em;
         z-index: var(--z-countdown);
+        display: none !important; /* Hide the countdown timer */
       }
 
       .countdown-circle {
@@ -923,6 +924,31 @@
         font-size: 1.25rem;
         font-weight: 700;
         color: var(--color-primary);
+      }
+
+      /* NÄSTA button countdown styles */
+      .btn.primary.countdown-active {
+        position: relative;
+        overflow: hidden;
+        background: var(--color-primary-hover); /* Depleted color as base */
+      }
+
+      .btn.primary.countdown-active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%; /* Start at 100% and decrease to show countdown */
+        background: var(--color-primary); /* Full color */
+        transition: width 0.1s linear;
+        z-index: 0;
+      }
+
+      .btn.primary.countdown-active .material-icons,
+      .btn.primary.countdown-active > span:not(.material-icons) {
+        position: relative;
+        z-index: 1;
       }
 
       .solution-container {
@@ -2433,6 +2459,9 @@
         gameState.countdownTimer = null; // Ensure timer is completely stopped
         gameState.pausedCountdownValue = gameState.countdownValue; // Save remaining time
 
+        // Keep countdown styling on NÄSTA button during pause (but timer stops)
+        // This maintains the visual state when resuming
+
         // Save the time spent on current item before pausing
         if (gameState.currentItemStartTime) {
           gameState.pausedTime += Date.now() - gameState.currentItemStartTime;
@@ -2482,6 +2511,11 @@
         gameState.currentItemIndex = 0;
         gameState.showingSolution = false;
         gameState.currentItemStartTime = null;
+
+        // Clean up NÄSTA button countdown
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.remove("countdown-active");
+        updateCountdownProgress(0);
 
         // Reset countdown display completely
         const timeLimit =
@@ -2550,6 +2584,12 @@
         if (gameState.currentItemIndex >= gameState.currentGameData.length)
           return;
         clearInterval(gameState.countdownTimer);
+        
+        // Clean up countdown styling from NÄSTA button
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.remove("countdown-active");
+        updateCountdownProgress(0);
+        
         const currentItem =
           gameState.currentGameData[gameState.currentItemIndex];
         const solutionDisplay = document.getElementById("solution-display");
@@ -2590,16 +2630,25 @@
           gameState.pausedCountdownValue = null;
         }
 
-        // Show countdown timer for both learning and practice mode
-        document.getElementById("countdown-timer").classList.add("visible");
+        const isLearningMode = document.getElementById("learning-mode").checked;
+        const nextBtn = document.getElementById("next-btn");
+
+        // Hide countdown timer (but keep it for potential future use)
+        document.getElementById("countdown-timer").classList.remove("visible");
         document.getElementById("countdown-text").textContent = Math.ceil(
           gameState.countdownValue
         );
 
-        // Set progress circle based on current countdown value
-        const progressCircle = document.getElementById("countdown-progress");
+        // Add countdown class to NÄSTA button and set initial progress
+        nextBtn.classList.add("countdown-active");
         const currentProgress =
           (gameState.countdownValue / gameState.totalCountdownTime) * 100;
+        
+        // Update the ::before pseudo-element width through a style element
+        updateCountdownProgress(currentProgress);
+
+        // Set progress circle based on current countdown value (hidden, but kept for consistency)
+        const progressCircle = document.getElementById("countdown-progress");
         progressCircle.style.strokeDashoffset = `${100 - currentProgress}`;
 
         gameState.countdownTimer = setInterval(() => {
@@ -2608,6 +2657,10 @@
 
           if (gameState.countdownValue <= 0) {
             clearInterval(gameState.countdownTimer);
+            
+            // Remove countdown class from NÄSTA button
+            nextBtn.classList.remove("countdown-active");
+            updateCountdownProgress(0);
 
             if (gameState.isGameRunning && !gameState.paused) {
               // Record timeout result before advancing with exact time limit
@@ -2634,16 +2687,42 @@
             return;
           }
 
-          // Update countdown display for both learning and practice mode
+          // Update countdown display (still update hidden circle for consistency)
           const displayValue = Math.ceil(gameState.countdownValue);
           document.getElementById("countdown-text").textContent = displayValue;
 
-          // Update progress circle
+          // Update progress on NÄSTA button (right to left countdown)
           const progress =
             (gameState.countdownValue / gameState.totalCountdownTime) * 100;
+          updateCountdownProgress(progress);
+          
+          // Update progress circle (hidden)
           const progressCircle = document.getElementById("countdown-progress");
           progressCircle.style.strokeDashoffset = `${100 - progress}`;
         }, 100);
+      }
+
+      // Helper function to update countdown progress on the NÄSTA button
+      function updateCountdownProgress(percentage) {
+        const nextBtn = document.getElementById("next-btn");
+        if (nextBtn.classList.contains("countdown-active")) {
+          // Create or update a data attribute that we can style with CSS
+          nextBtn.setAttribute('data-countdown-progress', percentage);
+          
+          // Directly update the pseudo-element through a dynamic style
+          let styleElement = document.getElementById("countdown-style");
+          if (!styleElement) {
+            styleElement = document.createElement("style");
+            styleElement.id = "countdown-style";
+            document.head.appendChild(styleElement);
+          }
+          
+          styleElement.textContent = `
+            .btn.primary.countdown-active::before {
+              width: ${percentage}% !important;
+            }
+          `;
+        }
       }
 
       function nextItem(vibrate = false) {
@@ -2682,9 +2761,14 @@
           gameState.currentItemStartTime = null;
         }
 
-        // Stop the current countdown timer before advancing
+        // Stop the current countdown timer before advancing and clean up button countdown
         clearInterval(gameState.countdownTimer);
         gameState.countdownTimer = null;
+        
+        // Remove countdown styling from NÄSTA button
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.remove("countdown-active");
+        updateCountdownProgress(0);
 
         gameState.currentItemIndex++;
 

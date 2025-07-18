@@ -40,18 +40,40 @@ jobs:
         with:
           script: |
             const previewUrl = '${{ steps.builddeploy.outputs.static_web_app_url }}';
-            if (previewUrl) {
-              const comment = `🚀 **Preview deployment is ready!**
-              
-              ✅ Preview URL: ${previewUrl}
-              
-              This preview will be updated automatically when new commits are pushed to this PR.`;
-              
-              github.rest.issues.createComment({
+            if (!previewUrl) return;
+            
+            const commentBody = `🚀 **Preview deployment is ready!**
+            
+            ✅ Preview URL: ${previewUrl}
+            
+            This preview will be updated automatically when new commits are pushed to this PR.`;
+            
+            // Look for existing preview comment
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            const existingComment = comments.data.find(comment => 
+              comment.body.includes('🚀 **Preview deployment is ready!**')
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: comment
+                body: commentBody
               });
             }
 

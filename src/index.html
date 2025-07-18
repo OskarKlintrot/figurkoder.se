@@ -96,6 +96,42 @@
         --z-menu: 1000;
       }
 
+      /* Dark mode styles */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          /* Colors for dark mode */
+          --color-primary: #0a84ff;
+          --color-primary-hover: #409cff;
+          --color-secondary: #ff453a;
+          --color-secondary-hover: #ff6961;
+          --color-text: #f2f2f7;
+          --color-text-muted: #98989d;
+          --color-text-light: #8e8e93;
+          --color-text-lighter: #636366;
+          --color-background: #000000;
+          --color-surface: #1c1c1e;
+          --color-surface-hover: #2c2c2e;
+          --color-surface-secondary: #2c2c2e;
+          --color-surface-tertiary: #3a3a3c;
+          --color-border: #38383a;
+          --color-border-light: #48484a;
+          --color-border-lighter: #545456;
+          --color-border-lightest: #636366;
+          --color-nav-hover: #3a3a3c;
+          --color-success: #30d158;
+          --color-warning: #ff9f0a;
+          --color-warning-bg: #1f1611;
+          --color-warning-text: #ffcc02;
+          --color-error: #ff453a;
+
+          /* Shadows for dark mode - lighter for visibility */
+          --shadow-sm: 0 0.125rem 0.25rem rgba(255, 255, 255, 0.05);
+          --shadow-md: 0 0.25rem 0.5rem rgba(255, 255, 255, 0.1);
+          --shadow-lg: 0 4px 12px rgba(255, 255, 255, 0.1);
+          --shadow-xl: 0 0.125rem 0.375rem rgba(255, 255, 255, 0.02);
+        }
+      }
+
       * {
         margin: 0;
         padding: 0;

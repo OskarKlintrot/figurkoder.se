@@ -2007,7 +2007,6 @@
         isReplayMode: false, // Flag to prevent initializeGame during replay
         usePresetData: false, // Flag to indicate we're using preset replay data, skip range filtering
         vibrationEnabled: true, // Flag to control vibration
-        pendingVibration: false, // Flag to trigger vibration on next safe opportunity
       };
 
       function toggleVibrationSetting() {
@@ -2469,7 +2468,6 @@
         gameState.hasStarted = false;
         gameState.paused = false;
         gameState.pausedCountdownValue = null;
-        gameState.pendingVibration = false; // Clear any pending vibration
         clearTimeout(gameState.gameTimer);
         clearInterval(gameState.countdownTimer);
         gameState.countdownTimer = null;
@@ -2502,12 +2500,6 @@
         if (gameState.currentItemIndex >= gameState.currentGameData.length) {
           stopGame();
           return;
-        }
-
-        // Trigger pending vibration if set
-        if (gameState.pendingVibration && navigator.vibrate) {
-          navigator.vibrate(100);
-          gameState.pendingVibration = false;
         }
 
         const currentItem =
@@ -2636,11 +2628,11 @@
               // Set vibration flag when countdown finishes in learning mode
               const isLearningMode = document.getElementById("learning-mode").checked;
               if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
-                gameState.pendingVibration = true;
+                navigator.vibrate(100);
               }
 
               // Advance directly to next item without showing answer (auto-advance)
-              nextItem(true);
+              nextItem();
             }
             return;
           }
@@ -2657,14 +2649,8 @@
         }, 100);
       }
 
-      function nextItem(fromCountdown = false) {
+      function nextItem() {
         if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
-
-        // Vibrate when manually advancing in learning mode (not when auto-advancing from countdown)
-        const isLearningMode = document.getElementById("learning-mode").checked;
-        if (!fromCountdown && gameState.vibrationEnabled && navigator.vibrate && isLearningMode) {
-          navigator.vibrate(100);
-        }
 
         // Record result for current item if not already recorded (i.e., user pressed NEXT)
         if (

@@ -930,30 +930,28 @@
       .btn.primary.countdown-active {
         position: relative;
         overflow: hidden;
-        background: var(--color-text-light); /* Use disabled button color as depleted state */
-        border-color: var(--color-text-light); /* Match border to background */
-        color: #ffffff; /* Ensure text is always white for visibility */
+        background: var(--color-primary-hover); /* Depleted color as base */
+        border-color: var(--color-primary-hover); /* Set depleted border color */
       }
 
       .btn.primary.countdown-active::before {
         content: '';
         position: absolute;
-        top: -1px; /* Account for border */
-        left: -1px; /* Account for border */
+        top: -1px; /* Include border */
+        left: -1px; /* Include border */
         height: calc(100% + 2px); /* Include border height */
         width: calc(100% + 2px); /* Start at full width including border and decrease to show countdown */
         background: var(--color-primary); /* Full color */
-        border: 1px solid var(--color-primary); /* Maintain primary border */
+        border: 1px solid var(--color-primary); /* Include border in transition */
         border-radius: inherit; /* Match button border radius */
         transition: width 0.1s linear;
-        z-index: 0;
+        z-index: -1; /* Put behind button content */
       }
 
       .btn.primary.countdown-active .material-icons,
       .btn.primary.countdown-active > span:not(.material-icons) {
         position: relative;
-        z-index: 1;
-        color: #ffffff; /* Explicit white color for visibility */
+        z-index: 1; /* Ensure text stays on top */
       }
 
       .solution-container {
@@ -2724,7 +2722,7 @@
           
           styleElement.textContent = `
             .btn.primary.countdown-active::before {
-              width: calc(${percentage}% + 2px) !important;
+              width: ${percentage}% !important;
             }
           `;
         }

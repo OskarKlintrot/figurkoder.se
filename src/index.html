@@ -2209,8 +2209,9 @@
           learningModeCheckbox.disabled = true;
           learningModeLabel.classList.add("disabled");
 
-          // Action buttons disabled during pause
+          // Action buttons during pause - enable NÄSTA to resume, disable VISA
           showBtn.disabled = true;
+          nextBtn.disabled = false;
         } else {
           // Game stopped: enable play, disable pause/stop, enable inputs
           playBtn.disabled = false;
@@ -2617,7 +2618,29 @@
       }
 
       function nextItem(vibrate = false) {
-        if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
+        // If game is paused, resume and advance to next item
+        if (gameState.paused) {
+          // Resume the game first
+          gameState.isGameRunning = true;
+          gameState.paused = false;
+
+          // Adjust currentItemStartTime to account for paused time
+          if (gameState.currentItemStartTime) {
+            gameState.currentItemStartTime = Date.now() - gameState.pausedTime;
+          }
+
+          // Activate wake lock when resuming
+          if (window.activateScreenWakeLock) {
+            window.activateScreenWakeLock();
+          }
+
+          // Update button states to reflect resumed game
+          updateButtonStates();
+
+          // Continue with normal nextItem logic
+        } else if (!gameState.isGameRunning) {
+          return; // Prevent advancing if game is not running and not paused
+        }
 
         // Remove progress bar class when manually advancing
         const nextBtn = document.getElementById("next-btn");

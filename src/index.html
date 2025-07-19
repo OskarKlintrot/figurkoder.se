@@ -2624,8 +2624,8 @@
                 gameState.currentItemStartTime = null;
               }
 
-              // Advance directly to next item without showing answer (auto-advance)
-              nextItem(true);
+              // Advance directly to next item without showing answer
+              nextItem();
             }
             return;
           }
@@ -2642,12 +2642,11 @@
         }, 100);
       }
 
-      function nextItem(vibrate = false) {
+      function nextItem() {
         if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
 
-        // Vibrate device for 100ms if enabled and in learning mode
-        const isLearningMode = document.getElementById("learning-mode").checked;
-        if (gameState.vibrationEnabled && navigator.vibrate && isLearningMode && vibrate) {
+        // Vibrate device for 100ms on advance (if enabled)
+        if (gameState.vibrationEnabled && navigator.vibrate) {
           navigator.vibrate(100);
         }
 

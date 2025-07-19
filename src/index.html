@@ -90,7 +90,6 @@
         --max-width-replay-btn: 200px;
 
         /* Z-index */
-        --z-countdown: 10;
         --z-header: 100;
         --z-overlay: 999;
         --z-menu: 1000;
@@ -876,55 +875,6 @@
         word-break: break-all;
       }
 
-      .countdown-timer {
-        position: absolute;
-        top: -1.8em;
-        right: 1em;
-        z-index: var(--z-countdown);
-      }
-
-      .countdown-circle {
-        position: relative;
-        width: 60px;
-        height: 60px;
-        background: var(--color-surface);
-        border-radius: var(--radius-full);
-        border: 3px solid var(--color-surface);
-        box-shadow: var(--shadow-lg);
-      }
-
-      .countdown-svg {
-        width: 100%;
-        height: 100%;
-        transform: rotate(-90deg);
-      }
-
-      .countdown-bg {
-        fill: none;
-        stroke: var(--color-border-light);
-        stroke-width: 2;
-      }
-
-      .countdown-progress {
-        fill: none;
-        stroke: var(--color-primary);
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-dasharray: 100, 100;
-        stroke-dashoffset: 0;
-        transition: stroke-dashoffset var(--transition-fast) linear;
-      }
-
-      .countdown-text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--color-primary);
-      }
-
       .solution-container {
         width: 100%;
         max-width: var(--max-width-solution);
@@ -978,6 +928,39 @@
       .btn.secondary:disabled:hover {
         background: var(--color-text-light);
         transform: none;
+      }
+
+      /* Progress bar styles for NÄSTA button */
+      .btn.primary.progress-bar {
+        position: relative;
+        overflow: hidden;
+        background: var(--color-primary);
+        --progress: 0%;
+      }
+
+      .btn.primary.progress-bar::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: var(--progress);
+        background: linear-gradient(
+          90deg,
+          var(--color-primary-hover) 0%,
+          var(--color-primary-hover) 100%
+        );
+        transition: width 0.1s linear;
+        z-index: 1;
+      }
+
+      .btn.primary.progress-bar .btn-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
       }
 
       .game-controls {
@@ -1156,20 +1139,6 @@
           min-width: 120px;
         }
 
-        .countdown-timer {
-          top: -1.5em;
-          right: 0.5em;
-        }
-
-        .countdown-circle {
-          width: 50px;
-          height: 50px;
-        }
-
-        .countdown-text {
-          font-size: 1rem;
-        }
-
         .action-buttons .btn {
           padding: 0.75rem 1rem;
           font-size: 0.9rem;
@@ -1201,20 +1170,6 @@
           padding: 1.25rem 0.75rem;
           font-size: 2rem;
           min-width: 100px;
-        }
-
-        .countdown-timer {
-          top: -1.25em;
-          right: 0.25em;
-        }
-
-        .countdown-circle {
-          width: 45px;
-          height: 45px;
-        }
-
-        .countdown-text {
-          font-size: 0.9rem;
         }
 
         .solution-display {
@@ -1308,14 +1263,6 @@
       .btn.visible {
         display: inline-flex !important;
       }
-
-      .countdown-timer.visible {
-        visibility: visible;
-      }
-
-      .countdown-timer.hidden {
-        visibility: hidden;
-      }
     </style>
   </head>
 
@@ -1393,23 +1340,6 @@
         <!-- Current Item Display -->
         <div class="current-item-container">
           <div class="current-item-display" id="current-item">--</div>
-          <!-- Countdown Timer -->
-          <div class="countdown-timer" id="countdown-timer">
-            <div class="countdown-circle">
-              <svg class="countdown-svg" viewBox="0 0 36 36">
-                <path
-                  class="countdown-bg"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                ></path>
-                <path
-                  class="countdown-progress"
-                  id="countdown-progress"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                ></path>
-              </svg>
-              <div class="countdown-text" id="countdown-text">6</div>
-            </div>
-          </div>
         </div>
 
         <!-- Solution Display -->
@@ -1424,8 +1354,10 @@
             VISA
           </button>
           <button class="btn primary" id="next-btn" onclick="nextItem()">
-            <span class="material-icons">arrow_forward</span>
-            NÄSTA
+            <div class="btn-content">
+              <span class="material-icons">arrow_forward</span>
+              NÄSTA
+            </div>
           </button>
         </div>
 
@@ -1732,13 +1664,11 @@
         // Note: vibrationEnabled is kept as it's a user setting
 
         // Reset UI elements to default state
-        const timeInput = document.getElementById("time-input");
-        if (timeInput) {
-          const defaultTimeLimit = parseInt(timeInput.defaultValue);
-          document.getElementById("countdown-text").textContent =
-            defaultTimeLimit;
-          document.getElementById("countdown-progress").style.strokeDashoffset =
-            "0";
+        // Reset progress bar on NÄSTA button
+        const nextBtn = document.getElementById("next-btn");
+        if (nextBtn) {
+          nextBtn.classList.remove("progress-bar");
+          nextBtn.style.setProperty("--progress", "0%");
         }
 
         // Reset display elements
@@ -2150,12 +2080,7 @@
           timeInput.parentNode.replaceChild(newTimeInput, timeInput);
 
           newTimeInput.addEventListener("change", function () {
-            // Update countdown display when time changes (only when game is not running)
-            if (!gameState.isGameRunning) {
-              const timeLimit =
-                parseInt(this.value) || parseInt(this.defaultValue);
-              document.getElementById("countdown-text").textContent = timeLimit;
-            }
+            // No special handling needed when time changes
           });
         }
 
@@ -2168,15 +2093,7 @@
         if (!gameState.currentGameData.length) {
           document.getElementById("current-item").textContent = "---";
           document.getElementById("solution-display").textContent = "---";
-          document.getElementById("solution-display").classList.add("visible"); // Update countdown text to show current time setting
-          const timeLimit =
-            parseInt(document.getElementById("time-input").value) ||
-            parseInt(document.getElementById("time-input").defaultValue);
-          document.getElementById("countdown-text").textContent = timeLimit;
-
-          // Always reset countdown progress circle
-          document.getElementById("countdown-progress").style.strokeDashoffset =
-            "0";
+          document.getElementById("solution-display").classList.add("visible");
           return;
         }
 
@@ -2195,16 +2112,6 @@
         } else {
           solutionDisplay.textContent = "•••";
         }
-
-        // Update countdown text to show current time setting
-        const timeLimit =
-          parseInt(document.getElementById("time-input").value) ||
-          parseInt(document.getElementById("time-input").defaultValue);
-        document.getElementById("countdown-text").textContent = timeLimit;
-
-        // Always reset countdown progress circle
-        document.getElementById("countdown-progress").style.strokeDashoffset =
-          "0";
       }
 
       function updateButtonStates() {
@@ -2358,6 +2265,11 @@
         gameState.paused = false;
         gameState.gameStartTime = Date.now();
 
+        // Reset progress bar on NÄSTA button for fresh start
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.remove("progress-bar");
+        nextBtn.style.setProperty("--progress", "0%");
+
         // Only filter data based on range if we're not using preset replay data
         if (!gameState.usePresetData) {
           // Filter data based on range
@@ -2438,6 +2350,9 @@
           gameState.pausedTime += Date.now() - gameState.currentItemStartTime;
         }
 
+        // Pause progress bar by maintaining current state
+        // No need to remove progress-bar class, just stop updating
+
         updateButtonStates();
       }
 
@@ -2483,13 +2398,10 @@
         gameState.showingSolution = false;
         gameState.currentItemStartTime = null;
 
-        // Reset countdown display completely
-        const timeLimit =
-          parseInt(document.getElementById("time-input").value) ||
-          parseInt(document.getElementById("time-input").defaultValue);
-        document.getElementById("countdown-text").textContent = timeLimit;
-        document.getElementById("countdown-progress").style.strokeDashoffset =
-          "0";
+        // Reset progress bar on NÄSTA button
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.remove("progress-bar");
+        nextBtn.style.setProperty("--progress", "0%");
 
         // Only show initial display if not running
         if (!gameState.isGameRunning) updateInitialDisplay();
@@ -2590,17 +2502,16 @@
           gameState.pausedCountdownValue = null;
         }
 
-        // Show countdown timer for both learning and practice mode
-        document.getElementById("countdown-timer").classList.add("visible");
-        document.getElementById("countdown-text").textContent = Math.ceil(
-          gameState.countdownValue
-        );
+        // Add progress bar class to NÄSTA button
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.add("progress-bar");
 
-        // Set progress circle based on current countdown value
-        const progressCircle = document.getElementById("countdown-progress");
-        const currentProgress =
-          (gameState.countdownValue / gameState.totalCountdownTime) * 100;
-        progressCircle.style.strokeDashoffset = `${100 - currentProgress}`;
+        // Set initial progress bar on NÄSTA button
+        const progressPercentage =
+          ((gameState.totalCountdownTime - gameState.countdownValue) /
+            gameState.totalCountdownTime) *
+          100;
+        nextBtn.style.setProperty("--progress", `${progressPercentage}%`);
 
         gameState.countdownTimer = setInterval(() => {
           if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
@@ -2608,6 +2519,8 @@
 
           if (gameState.countdownValue <= 0) {
             clearInterval(gameState.countdownTimer);
+            // Remove progress bar class when countdown ends
+            nextBtn.classList.remove("progress-bar");
 
             if (gameState.isGameRunning && !gameState.paused) {
               // Record timeout result before advancing with exact time limit
@@ -2634,20 +2547,21 @@
             return;
           }
 
-          // Update countdown display for both learning and practice mode
-          const displayValue = Math.ceil(gameState.countdownValue);
-          document.getElementById("countdown-text").textContent = displayValue;
-
-          // Update progress circle
-          const progress =
-            (gameState.countdownValue / gameState.totalCountdownTime) * 100;
-          const progressCircle = document.getElementById("countdown-progress");
-          progressCircle.style.strokeDashoffset = `${100 - progress}`;
+          // Update progress bar on NÄSTA button
+          const progressPercentage =
+            ((gameState.totalCountdownTime - gameState.countdownValue) /
+              gameState.totalCountdownTime) *
+            100;
+          nextBtn.style.setProperty("--progress", `${progressPercentage}%`);
         }, 100);
       }
 
       function nextItem(vibrate = false) {
         if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
+
+        // Remove progress bar class when manually advancing
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.remove("progress-bar");
 
         // Vibrate device for 100ms on auto-advance in learning mode (if enabled)
         if (
@@ -2809,17 +2723,11 @@
           gameState.hasStarted = false;
           gameState.paused = false;
 
-          // Reset timer display completely
+          // Reset timer state completely
           clearInterval(gameState.countdownTimer);
           gameState.countdownTimer = null;
           gameState.pausedCountdownValue = null;
           gameState.countdownValue = 0;
-          const timeLimit =
-            parseInt(document.getElementById("time-input").value) ||
-            parseInt(document.getElementById("time-input").defaultValue);
-          document.getElementById("countdown-text").textContent = timeLimit;
-          document.getElementById("countdown-progress").style.strokeDashoffset =
-            "0";
 
           // Update initial display and button states
           updateInitialDisplay();
@@ -2878,17 +2786,11 @@
           gameState.hasStarted = false;
           gameState.paused = false;
 
-          // Reset timer display completely
+          // Reset timer state completely
           clearInterval(gameState.countdownTimer);
           gameState.countdownTimer = null;
           gameState.pausedCountdownValue = null;
           gameState.countdownValue = 0;
-          const timeLimit =
-            parseInt(document.getElementById("time-input").value) ||
-            parseInt(document.getElementById("time-input").defaultValue);
-          document.getElementById("countdown-text").textContent = timeLimit;
-          document.getElementById("countdown-progress").style.strokeDashoffset =
-            "0";
 
           // Update initial display and button states - ensure we have data first
           if (gameState.currentGameData.length > 0) {
@@ -2897,10 +2799,6 @@
             // Fallback if no data is available
             document.getElementById("current-item").textContent = "---";
             document.getElementById("solution-display").textContent = "---";
-            const timeLimit =
-              parseInt(document.getElementById("time-input").value) ||
-              parseInt(document.getElementById("time-input").defaultValue);
-            document.getElementById("countdown-text").textContent = timeLimit;
           }
           updateButtonStates();
         }, 100);

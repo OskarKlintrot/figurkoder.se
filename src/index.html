@@ -24,12 +24,21 @@
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="modulepreload" href="/gameData.js" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
       href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap"
-      rel="stylesheet"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap"
+        rel="stylesheet"
+        type="text/css"
+      />
+    </noscript>
     <style>
       :root {
         /* Colors */
@@ -1634,16 +1643,13 @@
         </p>
       </div>
     </div>
-
+    <script src="/keep-screen-on.js" defer=""></script>
     <script type="module">
+      navigator.serviceWorker.register("/sw.js");
+
       import gameData from "/gameData.js";
 
-      // Make gameData available globally for the existing code
       window.gameData = gameData;
-    </script>
-    <script src="/keep-screen-on.js" defer=""></script>
-    <script>
-      navigator.serviceWorker.register("/sw.js");
 
       let currentGame = "";
 
@@ -2894,13 +2900,6 @@
         updateButtonStates();
       }
 
-      // Initialize game when navigating to game page
-      function navigateToGame(gameId) {
-        currentGame = gameId;
-        navigateToPage("game-page");
-        setTimeout(initializeGame, 100); // Small delay to ensure page is loaded
-      }
-
       // Handle keyboard shortcuts
       document.addEventListener("keydown", function (e) {
         if (document.querySelector("#game-page.active")) {
@@ -2971,6 +2970,22 @@
           tilesGrid.appendChild(tile);
         });
       }
+
+      // Make functions globally accessible for onclick handlers
+      window.openMenu = openMenu;
+      window.closeMenu = closeMenu;
+      window.goBack = goBack;
+      window.navigateToPage = navigateToPage;
+      window.navigateToGame = navigateToGame;
+      window.showAnswer = showAnswer;
+      window.nextItem = nextItem;
+      window.startGame = startGame;
+      window.pauseGame = pauseGame;
+      window.stopGame = stopGame;
+      window.replayAll = replayAll;
+      window.replaySlow = replaySlow;
+      window.toggleVibrationSetting = toggleVibrationSetting;
+      window.updateLearningMode = updateLearningMode;
 
       // Initialize page based on URL when loaded
       window.addEventListener("DOMContentLoaded", function () {

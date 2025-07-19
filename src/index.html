@@ -930,28 +930,26 @@
       .btn.primary.countdown-active {
         position: relative;
         overflow: hidden;
-        background: var(--color-primary-hover); /* Depleted color as base */
-        border-color: var(--color-primary-hover); /* Set depleted border color */
+        /* Keep normal button styling - blue background, white text */
       }
 
       .btn.primary.countdown-active::before {
         content: '';
         position: absolute;
-        top: -1px; /* Include border */
-        left: -1px; /* Include border */
-        height: calc(100% + 2px); /* Include border height */
-        width: calc(100% + 2px); /* Start at full width including border and decrease to show countdown */
-        background: var(--color-primary); /* Full color */
-        border: 1px solid var(--color-primary); /* Include border in transition */
+        top: 0;
+        right: 0; /* Start from right side */
+        height: 100%;
+        width: 0%; /* Start at 0% and grow to show depletion */
+        background: var(--color-text-light); /* Depleted color grows from right */
         border-radius: inherit; /* Match button border radius */
         transition: width 0.1s linear;
-        z-index: -1; /* Put behind button content */
+        z-index: 1; /* On top of button content initially */
       }
 
       .btn.primary.countdown-active .material-icons,
       .btn.primary.countdown-active > span:not(.material-icons) {
         position: relative;
-        z-index: 1; /* Ensure text stays on top */
+        z-index: 2; /* Keep text above the overlay */
       }
 
       .solution-container {
@@ -2720,9 +2718,11 @@
             document.head.appendChild(styleElement);
           }
           
+          // Invert percentage so overlay grows as time depletes (0% remaining = 100% overlay)
+          const overlayPercentage = 100 - percentage;
           styleElement.textContent = `
             .btn.primary.countdown-active::before {
-              width: ${percentage}% !important;
+              width: ${overlayPercentage}% !important;
             }
           `;
         }

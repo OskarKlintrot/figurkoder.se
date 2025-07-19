@@ -1472,7 +1472,7 @@
                   <input
                     type="checkbox"
                     id="learning-mode"
-                    onchange="onLearningModeChange()"
+                    onchange="updateLearningMode()"
                   />
                   <span class="checkmark"></span>
                   Inlärning?
@@ -1745,6 +1745,7 @@
         if (learningModeCheckbox) {
           learningModeCheckbox.checked = false;
         }
+        gameState.isLearningMode = false;
       }
 
       function goBack() {
@@ -2011,6 +2012,7 @@
         isReplayMode: false, // Flag to prevent initializeGame during replay
         usePresetData: false, // Flag to indicate we're using preset replay data, skip range filtering
         vibrationEnabled: true, // Flag to control vibration
+        isLearningMode: false, // Flag to control learning mode
       };
 
       function toggleVibrationSetting() {
@@ -2018,6 +2020,17 @@
           document.getElementById("vibration-setting").checked;
         // Save setting to localStorage
         localStorage.setItem("vibrationEnabled", gameState.vibrationEnabled);
+      }
+
+      function updateLearningMode() {
+        gameState.isLearningMode =
+          document.getElementById("learning-mode").checked;
+        // Update button states when learning mode changes
+        updateButtonStates();
+        // If game is not running, update the initial display
+        if (!gameState.isGameRunning) {
+          updateInitialDisplay();
+        }
       }
 
       function initializeGame() {
@@ -2105,11 +2118,9 @@
                 newCurrentItem[0];
 
               // Also update solution display based on learning mode
-              const isLearningMode =
-                document.getElementById("learning-mode").checked;
               const solutionDisplay =
                 document.getElementById("solution-display");
-              if (isLearningMode) {
+              if (gameState.isLearningMode) {
                 solutionDisplay.textContent = newCurrentItem[1];
               } else {
                 solutionDisplay.textContent = "•••";
@@ -2172,10 +2183,9 @@
         }
 
         document.getElementById("current-item").textContent = currentItem[0];
-        const isLearningMode = document.getElementById("learning-mode").checked;
         const solutionDisplay = document.getElementById("solution-display");
         solutionDisplay.classList.add("visible");
-        if (isLearningMode) {
+        if (gameState.isLearningMode) {
           solutionDisplay.textContent = currentItem[1];
         } else {
           solutionDisplay.textContent = "•••";
@@ -2206,7 +2216,6 @@
         const learningModeCheckbox = document.getElementById("learning-mode");
         const learningModeLabel =
           learningModeCheckbox.closest(".checkbox-label");
-        const isLearningMode = learningModeCheckbox.checked;
 
         // Determine if current game uses dropdowns
         const game = gameData[currentGame];
@@ -2234,7 +2243,8 @@
 
           // In learning mode, disable "Visa" button since answer is always shown
           // Also disable if answer is already shown for current item
-          showBtn.disabled = isLearningMode || gameState.showingSolution;
+          showBtn.disabled =
+            gameState.isLearningMode || gameState.showingSolution;
           nextBtn.disabled = false;
         } else if (gameState.paused) {
           // During pause: enable play/stop, disable pause, disable inputs
@@ -2309,16 +2319,6 @@
             group.classList.remove("hidden");
           }
         });
-      }
-
-      function onLearningModeChange() {
-        // Update button states when learning mode changes
-        updateButtonStates();
-
-        // If game is not running, update the initial display
-        if (!gameState.isGameRunning) {
-          updateInitialDisplay();
-        }
       }
 
       function startGame() {
@@ -2404,8 +2404,7 @@
         gameState.currentItemStartTime = null;
         gameState.pausedTime = 0; // Reset paused time for new game
         // Shuffle data only if NOT in learning mode
-        const isLearningMode = document.getElementById("learning-mode").checked;
-        if (!isLearningMode) {
+        if (!gameState.isLearningMode) {
           for (let i = gameState.currentGameData.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [gameState.currentGameData[i], gameState.currentGameData[j]] = [
@@ -2462,11 +2461,10 @@
         }
 
         // If game has started and we have results, show them (but not in learning mode)
-        const isLearningMode = document.getElementById("learning-mode").checked;
         const shouldShowResults =
           gameState.hasStarted &&
           gameState.gameResults.length > 0 &&
-          !isLearningMode;
+          !gameState.isLearningMode;
 
         gameState.isGameRunning = false;
         gameState.hasStarted = false;
@@ -2515,21 +2513,20 @@
           gameState.pausedTime = 0; // Reset paused time for new item
         }
 
-        const isLearningMode = document.getElementById("learning-mode").checked;
         const solutionDisplay = document.getElementById("solution-display");
         solutionDisplay.classList.add("visible");
 
         // Reset showingSolution for new item unless in learning mode
-        if (!isLearningMode && !resume) {
+        if (!gameState.isLearningMode && !resume) {
           gameState.showingSolution = false;
         }
 
-        if (isLearningMode || gameState.showingSolution) {
+        if (gameState.isLearningMode || gameState.showingSolution) {
           solutionDisplay.textContent = currentItem[1];
         } else {
           solutionDisplay.textContent = "•••";
         }
-        if (isLearningMode) {
+        if (gameState.isLearningMode) {
           gameState.showingSolution = true;
           if (gameState.isGameRunning) {
             startCountdown(resume);
@@ -2588,8 +2585,6 @@
           gameState.pausedCountdownValue = null;
         }
 
-        const isLearningMode = document.getElementById("learning-mode").checked;
-
         // Show countdown timer for both learning and practice mode
         document.getElementById("countdown-timer").classList.add("visible");
         document.getElementById("countdown-text").textContent = Math.ceil(
@@ -2629,9 +2624,7 @@
               }
 
               // Advance directly to next item without showing answer
-              const isLearningMode =
-                document.getElementById("learning-mode").checked;
-              nextItem(isLearningMode); // Vibrate on auto-advance in learning mode
+              nextItem(gameState.isLearningMode); // Vibrate on auto-advance in learning mode
             }
             return;
           }
@@ -2652,11 +2645,10 @@
         if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
 
         // Vibrate device for 100ms on auto-advance in learning mode (if enabled)
-        const isLearningMode = document.getElementById("learning-mode").checked;
         if (
           gameState.vibrationEnabled &&
           navigator.vibrate &&
-          isLearningMode &&
+          gameState.isLearningMode &&
           vibrate
         ) {
           navigator.vibrate(100);
@@ -2692,10 +2684,7 @@
         gameState.currentItemIndex++;
 
         if (gameState.currentItemIndex >= gameState.currentGameData.length) {
-          const isLearningMode =
-            document.getElementById("learning-mode").checked;
-
-          if (isLearningMode) {
+          if (gameState.isLearningMode) {
             // In learning mode, loop back to the beginning
             gameState.currentItemIndex = 0;
             showCurrentItem();
@@ -2873,6 +2862,7 @@
 
           // Enable learning mode for slow replay
           document.getElementById("learning-mode").checked = true;
+          gameState.isLearningMode = true;
 
           // Set the preset data flag AFTER navigation but BEFORE clearing replay mode
           gameState.usePresetData = true;
@@ -2928,8 +2918,7 @@
         // masterGameData should remain unchanged from the first game
 
         // Shuffle data only if NOT in learning mode
-        const isLearningMode = document.getElementById("learning-mode").checked;
-        if (!isLearningMode) {
+        if (!gameState.isLearningMode) {
           for (let i = gameState.currentGameData.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [gameState.currentGameData[i], gameState.currentGameData[j]] = [
@@ -3036,6 +3025,10 @@
             gameState.vibrationEnabled;
         }
 
+        // Initialize learning mode state from checkbox
+        gameState.isLearningMode =
+          document.getElementById("learning-mode").checked;
+
         generateTiles();
         // Add a small delay to ensure gameData is loaded
         setTimeout(() => {
@@ -3097,10 +3090,8 @@
               newCurrentItem[0];
 
             // Also update solution display based on learning mode
-            const isLearningMode =
-              document.getElementById("learning-mode").checked;
             const solutionDisplay = document.getElementById("solution-display");
-            if (isLearningMode) {
+            if (gameState.isLearningMode) {
               solutionDisplay.textContent = newCurrentItem[1];
             } else {
               solutionDisplay.textContent = "•••";

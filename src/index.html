@@ -1709,8 +1709,13 @@
         nextBtn.style.setProperty("--progress", "0%");
 
         // Reset display elements
-        (domCache.currentItem || document.getElementById("current-item")).textContent = "---";
-        (domCache.solutionDisplay || document.getElementById("solution-display")).textContent = "---";
+        (
+          domCache.currentItem || document.getElementById("current-item")
+        ).textContent = "---";
+        (
+          domCache.solutionDisplay ||
+          document.getElementById("solution-display")
+        ).textContent = "---";
 
         // Reset learning mode to default (unchecked)
         const learningModeCheckbox = document.getElementById("learning-mode");
@@ -1772,7 +1777,7 @@
           // Show target page
           document.getElementById(pageId).classList.add("active");
         };
-        
+
         // Use requestAnimationFrame to batch the DOM updates
         requestAnimationFrame(batch);
 
@@ -2184,7 +2189,7 @@
           this.pauseBtn = document.getElementById("pause-btn");
           this.stopBtn = document.getElementById("stop-btn");
           this.showBtn = document.getElementById("show-btn");
-        }
+        },
       };
 
       // Debounced update button states to reduce reflows
@@ -2199,7 +2204,8 @@
       function updateButtonStates() {
         // Use cached DOM elements where possible
         const playBtn = domCache.playBtn || document.getElementById("play-btn");
-        const pauseBtn = domCache.pauseBtn || document.getElementById("pause-btn");
+        const pauseBtn =
+          domCache.pauseBtn || document.getElementById("pause-btn");
         const stopBtn = domCache.stopBtn || document.getElementById("stop-btn");
         const showBtn = domCache.showBtn || document.getElementById("show-btn");
         const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
@@ -2281,7 +2287,7 @@
             nextBtn.disabled = true;
           }
         };
-        
+
         // Execute the batched updates
         updateBatch();
       }
@@ -2537,7 +2543,9 @@
         }
         const currentItem =
           gameState.currentGameData[gameState.currentItemIndex];
-        (domCache.currentItem || document.getElementById("current-item")).textContent = currentItem[0];
+        (
+          domCache.currentItem || document.getElementById("current-item")
+        ).textContent = currentItem[0];
 
         // Always start timing for this item when game is running, unless resuming
         if (gameState.isGameRunning && !resume) {
@@ -2545,7 +2553,9 @@
           gameState.pausedTime = 0; // Reset paused time for new item
         }
 
-        const solutionDisplay = domCache.solutionDisplay || document.getElementById("solution-display");
+        const solutionDisplay =
+          domCache.solutionDisplay ||
+          document.getElementById("solution-display");
         solutionDisplay.classList.add("visible");
 
         // Reset showingSolution for new item unless in learning mode
@@ -2641,11 +2651,11 @@
         let lastUpdateTime = Date.now();
         const countdownStep = () => {
           if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
-          
+
           const now = Date.now();
           const deltaTime = (now - lastUpdateTime) / 1000; // Convert to seconds
           lastUpdateTime = now;
-          
+
           gameState.countdownValue -= deltaTime;
 
           if (gameState.countdownValue <= 0) {
@@ -3098,7 +3108,7 @@
       window.addEventListener("DOMContentLoaded", function () {
         // Initialize DOM cache for better performance
         domCache.init();
-        
+
         // Load vibration setting from localStorage
         const savedVibrationSetting = localStorage.getItem("vibrationEnabled");
         if (savedVibrationSetting !== null) {

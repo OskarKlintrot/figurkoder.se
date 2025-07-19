@@ -6,11 +6,18 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover"
     />
+    <!-- Mobile optimization -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
     <title>Figurkoder.se</title>
 
     <meta name="description" content="En app för att träna på figurkoder." />
     <meta name="theme-color" content="#007aff" />
+    <!-- Performance and caching hints -->
+    <meta http-equiv="x-dns-prefetch-control" content="on" />
+    <meta name="format-detection" content="telephone=no" />
 
     <link rel="canonical" href="https://figurkoder.se/" />
 
@@ -24,11 +31,16 @@
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="modulepreload" href="/gameData.js" />
+    <link rel="modulepreload" href="/script.js" />
+    <!-- DNS prefetch for better performance -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Optimized font loading - only load Material Icons when needed -->
     <link
       rel="preload"
-      href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap&text=visibility_arrow_forward_play_arrow_pause_stop_replay"
       as="style"
       onload="this.onload=null;this.rel='stylesheet'"
     />
@@ -39,7 +51,13 @@
         type="text/css"
       />
     </noscript>
-    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="preload"
+      href="/styles.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript><link rel="stylesheet" href="/styles.css" /></noscript>
   </head>
 
   <body>
@@ -388,7 +406,8 @@
         </p>
       </div>
     </div>
-    <script src="/keep-screen-on.js" defer=""></script>
-    <script type="module" src="/script.js" defer=""></script>
+
+    <script src="/keep-screen-on.js" defer></script>
+    <script type="module" src="/script.js" defer></script>
   </body>
 </html>

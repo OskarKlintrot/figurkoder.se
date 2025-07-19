@@ -150,7 +150,11 @@
         }
 
         .nav-setting {
-          background: linear-gradient(135deg, #1a1a1c 0%, #2c2c2e 100%) !important;
+          background: linear-gradient(
+            135deg,
+            #1a1a1c 0%,
+            #2c2c2e 100%
+          ) !important;
           border: 1px solid #48484a !important;
         }
 
@@ -2625,7 +2629,9 @@
               }
 
               // Advance directly to next item without showing answer
-              nextItem();
+              const isLearningMode =
+                document.getElementById("learning-mode").checked;
+              nextItem(isLearningMode); // Vibrate on auto-advance in learning mode
             }
             return;
           }
@@ -2642,11 +2648,17 @@
         }, 100);
       }
 
-      function nextItem() {
+      function nextItem(vibrate = false) {
         if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
 
-        // Vibrate device for 100ms on advance (if enabled)
-        if (gameState.vibrationEnabled && navigator.vibrate) {
+        // Vibrate device for 100ms on auto-advance in learning mode (if enabled)
+        const isLearningMode = document.getElementById("learning-mode").checked;
+        if (
+          gameState.vibrationEnabled &&
+          navigator.vibrate &&
+          isLearningMode &&
+          vibrate
+        ) {
           navigator.vibrate(100);
         }
 

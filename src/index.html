@@ -1673,6 +1673,11 @@
           clearTimeout(gameState.gameTimer);
           clearInterval(gameState.countdownTimer);
           gameState.countdownTimer = null;
+
+          // Deactivate wake lock when resetting game state
+          if (window.deactivateScreenWakeLock) {
+            window.deactivateScreenWakeLock();
+          }
         }
 
         // Reset all game state variables to initial values
@@ -2278,6 +2283,11 @@
             gameState.currentItemStartTime = Date.now() - gameState.pausedTime;
           }
 
+          // Activate wake lock when resuming
+          if (window.activateScreenWakeLock) {
+            window.activateScreenWakeLock();
+          }
+
           showCurrentItem(true); // Resume with existing countdown
           updateButtonStates();
           return;
@@ -2369,6 +2379,11 @@
         showCurrentItem();
         updateButtonStates();
 
+        // Activate wake lock when starting new game
+        if (window.activateScreenWakeLock) {
+          window.activateScreenWakeLock();
+        }
+
         // Countdown will start automatically in showCurrentItem() if not in learning mode
       }
 
@@ -2386,6 +2401,11 @@
 
         // Pause progress bar by maintaining current state
         // No need to remove progress-bar class, just stop updating
+
+        // Deactivate wake lock when pausing
+        if (window.deactivateScreenWakeLock) {
+          window.deactivateScreenWakeLock();
+        }
 
         updateButtonStates();
       }
@@ -2441,6 +2461,11 @@
         if (!gameState.isGameRunning) updateInitialDisplay();
 
         updateButtonStates();
+
+        // Deactivate wake lock when stopping game
+        if (window.deactivateScreenWakeLock) {
+          window.deactivateScreenWakeLock();
+        }
 
         // Navigate to results if we should show them
         if (shouldShowResults) {
@@ -2517,6 +2542,11 @@
           });
           // Clear the start time to prevent duplicate recording
           gameState.currentItemStartTime = null;
+        }
+
+        // Deactivate wake lock when user shows answer (timing challenge ends)
+        if (window.deactivateScreenWakeLock) {
+          window.deactivateScreenWakeLock();
         }
 
         // Update button states after showing answer

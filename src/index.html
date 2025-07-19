@@ -1668,8 +1668,11 @@
         if (gameState.isGameRunning || gameState.paused) {
           // Clear all timers
           clearTimeout(gameState.gameTimer);
-          clearInterval(gameState.countdownTimer);
-          gameState.countdownTimer = null;
+          // Cancel animation frame instead of clearing interval
+          if (gameState.countdownTimer) {
+            cancelAnimationFrame(gameState.countdownTimer);
+            gameState.countdownTimer = null;
+          }
 
           // Deactivate wake lock when resetting game state
           if (window.deactivateScreenWakeLock) {
@@ -1701,15 +1704,13 @@
 
         // Reset UI elements to default state
         // Reset progress bar on NÄSTA button
-        const nextBtn = document.getElementById("next-btn");
-        if (nextBtn) {
-          nextBtn.classList.remove("progress-bar");
-          nextBtn.style.setProperty("--progress", "0%");
-        }
+        const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
+        nextBtn.classList.remove("progress-bar");
+        nextBtn.style.setProperty("--progress", "0%");
 
         // Reset display elements
-        document.getElementById("current-item").textContent = "---";
-        document.getElementById("solution-display").textContent = "---";
+        (domCache.currentItem || document.getElementById("current-item")).textContent = "---";
+        (domCache.solutionDisplay || document.getElementById("solution-display")).textContent = "---";
 
         // Reset learning mode to default (unchecked)
         const learningModeCheckbox = document.getElementById("learning-mode");
@@ -1761,13 +1762,19 @@
           resetGameState();
         }
 
-        // Hide all pages
-        document.querySelectorAll(".page").forEach((page) => {
-          page.classList.remove("active");
-        });
+        // Batch DOM updates for page navigation to reduce reflows
+        const batch = () => {
+          // Hide all pages
+          document.querySelectorAll(".page").forEach((page) => {
+            page.classList.remove("active");
+          });
 
-        // Show target page
-        document.getElementById(pageId).classList.add("active");
+          // Show target page
+          document.getElementById(pageId).classList.add("active");
+        };
+        
+        // Use requestAnimationFrame to batch the DOM updates
+        requestAnimationFrame(batch);
 
         // Update URL if requested
         if (updateURL) {
@@ -2150,12 +2157,52 @@
         }
       }
 
+      /*
+       * PERFORMANCE OPTIMIZATIONS TO REDUCE FORCED REFLOW:
+       * 1. Replaced setInterval with requestAnimationFrame for smooth countdown animation
+       * 2. Batched DOM updates using requestAnimationFrame to minimize layout recalculations
+       * 3. Added DOM element caching to reduce repeated queries
+       * 4. Debounced button state updates to prevent excessive DOM manipulations
+       * 5. Batched page navigation DOM updates to reduce reflows
+       * These changes should significantly reduce the 60ms forced reflow time.
+       */
+
+      // Cache frequently accessed DOM elements to reduce queries
+      const domCache = {
+        nextBtn: null,
+        currentItem: null,
+        solutionDisplay: null,
+        playBtn: null,
+        pauseBtn: null,
+        stopBtn: null,
+        showBtn: null,
+        init() {
+          this.nextBtn = document.getElementById("next-btn");
+          this.currentItem = document.getElementById("current-item");
+          this.solutionDisplay = document.getElementById("solution-display");
+          this.playBtn = document.getElementById("play-btn");
+          this.pauseBtn = document.getElementById("pause-btn");
+          this.stopBtn = document.getElementById("stop-btn");
+          this.showBtn = document.getElementById("show-btn");
+        }
+      };
+
+      // Debounced update button states to reduce reflows
+      let updateButtonStatesTimer = null;
+      function updateButtonStatesDebounced() {
+        if (updateButtonStatesTimer) {
+          cancelAnimationFrame(updateButtonStatesTimer);
+        }
+        updateButtonStatesTimer = requestAnimationFrame(updateButtonStates);
+      }
+
       function updateButtonStates() {
-        const playBtn = document.getElementById("play-btn");
-        const pauseBtn = document.getElementById("pause-btn");
-        const stopBtn = document.getElementById("stop-btn");
-        const showBtn = document.getElementById("show-btn");
-        const nextBtn = document.getElementById("next-btn");
+        // Use cached DOM elements where possible
+        const playBtn = domCache.playBtn || document.getElementById("play-btn");
+        const pauseBtn = domCache.pauseBtn || document.getElementById("pause-btn");
+        const stopBtn = domCache.stopBtn || document.getElementById("stop-btn");
+        const showBtn = domCache.showBtn || document.getElementById("show-btn");
+        const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
         const fromInput = document.getElementById("from-input");
         const toInput = document.getElementById("to-input");
         const fromDropdown = document.getElementById("from-dropdown");
@@ -2169,68 +2216,74 @@
         const game = gameData[currentGame];
         const useDropdown = game && (game.dropdown || false);
 
-        // Always show all control buttons
-        playBtn.classList.add("visible");
-        pauseBtn.classList.add("visible");
-        stopBtn.classList.add("visible");
+        // Batch DOM updates to reduce reflows
+        const updateBatch = () => {
+          // Always show all control buttons
+          playBtn.classList.add("visible");
+          pauseBtn.classList.add("visible");
+          stopBtn.classList.add("visible");
 
-        if (gameState.isGameRunning) {
-          // During game: disable play, enable pause/stop, disable inputs
-          playBtn.disabled = true;
-          pauseBtn.disabled = false;
-          stopBtn.disabled = false;
+          if (gameState.isGameRunning) {
+            // During game: disable play, enable pause/stop, disable inputs
+            playBtn.disabled = true;
+            pauseBtn.disabled = false;
+            stopBtn.disabled = false;
 
-          // Disable game configuration inputs during play
-          fromInput.disabled = true;
-          toInput.disabled = true;
-          fromDropdown.disabled = true;
-          toDropdown.disabled = true;
-          timeInput.disabled = true;
-          learningModeCheckbox.disabled = true;
-          learningModeLabel.classList.add("disabled");
+            // Disable game configuration inputs during play
+            fromInput.disabled = true;
+            toInput.disabled = true;
+            fromDropdown.disabled = true;
+            toDropdown.disabled = true;
+            timeInput.disabled = true;
+            learningModeCheckbox.disabled = true;
+            learningModeLabel.classList.add("disabled");
 
-          // In learning mode, disable "Visa" button since answer is always shown
-          // Also disable if answer is already shown for current item
-          showBtn.disabled =
-            gameState.isLearningMode || gameState.showingSolution;
-          nextBtn.disabled = false;
-        } else if (gameState.paused) {
-          // During pause: enable play/stop, disable pause, disable inputs
-          playBtn.disabled = false;
-          pauseBtn.disabled = true;
-          stopBtn.disabled = false;
+            // In learning mode, disable "Visa" button since answer is always shown
+            // Also disable if answer is already shown for current item
+            showBtn.disabled =
+              gameState.isLearningMode || gameState.showingSolution;
+            nextBtn.disabled = false;
+          } else if (gameState.paused) {
+            // During pause: enable play/stop, disable pause, disable inputs
+            playBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = false;
 
-          // Keep inputs disabled during pause
-          fromInput.disabled = true;
-          toInput.disabled = true;
-          fromDropdown.disabled = true;
-          toDropdown.disabled = true;
-          timeInput.disabled = true;
-          learningModeCheckbox.disabled = true;
-          learningModeLabel.classList.add("disabled");
+            // Keep inputs disabled during pause
+            fromInput.disabled = true;
+            toInput.disabled = true;
+            fromDropdown.disabled = true;
+            toDropdown.disabled = true;
+            timeInput.disabled = true;
+            learningModeCheckbox.disabled = true;
+            learningModeLabel.classList.add("disabled");
 
-          // Action buttons during pause - enable NÄSTA to resume, disable VISA
-          showBtn.disabled = true;
-          nextBtn.disabled = false;
-        } else {
-          // Game stopped: enable play, disable pause/stop, enable inputs
-          playBtn.disabled = false;
-          pauseBtn.disabled = true;
-          stopBtn.disabled = true;
+            // Action buttons during pause - enable NÄSTA to resume, disable VISA
+            showBtn.disabled = true;
+            nextBtn.disabled = false;
+          } else {
+            // Game stopped: enable play, disable pause/stop, enable inputs
+            playBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = true;
 
-          // Enable game configuration inputs when stopped
-          fromInput.disabled = false;
-          toInput.disabled = false;
-          fromDropdown.disabled = false;
-          toDropdown.disabled = false;
-          timeInput.disabled = false;
-          learningModeCheckbox.disabled = false;
-          learningModeLabel.classList.remove("disabled");
+            // Enable game configuration inputs when stopped
+            fromInput.disabled = false;
+            toInput.disabled = false;
+            fromDropdown.disabled = false;
+            toDropdown.disabled = false;
+            timeInput.disabled = false;
+            learningModeCheckbox.disabled = false;
+            learningModeLabel.classList.remove("disabled");
 
-          // Action buttons disabled when stopped
-          showBtn.disabled = true;
-          nextBtn.disabled = true;
-        }
+            // Action buttons disabled when stopped
+            showBtn.disabled = true;
+            nextBtn.disabled = true;
+          }
+        };
+        
+        // Execute the batched updates
+        updateBatch();
       }
 
       function hideRangeControls() {
@@ -2387,8 +2440,11 @@
       function pauseGame() {
         gameState.isGameRunning = false;
         gameState.paused = true;
-        clearInterval(gameState.countdownTimer);
-        gameState.countdownTimer = null; // Ensure timer is completely stopped
+        // Cancel animation frame instead of clearing interval
+        if (gameState.countdownTimer) {
+          cancelAnimationFrame(gameState.countdownTimer);
+          gameState.countdownTimer = null; // Ensure timer is completely stopped
+        }
         gameState.pausedCountdownValue = gameState.countdownValue; // Save remaining time
 
         // Save the time spent on current item before pausing
@@ -2442,15 +2498,18 @@
         gameState.paused = false;
         gameState.pausedCountdownValue = null;
         clearTimeout(gameState.gameTimer);
-        clearInterval(gameState.countdownTimer);
-        gameState.countdownTimer = null;
+        // Cancel animation frame instead of clearing interval
+        if (gameState.countdownTimer) {
+          cancelAnimationFrame(gameState.countdownTimer);
+          gameState.countdownTimer = null;
+        }
         gameState.countdownValue = 0;
         gameState.currentItemIndex = 0;
         gameState.showingSolution = false;
         gameState.currentItemStartTime = null;
 
         // Reset progress bar on NÄSTA button
-        const nextBtn = document.getElementById("next-btn");
+        const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
         nextBtn.classList.remove("progress-bar");
         nextBtn.style.setProperty("--progress", "0%");
 
@@ -2478,7 +2537,7 @@
         }
         const currentItem =
           gameState.currentGameData[gameState.currentItemIndex];
-        document.getElementById("current-item").textContent = currentItem[0];
+        (domCache.currentItem || document.getElementById("current-item")).textContent = currentItem[0];
 
         // Always start timing for this item when game is running, unless resuming
         if (gameState.isGameRunning && !resume) {
@@ -2486,7 +2545,7 @@
           gameState.pausedTime = 0; // Reset paused time for new item
         }
 
-        const solutionDisplay = document.getElementById("solution-display");
+        const solutionDisplay = domCache.solutionDisplay || document.getElementById("solution-display");
         solutionDisplay.classList.add("visible");
 
         // Reset showingSolution for new item unless in learning mode
@@ -2511,13 +2570,17 @@
         }
 
         // Update button states based on current game state
-        updateButtonStates();
+        updateButtonStatesDebounced();
       }
 
       function showAnswer() {
         if (gameState.currentItemIndex >= gameState.currentGameData.length)
           return;
-        clearInterval(gameState.countdownTimer);
+        // Cancel animation frame instead of clearing interval
+        if (gameState.countdownTimer) {
+          cancelAnimationFrame(gameState.countdownTimer);
+          gameState.countdownTimer = null;
+        }
         const currentItem =
           gameState.currentGameData[gameState.currentItemIndex];
         const solutionDisplay = document.getElementById("solution-display");
@@ -2547,7 +2610,7 @@
         }
 
         // Update button states after showing answer
-        updateButtonStates();
+        updateButtonStatesDebounced();
       }
 
       function startCountdown(resume = false) {
@@ -2564,7 +2627,7 @@
         }
 
         // Add progress bar class to NÄSTA button
-        const nextBtn = document.getElementById("next-btn");
+        const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
         nextBtn.classList.add("progress-bar");
 
         // Set initial progress bar on NÄSTA button
@@ -2574,12 +2637,23 @@
           100;
         nextBtn.style.setProperty("--progress", `${progressPercentage}%`);
 
-        gameState.countdownTimer = setInterval(() => {
+        // Use requestAnimationFrame for smoother animation and better performance
+        let lastUpdateTime = Date.now();
+        const countdownStep = () => {
           if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
-          gameState.countdownValue -= 0.1;
+          
+          const now = Date.now();
+          const deltaTime = (now - lastUpdateTime) / 1000; // Convert to seconds
+          lastUpdateTime = now;
+          
+          gameState.countdownValue -= deltaTime;
 
           if (gameState.countdownValue <= 0) {
-            clearInterval(gameState.countdownTimer);
+            // Cancel animation frame instead of clearing interval
+            if (gameState.countdownTimer) {
+              cancelAnimationFrame(gameState.countdownTimer);
+              gameState.countdownTimer = null;
+            }
             // Remove progress bar class when countdown ends
             nextBtn.classList.remove("progress-bar");
 
@@ -2608,13 +2682,21 @@
             return;
           }
 
-          // Update progress bar on NÄSTA button
-          const progressPercentage =
-            ((gameState.totalCountdownTime - gameState.countdownValue) /
-              gameState.totalCountdownTime) *
-            100;
-          nextBtn.style.setProperty("--progress", `${progressPercentage}%`);
-        }, 100);
+          // Update progress bar on NÄSTA button - batch DOM update
+          requestAnimationFrame(() => {
+            const progressPercentage =
+              ((gameState.totalCountdownTime - gameState.countdownValue) /
+                gameState.totalCountdownTime) *
+              100;
+            nextBtn.style.setProperty("--progress", `${progressPercentage}%`);
+          });
+
+          // Continue animation
+          gameState.countdownTimer = requestAnimationFrame(countdownStep);
+        };
+
+        // Start the countdown animation
+        gameState.countdownTimer = requestAnimationFrame(countdownStep);
       }
 
       function nextItem(vibrate = false) {
@@ -2643,7 +2725,7 @@
         }
 
         // Remove progress bar class when manually advancing
-        const nextBtn = document.getElementById("next-btn");
+        const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
         nextBtn.classList.remove("progress-bar");
 
         // Vibrate device for 100ms on auto-advance in learning mode (if enabled)
@@ -2680,8 +2762,10 @@
         }
 
         // Stop the current countdown timer before advancing
-        clearInterval(gameState.countdownTimer);
-        gameState.countdownTimer = null;
+        if (gameState.countdownTimer) {
+          cancelAnimationFrame(gameState.countdownTimer);
+          gameState.countdownTimer = null;
+        }
 
         gameState.currentItemIndex++;
 
@@ -3012,6 +3096,9 @@
 
       // Initialize page based on URL when loaded
       window.addEventListener("DOMContentLoaded", function () {
+        // Initialize DOM cache for better performance
+        domCache.init();
+        
         // Load vibration setting from localStorage
         const savedVibrationSetting = localStorage.getItem("vibrationEnabled");
         if (savedVibrationSetting !== null) {

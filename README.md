@@ -1,40 +1,71 @@
 # Figurkoder.se
-This started as a project in the course [2dv607 - RIA-development with JavaScript](https://coursepress.lnu.se/kurs/ria-utveckling-med-javascript/) at [Linnaeus University](https://coursepress.lnu.se/program/webbprogrammerare/)
 
-## Offline First
-This app is developed to work offline and it should work in [these browsers](http://caniuse.com/#search=service%20workers). Go to settings and then _Add to homepage_ / _Lägg till på startskärmen_ or similar. Now you should be able to launch the app from the shortcut even if you are offline.
+En webbaserad träningsapp för figurkoder.
 
+## Funktioner
 
-## Installation for developers
-After cloning the repository, install dependencies:
+- **Progressiv webbapp (PWA)** - Fungerar offline och kan installeras på hemskärmen
+- **Två träningslägen:**
+  - **Lära:** Memorera figurkoderna
+  - **Träna:** Träning för att testa hur väl de har memorerats
+- **Responsiv design** - Fungerar på alla enheter
+
+## För utvecklare
+
+### Teknisk översikt
+
+Appen är byggd som en modern single-page application med:
+- **Vanilla JavaScript** - Inga externa ramverk eller bibliotek
+- **Service Worker** - För PWA-funktionalitet och offline-caching
+- **Azure Static Web Apps** - Hosting och konfiguration
+
+### Projektstruktur
 ```
-cd <repo folder>
-npm install
+src/
+├── index.html           # Huvudfil med all HTML, CSS och JavaScript
+├── gameData.js          # Data för figurkoder och träningsfrågor
+├── sw.js                # Service Worker för PWA-funktionalitet
+├── site.webmanifest     # Web App Manifest
+├── staticwebapp.config.json # Azure SWA-konfiguration
+└── *.png/ico            # Ikoner och favicons
 ```
 
-Now you can run your local server with live preview:
+### Lokal utveckling
+
+För att köra appen lokalt kan du använda en enkel HTTP-server:
+
+```bash
+# Med Python
+python -m http.server 3000
+
+# Med Node.js (http-server)
+npx http-server src -p 3000
+
+# Med VS Code Live Server extension
+# Högerklicka på src/index.html och välj "Open with Live Server"
 ```
-npm start
-```
-Server is located at http://localhost:3000
 
-To build a static version of the project run:
-```
-npm run build
-```
+Appen kommer sedan att vara tillgänglig på http://localhost:3000
 
-Note that all source code is located under `src/`. When building the project the build ends up in the root. This is a bit ugly and the reason is that both development and hosting is done from the same branch on gh-pages.
+### Deployment
 
-## Roadmap
+Appen är konfigurerad för Azure Static Web Apps och använder GitHub Actions för automatisk deployment. Källkoden ligger i `src/` mappen och Azure SWA är konfigurerad att servera innehållet därifrån.
 
-### Todo
+## PWA-installation
 
- - Add "restart"-buttons to the Result component. Using them the user can either try the same mnemomic image's again or practice them again.
- - Add a setting for turning vibrations on and off.
- - Remove all React-Redux bindings from middle and leaf components and have bindings only in the top level components.
- - Move `src` to a seperate branch.
+Appen fungerar som en Progressive Web App:
+1. Besök https://figurkoder.se
+2. I webbläsaren, välj "Lägg till på startskärmen" eller liknande alternativ
+3. Appen kan nu användas offline och startas från hemskärmen
 
-### Done
+## Offline-funktionalitet
 
- - Make the app offline-first and make the whole app avalible offline. (*UPDATE 2016-03-22:* Using AppCache now instead of SW, must be removed when iOS starts to support SW)
- - When going back from the Result's the settings should be kept.
+Appen använder en Service Worker för att cacha resurser och fungera offline.
+
+## Licens
+
+Detta projekt är licensierat under MIT License - se [LICENSE](LICENSE) filen för detaljer.
+
+## Historik
+
+Detta projekt startade som en uppgift i kursen [2dv607 - RIA-development with JavaScript](https://coursepress.lnu.se/kurs/ria-utveckling-med-javascript/) på [Linnéuniversitetet](https://coursepress.lnu.se/program/webbprogrammerare/) men har sedan utvecklats till en fullfunktionell PWA för träning av figurkoder.

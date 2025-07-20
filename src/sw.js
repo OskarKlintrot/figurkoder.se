@@ -95,6 +95,18 @@ self.addEventListener("fetch", function (event) {
   // Get the request
   let request = event.request;
 
+  // Handle version endpoint
+  if (request.url.endsWith('/sw/version')) {
+    event.respondWith(
+      new Response(JSON.stringify({ version: version }), {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    );
+    return;
+  }
+
   // Bug fix
   // https://stackoverflow.com/a/49719964
   if (

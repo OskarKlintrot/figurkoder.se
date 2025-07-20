@@ -1,4 +1,5 @@
-navigator.serviceWorker.register("/sw.js");
+// Register service worker and store the promise for later use
+const serviceWorkerRegistration = navigator.serviceWorker.register("/sw.js");
 
 import gameData from "/gameData.js";
 
@@ -124,8 +125,7 @@ function resetGameState() {
     domCache.currentItem || document.getElementById("current-item")
   ).textContent = "---";
   (
-    domCache.solutionDisplay ||
-    document.getElementById("solution-display")
+    domCache.solutionDisplay || document.getElementById("solution-display")
   ).textContent = "---";
 
   // Reset learning mode to default (unchecked)
@@ -274,8 +274,7 @@ function getURLForPage(pageId) {
       return prefix + (currentGame ? `/game/${currentGame}` : "/game");
     case "results-page":
       return (
-        prefix +
-        (currentGame ? `/game/${currentGame}/results` : "/results")
+        prefix + (currentGame ? `/game/${currentGame}/results` : "/results")
       );
     case "about-page":
       return prefix + "/about";
@@ -353,9 +352,7 @@ function initializeFromURL() {
       const gameDataObj = gameData[game];
 
       // Safely set description if element exists
-      const descElement = document.getElementById(
-        "game-description-text"
-      );
+      const descElement = document.getElementById("game-description-text");
       if (descElement) {
         descElement.textContent = gameDataObj.description;
       }
@@ -431,8 +428,7 @@ function toggleVibrationSetting() {
  * Updates the learning mode state when checkbox changes
  */
 function updateLearningMode() {
-  gameState.isLearningMode =
-    document.getElementById("learning-mode").checked;
+  gameState.isLearningMode = document.getElementById("learning-mode").checked;
   // Update button states when learning mode changes
   updateButtonStates();
   // If game is not running, update the initial display
@@ -525,12 +521,10 @@ function initializeGame() {
         gameState.currentGameData.length > fromValue
       ) {
         const newCurrentItem = gameState.currentGameData[fromValue];
-        document.getElementById("current-item").textContent =
-          newCurrentItem[0];
+        document.getElementById("current-item").textContent = newCurrentItem[0];
 
         // Also update solution display based on learning mode
-        const solutionDisplay =
-          document.getElementById("solution-display");
+        const solutionDisplay = document.getElementById("solution-display");
         if (gameState.isLearningMode) {
           solutionDisplay.textContent = newCurrentItem[1];
         } else {
@@ -619,8 +613,7 @@ function updateButtonStatesDebounced() {
 function updateButtonStates() {
   // Use cached DOM elements where possible
   const playBtn = domCache.playBtn || document.getElementById("play-btn");
-  const pauseBtn =
-    domCache.pauseBtn || document.getElementById("pause-btn");
+  const pauseBtn = domCache.pauseBtn || document.getElementById("pause-btn");
   const stopBtn = domCache.stopBtn || document.getElementById("stop-btn");
   const showBtn = domCache.showBtn || document.getElementById("show-btn");
   const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
@@ -630,12 +623,10 @@ function updateButtonStates() {
   const toDropdown = document.getElementById("to-dropdown");
   const timeInput = document.getElementById("time-input");
   const learningModeCheckbox = document.getElementById("learning-mode");
-  const learningModeLabel =
-    learningModeCheckbox.closest(".checkbox-label");
+  const learningModeLabel = learningModeCheckbox.closest(".checkbox-label");
 
   // Determine if current game uses dropdowns
   const game = gameData[currentGame];
-  const useDropdown = game && (game.dropdown || false);
 
   // Batch DOM updates to reduce reflows
   const updateBatch = () => {
@@ -661,8 +652,7 @@ function updateButtonStates() {
 
       // In learning mode, disable "Visa" button since answer is always shown
       // Also disable if answer is already shown for current item
-      showBtn.disabled =
-        gameState.isLearningMode || gameState.showingSolution;
+      showBtn.disabled = gameState.isLearningMode || gameState.showingSolution;
       nextBtn.disabled = false;
     } else if (gameState.paused) {
       // During pause: enable play/stop, disable pause, disable inputs
@@ -712,10 +702,6 @@ function updateButtonStates() {
  */
 function hideRangeControls() {
   // Hide both input and dropdown controls for range selection
-  const fromInput = document.getElementById("from-input");
-  const toInput = document.getElementById("to-input");
-  const fromDropdown = document.getElementById("from-dropdown");
-  const toDropdown = document.getElementById("to-dropdown");
 
   // Hide the control groups that contain the range inputs
   const controlGroups = document.querySelectorAll(".control-group");
@@ -802,14 +788,12 @@ function startGame() {
 
     let fromIndex, toIndex;
     if (useDropdown) {
-      fromIndex =
-        parseInt(document.getElementById("from-dropdown").value) || 0;
+      fromIndex = parseInt(document.getElementById("from-dropdown").value) || 0;
       toIndex =
         parseInt(document.getElementById("to-dropdown").value) ||
         gameState.currentGameData.length - 1;
     } else {
-      fromIndex =
-        parseInt(document.getElementById("from-input").value) || 0;
+      fromIndex = parseInt(document.getElementById("from-input").value) || 0;
       toIndex =
         parseInt(document.getElementById("to-input").value) ||
         gameState.currentGameData.length - 1;
@@ -906,12 +890,9 @@ function stopGame() {
     gameState.currentItemStartTime &&
     gameState.currentItemIndex < gameState.currentGameData.length
   ) {
-    const currentItem =
-      gameState.currentGameData[gameState.currentItemIndex];
+    const currentItem = gameState.currentGameData[gameState.currentItemIndex];
     const totalTimeSpent =
-      (Date.now() -
-        gameState.currentItemStartTime +
-        gameState.pausedTime) /
+      (Date.now() - gameState.currentItemStartTime + gameState.pausedTime) /
       1000;
     const timeSpent = Math.max(0.1, totalTimeSpent); // Minimum 0.1 seconds
 
@@ -975,8 +956,7 @@ function showCurrentItem(resume = false) {
     stopGame();
     return;
   }
-  const currentItem =
-    gameState.currentGameData[gameState.currentItemIndex];
+  const currentItem = gameState.currentGameData[gameState.currentItemIndex];
   (
     domCache.currentItem || document.getElementById("current-item")
   ).textContent = currentItem[0];
@@ -988,8 +968,7 @@ function showCurrentItem(resume = false) {
   }
 
   const solutionDisplay =
-    domCache.solutionDisplay ||
-    document.getElementById("solution-display");
+    domCache.solutionDisplay || document.getElementById("solution-display");
   solutionDisplay.classList.add("visible");
 
   // Reset showingSolution for new item unless in learning mode
@@ -1021,15 +1000,13 @@ function showCurrentItem(resume = false) {
  * Shows the answer for the current item and records the action
  */
 function showAnswer() {
-  if (gameState.currentItemIndex >= gameState.currentGameData.length)
-    return;
+  if (gameState.currentItemIndex >= gameState.currentGameData.length) return;
   // Cancel animation frame instead of clearing interval
   if (gameState.countdownTimer) {
     cancelAnimationFrame(gameState.countdownTimer);
     gameState.countdownTimer = null;
   }
-  const currentItem =
-    gameState.currentGameData[gameState.currentItemIndex];
+  const currentItem = gameState.currentGameData[gameState.currentItemIndex];
   const solutionDisplay = document.getElementById("solution-display");
   solutionDisplay.textContent = currentItem[1];
   solutionDisplay.classList.add("visible");
@@ -1198,12 +1175,9 @@ function nextItem(vibrate = false) {
     gameState.currentItemStartTime &&
     gameState.currentItemIndex < gameState.currentGameData.length
   ) {
-    const currentItem =
-      gameState.currentGameData[gameState.currentItemIndex];
+    const currentItem = gameState.currentGameData[gameState.currentItemIndex];
     const totalTimeSpent =
-      (Date.now() -
-        gameState.currentItemStartTime +
-        gameState.pausedTime) /
+      (Date.now() - gameState.currentItemStartTime + gameState.pausedTime) /
       1000;
     const timeSpent = Math.max(0.1, totalTimeSpent); // Minimum 0.1 seconds
 
@@ -1367,8 +1341,7 @@ function replayAll() {
  * Replays only the items that were answered slowly or incorrectly
  */
 function replaySlow() {
-  if (!gameState.gameResults.length || !gameState.masterGameData.length)
-    return;
+  if (!gameState.gameResults.length || !gameState.masterGameData.length) return;
 
   // Set replay mode flag
   gameState.isReplayMode = true;
@@ -1381,10 +1354,7 @@ function replaySlow() {
       const foundItem = gameState.masterGameData.find(
         (item) => item[0] === result.figurkod
       );
-      if (
-        foundItem &&
-        !slowItems.some((item) => item[0] === foundItem[0])
-      ) {
+      if (foundItem && !slowItems.some((item) => item[0] === foundItem[0])) {
         slowItems.push(foundItem);
       }
     }
@@ -1436,63 +1406,32 @@ function replaySlow() {
 }
 
 /**
- * Starts a replay game with existing data without filtering
+ * Fetches the service worker version and displays it in the navigation menu
  */
-function startReplayGame() {
-  // Start game without filtering data (use existing currentGameData)
-  if (!gameState.currentGameData.length) return;
-
-  gameState.isGameRunning = true;
-  gameState.hasStarted = true;
-  gameState.paused = false;
-  gameState.gameStartTime = Date.now();
-
-  // Initialize results tracking
-  gameState.gameResults = [];
-  gameState.currentItemStartTime = null;
-
-  // DON'T overwrite masterGameData here - keep the original
-  // masterGameData should remain unchanged from the first game
-
-  // Shuffle data only if NOT in learning mode
-  if (!gameState.isLearningMode) {
-    for (let i = gameState.currentGameData.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [gameState.currentGameData[i], gameState.currentGameData[j]] = [
-        gameState.currentGameData[j],
-        gameState.currentGameData[i],
-      ];
+async function fetchAndDisplayVersion() {
+  try {
+    // Wait for service worker to be ready
+    if (serviceWorkerRegistration) {
+      // First wait for registration to complete
+      await serviceWorkerRegistration;
+      // Then wait for the service worker to be ready
+      await navigator.serviceWorker.ready;
+      
+      // Add a small delay to ensure the service worker is fully ready to handle requests
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
+
+    const response = await fetch("/sw/version");
+    if (response.ok) {
+      const data = await response.json();
+      document.getElementById("version-display").textContent = data.version;
+    } else {
+      document.getElementById("version-display").textContent = "Okänd";
+    }
+  } catch (error) {
+    console.log("Could not fetch version:", error);
+    document.getElementById("version-display").textContent = "Okänd";
   }
-  gameState.currentItemIndex = 0;
-
-  // Clear replay mode flag after starting
-  gameState.isReplayMode = false;
-
-  // Only call showCurrentItem to handle display logic
-  showCurrentItem();
-  updateButtonStates();
-}
-
-/**
- * Updates a simple timer display (currently unused)
- */
-function updateTimer() {
-  if (gameState.gameStartTime) {
-    const elapsed = (Date.now() - gameState.gameStartTime) / 1000;
-    // Could update a timer display here if needed
-  }
-}
-
-/**
- * Toggles the navigation menu open/closed state
- */
-function toggleMenu() {
-  const menu = document.getElementById("nav-menu");
-  const overlay = document.getElementById("nav-overlay");
-
-  menu.classList.toggle("open");
-  overlay.classList.toggle("open");
 }
 
 /**
@@ -1572,17 +1511,13 @@ function populateDropdowns(data) {
 
     // If "Från" is greater than or equal to "Till", update "Till" to be after "Från"
     if (fromIndex >= toIndex) {
-      newToDropdown.value = Math.min(
-        fromIndex + 1,
-        data.length - 1
-      ).toString();
+      newToDropdown.value = Math.min(fromIndex + 1, data.length - 1).toString();
     }
 
     // Update current-item display to show the new "from" item when game is not running
     if (!gameState.isGameRunning && data.length > fromIndex) {
       const newCurrentItem = data[fromIndex];
-      document.getElementById("current-item").textContent =
-        newCurrentItem[0];
+      document.getElementById("current-item").textContent = newCurrentItem[0];
 
       // Also update solution display based on learning mode
       const solutionDisplay = document.getElementById("solution-display");
@@ -1671,10 +1606,11 @@ window.addEventListener("DOMContentLoaded", function () {
   }
 
   // Initialize learning mode state from checkbox
-  gameState.isLearningMode =
-    document.getElementById("learning-mode").checked;
+  gameState.isLearningMode = document.getElementById("learning-mode").checked;
 
   generateTiles();
+  // Fetch and display service worker version
+  fetchAndDisplayVersion();
   // Add a small delay to ensure gameData is loaded
   setTimeout(() => {
     initializeFromURL();

@@ -884,9 +884,9 @@ function pauseGame() {
  * Stops the current game and optionally shows results
  */
 function stopGame() {
-  // Record current item result if game is running and we have a start time
+  // Record current item result if game is running/paused and we have a start time
   if (
-    gameState.isGameRunning &&
+    (gameState.isGameRunning || gameState.paused) &&
     gameState.currentItemStartTime &&
     gameState.currentItemIndex < gameState.currentGameData.length
   ) {

@@ -2,8 +2,6 @@ navigator.serviceWorker.register("/sw.js");
 
 import gameData from "/gameData.js";
 
-window.gameData = gameData;
-
 let currentGame = "";
 
 function openMenu() {

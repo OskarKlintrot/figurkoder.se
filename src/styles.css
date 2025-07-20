@@ -154,11 +154,7 @@
   }
 
   .nav-setting {
-    background: linear-gradient(
-      135deg,
-      #1a1a1c 0%,
-      #2c2c2e 100%
-    ) !important;
+    background: linear-gradient(135deg, #1a1a1c 0%, #2c2c2e 100%) !important;
     border: 1px solid #48484a !important;
   }
 
@@ -186,11 +182,7 @@
   }
 
   .nav-version {
-    background: linear-gradient(
-      135deg,
-      #1a1a1c 0%,
-      #2c2c2e 100%
-    ) !important;
+    background: linear-gradient(135deg, #1a1a1c 0%, #2c2c2e 100%) !important;
     border: 1px solid #48484a !important;
   }
 
@@ -211,8 +203,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
   background: var(--color-background);
   color: var(--color-text);
 }
@@ -466,8 +458,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-input) 0;
-  border-bottom: var(--border-width-thin) solid
-    var(--color-border-lightest);
+  border-bottom: var(--border-width-thin) solid var(--color-border-lightest);
 }
 
 .result-item:last-child {
@@ -721,8 +712,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-lg) 0;
-  border-bottom: var(--border-width-thin) solid
-    var(--color-border-lightest);
+  border-bottom: var(--border-width-thin) solid var(--color-border-lightest);
 }
 
 .figurkod-item:last-child {

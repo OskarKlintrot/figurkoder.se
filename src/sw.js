@@ -13,10 +13,7 @@ let imgID = `${version}_img`;
 let cacheIDs = [coreID, pageID, assetID, imgID];
 
 // Core assets
-let coreAssets = [
-  "/",
-  "/gameData.js",
-];
+let coreAssets = ["/", "/gameData.js"];
 
 //
 // Helper Methods
@@ -96,12 +93,12 @@ self.addEventListener("fetch", function (event) {
   let request = event.request;
 
   // Handle version endpoint
-  if (request.url.endsWith('/sw/version')) {
+  if (request.url.endsWith("/sw/version")) {
     event.respondWith(
       new Response(JSON.stringify({ version: version }), {
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       })
     );
     return;

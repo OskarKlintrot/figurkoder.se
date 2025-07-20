@@ -2,18 +2,78 @@ navigator.serviceWorker.register("/sw.js");
 
 import gameData from "/gameData.js";
 
+// Global variables
 let currentGame = "";
 
+// Game state object
+const gameState = {
+  currentGameData: [],
+  originalGameData: [], // Store the original filtered data used in the game
+  masterGameData: [], // Store the very first filtered data from the initial game
+  currentItemIndex: 0,
+  gameTimer: null,
+  countdownTimer: null,
+  gameStartTime: null,
+  isGameRunning: false,
+  showingSolution: false,
+  countdownValue: 0,
+  totalCountdownTime: 0,
+  hasStarted: false,
+  pausedCountdownValue: null,
+  paused: false,
+  gameResults: [],
+  currentItemStartTime: null,
+  pausedTime: 0, // Track time spent in pause for current item
+  isReplayMode: false, // Flag to prevent initializeGame during replay
+  usePresetData: false, // Flag to indicate we're using preset replay data, skip range filtering
+  vibrationEnabled: true, // Flag to control vibration
+  isLearningMode: false, // Flag to control learning mode
+};
+
+// Cache frequently accessed DOM elements to reduce queries
+const domCache = {
+  nextBtn: null,
+  currentItem: null,
+  solutionDisplay: null,
+  playBtn: null,
+  pauseBtn: null,
+  stopBtn: null,
+  showBtn: null,
+  init() {
+    this.nextBtn = document.getElementById("next-btn");
+    this.currentItem = document.getElementById("current-item");
+    this.solutionDisplay = document.getElementById("solution-display");
+    this.playBtn = document.getElementById("play-btn");
+    this.pauseBtn = document.getElementById("pause-btn");
+    this.stopBtn = document.getElementById("stop-btn");
+    this.showBtn = document.getElementById("show-btn");
+  },
+};
+
+// Debounced update button states to reduce reflows
+let updateButtonStatesTimer = null;
+
+// Function declarations
+
+/**
+ * Opens the navigation menu by adding CSS classes
+ */
 function openMenu() {
   document.getElementById("nav-menu").classList.add("open");
   document.querySelector(".nav-overlay").classList.add("open");
 }
 
+/**
+ * Closes the navigation menu by removing CSS classes
+ */
 function closeMenu() {
   document.getElementById("nav-menu").classList.remove("open");
   document.querySelector(".nav-overlay").classList.remove("open");
 }
 
+/**
+ * Resets all game state variables and UI elements to their default values
+ */
 function resetGameState() {
   // Stop any running game
   if (gameState.isGameRunning || gameState.paused) {
@@ -76,6 +136,9 @@ function resetGameState() {
   gameState.isLearningMode = false;
 }
 
+/**
+ * Handles navigation back to previous page based on current page context
+ */
 function goBack() {
   const currentPageId = document.querySelector(".page.active").id;
 
@@ -94,6 +157,11 @@ function goBack() {
   }
 }
 
+/**
+ * Updates the page header with title and back button visibility
+ * @param {string} title - The title to display in the header
+ * @param {boolean} showBackButton - Whether to show the back button
+ */
 function updateHeader(title, showBackButton = false) {
   document.getElementById("page-title").textContent = title;
   const backBtn = document.getElementById("back-btn");
@@ -107,6 +175,11 @@ function updateHeader(title, showBackButton = false) {
   }
 }
 
+/**
+ * Navigates to a specific page, managing page visibility and URL updates
+ * @param {string} pageId - The ID of the page to navigate to
+ * @param {boolean} updateURL - Whether to update the browser URL
+ */
 function navigateToPage(pageId, updateURL = true) {
   // Check if we're leaving the game page to reset state
   const currentPageId = document.querySelector(".page.active")?.id;
@@ -173,6 +246,10 @@ function navigateToPage(pageId, updateURL = true) {
   }
 }
 
+/**
+ * Determines whether to use hash-based routing based on the current environment
+ * @returns {boolean} True if hash routing should be used
+ */
 function shouldUseHashRouting() {
   return (
     window.location.hostname === "localhost" ||
@@ -182,6 +259,11 @@ function shouldUseHashRouting() {
   );
 }
 
+/**
+ * Generates the appropriate URL for a given page ID
+ * @param {string} pageId - The ID of the page to generate URL for
+ * @returns {string} The generated URL
+ */
 function getURLForPage(pageId) {
   const prefix = shouldUseHashRouting() ? "#" : "";
 
@@ -208,6 +290,10 @@ function getURLForPage(pageId) {
   }
 }
 
+/**
+ * Parses the current URL to determine which page and game should be displayed
+ * @returns {Object} An object containing page and game information
+ */
 function parseURL() {
   let path;
 
@@ -251,6 +337,9 @@ function parseURL() {
   }
 }
 
+/**
+ * Initializes the application based on the current URL
+ */
 function initializeFromURL() {
   const { page, game } = parseURL();
 
@@ -299,6 +388,10 @@ function initializeFromURL() {
   }
 }
 
+/**
+ * Navigates to a specific game type and initializes it
+ * @param {string} gameType - The type of game to navigate to
+ */
 function navigateToGame(gameType) {
   // Reset any previous game state before starting a new game
   resetGameState();
@@ -324,31 +417,9 @@ function navigateToGame(gameType) {
   }, 100);
 }
 
-// Game state object
-const gameState = {
-  currentGameData: [],
-  originalGameData: [], // Store the original filtered data used in the game
-  masterGameData: [], // Store the very first filtered data from the initial game
-  currentItemIndex: 0,
-  gameTimer: null,
-  countdownTimer: null,
-  gameStartTime: null,
-  isGameRunning: false,
-  showingSolution: false,
-  countdownValue: 0,
-  totalCountdownTime: 0,
-  hasStarted: false,
-  pausedCountdownValue: null,
-  paused: false,
-  gameResults: [],
-  currentItemStartTime: null,
-  pausedTime: 0, // Track time spent in pause for current item
-  isReplayMode: false, // Flag to prevent initializeGame during replay
-  usePresetData: false, // Flag to indicate we're using preset replay data, skip range filtering
-  vibrationEnabled: true, // Flag to control vibration
-  isLearningMode: false, // Flag to control learning mode
-};
-
+/**
+ * Toggles the vibration setting and saves it to localStorage
+ */
 function toggleVibrationSetting() {
   gameState.vibrationEnabled =
     document.getElementById("vibration-setting").checked;
@@ -356,6 +427,9 @@ function toggleVibrationSetting() {
   localStorage.setItem("vibrationEnabled", gameState.vibrationEnabled);
 }
 
+/**
+ * Updates the learning mode state when checkbox changes
+ */
 function updateLearningMode() {
   gameState.isLearningMode =
     document.getElementById("learning-mode").checked;
@@ -367,6 +441,9 @@ function updateLearningMode() {
   }
 }
 
+/**
+ * Initializes a game with the selected settings and data
+ */
 function initializeGame() {
   if (!currentGame || !gameData[currentGame]) {
     return;
@@ -488,6 +565,9 @@ function initializeGame() {
   updateButtonStates();
 }
 
+/**
+ * Updates the initial display when game is not running
+ */
 function updateInitialDisplay() {
   if (!gameState.currentGameData.length) {
     document.getElementById("current-item").textContent = "---";
@@ -523,28 +603,9 @@ function updateInitialDisplay() {
  * These changes should significantly reduce the 60ms forced reflow time.
  */
 
-// Cache frequently accessed DOM elements to reduce queries
-const domCache = {
-  nextBtn: null,
-  currentItem: null,
-  solutionDisplay: null,
-  playBtn: null,
-  pauseBtn: null,
-  stopBtn: null,
-  showBtn: null,
-  init() {
-    this.nextBtn = document.getElementById("next-btn");
-    this.currentItem = document.getElementById("current-item");
-    this.solutionDisplay = document.getElementById("solution-display");
-    this.playBtn = document.getElementById("play-btn");
-    this.pauseBtn = document.getElementById("pause-btn");
-    this.stopBtn = document.getElementById("stop-btn");
-    this.showBtn = document.getElementById("show-btn");
-  },
-};
-
-// Debounced update button states to reduce reflows
-let updateButtonStatesTimer = null;
+/**
+ * Debounced function to update button states and reduce reflows
+ */
 function updateButtonStatesDebounced() {
   if (updateButtonStatesTimer) {
     cancelAnimationFrame(updateButtonStatesTimer);
@@ -552,6 +613,9 @@ function updateButtonStatesDebounced() {
   updateButtonStatesTimer = requestAnimationFrame(updateButtonStates);
 }
 
+/**
+ * Updates the state of all game control buttons based on current game state
+ */
 function updateButtonStates() {
   // Use cached DOM elements where possible
   const playBtn = domCache.playBtn || document.getElementById("play-btn");
@@ -643,6 +707,9 @@ function updateButtonStates() {
   updateBatch();
 }
 
+/**
+ * Hides range control inputs for special game modes
+ */
 function hideRangeControls() {
   // Hide both input and dropdown controls for range selection
   const fromInput = document.getElementById("from-input");
@@ -664,6 +731,9 @@ function hideRangeControls() {
   });
 }
 
+/**
+ * Shows range control inputs for normal game modes
+ */
 function showRangeControls() {
   // Show both input and dropdown controls for range selection
   const controlGroups = document.querySelectorAll(".control-group");
@@ -679,6 +749,9 @@ function showRangeControls() {
   });
 }
 
+/**
+ * Starts a new game or resumes a paused game
+ */
 function startGame() {
   if (gameState.paused) {
     // Resume paused game
@@ -794,6 +867,9 @@ function startGame() {
   // Countdown will start automatically in showCurrentItem() if not in learning mode
 }
 
+/**
+ * Pauses the current game and saves its state
+ */
 function pauseGame() {
   gameState.isGameRunning = false;
   gameState.paused = true;
@@ -820,6 +896,9 @@ function pauseGame() {
   updateButtonStates();
 }
 
+/**
+ * Stops the current game and optionally shows results
+ */
 function stopGame() {
   // Record current item result if game is running and we have a start time
   if (
@@ -887,6 +966,10 @@ function stopGame() {
   }
 }
 
+/**
+ * Displays the current item in the game and manages timing
+ * @param {boolean} resume - Whether this is resuming from a pause
+ */
 function showCurrentItem(resume = false) {
   if (gameState.currentItemIndex >= gameState.currentGameData.length) {
     stopGame();
@@ -934,6 +1017,9 @@ function showCurrentItem(resume = false) {
   updateButtonStatesDebounced();
 }
 
+/**
+ * Shows the answer for the current item and records the action
+ */
 function showAnswer() {
   if (gameState.currentItemIndex >= gameState.currentGameData.length)
     return;
@@ -974,6 +1060,10 @@ function showAnswer() {
   updateButtonStatesDebounced();
 }
 
+/**
+ * Starts the countdown timer for the current item
+ * @param {boolean} resume - Whether this is resuming from a pause
+ */
 function startCountdown(resume = false) {
   const timeLimit =
     parseInt(document.getElementById("time-input").value) ||
@@ -1060,6 +1150,10 @@ function startCountdown(resume = false) {
   gameState.countdownTimer = requestAnimationFrame(countdownStep);
 }
 
+/**
+ * Advances to the next item in the game
+ * @param {boolean} vibrate - Whether to vibrate the device (for auto-advance)
+ */
 function nextItem(vibrate = false) {
   // If game is paused, resume and advance to next item
   if (gameState.paused) {
@@ -1150,6 +1244,9 @@ function nextItem(vibrate = false) {
   // Auto-advance will continue automatically in showCurrentItem()
 }
 
+/**
+ * Updates the results page with game statistics and individual item results
+ */
 function updateResults() {
   const resultsList = document.getElementById("results-list");
   const averageTimeElement = document.getElementById("average-time");
@@ -1226,6 +1323,9 @@ function updateResults() {
   replaySlowText.textContent = `Repetera långsamma (${slowOrErrorCount})`;
 }
 
+/**
+ * Replays the entire game with the same settings
+ */
 function replayAll() {
   // Set replay mode flag
   gameState.isReplayMode = true;
@@ -1263,6 +1363,9 @@ function replayAll() {
   }, 100);
 }
 
+/**
+ * Replays only the items that were answered slowly or incorrectly
+ */
 function replaySlow() {
   if (!gameState.gameResults.length || !gameState.masterGameData.length)
     return;
@@ -1332,6 +1435,9 @@ function replaySlow() {
   }, 100);
 }
 
+/**
+ * Starts a replay game with existing data without filtering
+ */
 function startReplayGame() {
   // Start game without filtering data (use existing currentGameData)
   if (!gameState.currentGameData.length) return;
@@ -1368,25 +1474,9 @@ function startReplayGame() {
   updateButtonStates();
 }
 
-// Handle keyboard shortcuts
-document.addEventListener("keydown", function (e) {
-  if (document.querySelector("#game-page.active")) {
-    if (e.key === " " || e.key === "Enter") {
-      // Space or Enter to show answer
-      e.preventDefault();
-      if (gameState.isGameRunning && !gameState.showingSolution) {
-        showAnswer();
-      }
-    } else if (e.key === "ArrowRight" || e.key === "n" || e.key === "N") {
-      // Right arrow or N to next
-      e.preventDefault();
-      if (gameState.isGameRunning) {
-        nextItem();
-      }
-    }
-  }
-});
-
+/**
+ * Updates a simple timer display (currently unused)
+ */
 function updateTimer() {
   if (gameState.gameStartTime) {
     const elapsed = (Date.now() - gameState.gameStartTime) / 1000;
@@ -1394,6 +1484,9 @@ function updateTimer() {
   }
 }
 
+/**
+ * Toggles the navigation menu open/closed state
+ */
 function toggleMenu() {
   const menu = document.getElementById("nav-menu");
   const overlay = document.getElementById("nav-overlay");
@@ -1402,17 +1495,11 @@ function toggleMenu() {
   overlay.classList.toggle("open");
 }
 
-// Handle navigation changes (back/forward navigation)
-if (shouldUseHashRouting()) {
-  window.addEventListener("hashchange", function () {
-    initializeFromURL();
-  });
-} else {
-  window.addEventListener("popstate", function () {
-    initializeFromURL();
-  });
-}
-
+/**
+ * Gets the range of data for a specific game
+ * @param {string} gameId - The ID of the game
+ * @returns {Object} Object with start and stop values
+ */
 function getGameRange(gameId) {
   const game = gameData[gameId];
   const start = game.data[0][0];
@@ -1420,6 +1507,9 @@ function getGameRange(gameId) {
   return { start, stop };
 }
 
+/**
+ * Generates the game tiles for the main menu
+ */
 function generateTiles() {
   const tilesGrid = document.getElementById("tiles-grid");
 
@@ -1439,48 +1529,10 @@ function generateTiles() {
   });
 }
 
-// Make functions globally accessible for onclick handlers
-window.openMenu = openMenu;
-window.closeMenu = closeMenu;
-window.goBack = goBack;
-window.navigateToPage = navigateToPage;
-window.navigateToGame = navigateToGame;
-window.showAnswer = showAnswer;
-window.nextItem = nextItem;
-window.startGame = startGame;
-window.pauseGame = pauseGame;
-window.stopGame = stopGame;
-window.replayAll = replayAll;
-window.replaySlow = replaySlow;
-window.toggleVibrationSetting = toggleVibrationSetting;
-window.updateLearningMode = updateLearningMode;
-
-// Initialize page based on URL when loaded
-window.addEventListener("DOMContentLoaded", function () {
-  // Initialize DOM cache for better performance
-  domCache.init();
-
-  // Load vibration setting from localStorage
-  const savedVibrationSetting = localStorage.getItem("vibrationEnabled");
-  if (savedVibrationSetting !== null) {
-    gameState.vibrationEnabled = savedVibrationSetting === "true";
-    document.getElementById("vibration-setting").checked =
-      gameState.vibrationEnabled;
-  }
-
-  // Initialize learning mode state from checkbox
-  gameState.isLearningMode =
-    document.getElementById("learning-mode").checked;
-
-  generateTiles();
-  // Add a small delay to ensure gameData is loaded
-  setTimeout(() => {
-    initializeFromURL();
-    // Initialize button states on page load
-    updateButtonStates();
-  }, 100);
-});
-
+/**
+ * Populates dropdown menus with data from the current game
+ * @param {Array} data - The game data array to populate dropdowns with
+ */
 function populateDropdowns(data) {
   const fromDropdown = document.getElementById("from-dropdown");
   const toDropdown = document.getElementById("to-dropdown");
@@ -1556,3 +1608,77 @@ function populateDropdowns(data) {
   newFromDropdown.value = "0";
   newToDropdown.value = (data.length - 1).toString();
 }
+
+// Event listeners and initialization
+
+// Handle keyboard shortcuts
+document.addEventListener("keydown", function (e) {
+  if (document.querySelector("#game-page.active")) {
+    if (e.key === " " || e.key === "Enter") {
+      // Space or Enter to show answer
+      e.preventDefault();
+      if (gameState.isGameRunning && !gameState.showingSolution) {
+        showAnswer();
+      }
+    } else if (e.key === "ArrowRight" || e.key === "n" || e.key === "N") {
+      // Right arrow or N to next
+      e.preventDefault();
+      if (gameState.isGameRunning) {
+        nextItem();
+      }
+    }
+  }
+});
+
+// Handle navigation changes (back/forward navigation)
+if (shouldUseHashRouting()) {
+  window.addEventListener("hashchange", function () {
+    initializeFromURL();
+  });
+} else {
+  window.addEventListener("popstate", function () {
+    initializeFromURL();
+  });
+}
+
+// Make functions globally accessible for onclick handlers
+window.openMenu = openMenu;
+window.closeMenu = closeMenu;
+window.goBack = goBack;
+window.navigateToPage = navigateToPage;
+window.navigateToGame = navigateToGame;
+window.showAnswer = showAnswer;
+window.nextItem = nextItem;
+window.startGame = startGame;
+window.pauseGame = pauseGame;
+window.stopGame = stopGame;
+window.replayAll = replayAll;
+window.replaySlow = replaySlow;
+window.toggleVibrationSetting = toggleVibrationSetting;
+window.updateLearningMode = updateLearningMode;
+
+// Initialize page based on URL when loaded
+window.addEventListener("DOMContentLoaded", function () {
+  // Initialize DOM cache for better performance
+  domCache.init();
+
+  // Load vibration setting from localStorage
+  const savedVibrationSetting = localStorage.getItem("vibrationEnabled");
+  if (savedVibrationSetting !== null) {
+    gameState.vibrationEnabled = savedVibrationSetting === "true";
+    document.getElementById("vibration-setting").checked =
+      gameState.vibrationEnabled;
+  }
+
+  // Initialize learning mode state from checkbox
+  gameState.isLearningMode =
+    document.getElementById("learning-mode").checked;
+
+  generateTiles();
+  // Add a small delay to ensure gameData is loaded
+  setTimeout(() => {
+    initializeFromURL();
+    // Initialize button states on page load
+    updateButtonStates();
+  }, 100);
+});

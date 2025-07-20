@@ -1485,6 +1485,24 @@ function updateTimer() {
 }
 
 /**
+ * Fetches the service worker version and displays it in the navigation menu
+ */
+async function fetchAndDisplayVersion() {
+  try {
+    const response = await fetch('/sw/version');
+    if (response.ok) {
+      const data = await response.json();
+      document.getElementById('version-display').textContent = data.version;
+    } else {
+      document.getElementById('version-display').textContent = 'Okänd';
+    }
+  } catch (error) {
+    console.log('Could not fetch version:', error);
+    document.getElementById('version-display').textContent = 'Okänd';
+  }
+}
+
+/**
  * Toggles the navigation menu open/closed state
  */
 function toggleMenu() {
@@ -1675,6 +1693,8 @@ window.addEventListener("DOMContentLoaded", function () {
     document.getElementById("learning-mode").checked;
 
   generateTiles();
+  // Fetch and display service worker version
+  fetchAndDisplayVersion();
   // Add a small delay to ensure gameData is loaded
   setTimeout(() => {
     initializeFromURL();

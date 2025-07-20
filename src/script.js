@@ -1,5 +1,5 @@
-// Register service worker and store the promise
-const swRegistration = navigator.serviceWorker.register("/sw.js");
+// Register service worker and store the promise for later use
+const serviceWorkerRegistration = navigator.serviceWorker.register("/sw.js");
 
 import gameData from "/gameData.js";
 
@@ -1410,10 +1410,15 @@ function replaySlow() {
  */
 async function fetchAndDisplayVersion() {
   try {
-    // Wait for service worker to be registered and ready
-    if ("serviceWorker" in navigator) {
-      await swRegistration; // Wait for registration to complete
-      await navigator.serviceWorker.ready; // Wait for service worker to be ready
+    // Wait for service worker to be ready
+    if (serviceWorkerRegistration) {
+      // First wait for registration to complete
+      await serviceWorkerRegistration;
+      // Then wait for the service worker to be ready
+      await navigator.serviceWorker.ready;
+      
+      // Add a small delay to ensure the service worker is fully ready to handle requests
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     const response = await fetch("/sw/version");

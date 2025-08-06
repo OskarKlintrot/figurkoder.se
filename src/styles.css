@@ -176,7 +176,7 @@ body {
   transition: transform 0.15s ease-out;
 }
 
-.header .back-btn {
+.back-btn {
   position: absolute;
   left: 0;
   background: none;
@@ -188,7 +188,7 @@ body {
   opacity: 1;
 }
 
-.header .menu-btn {
+.menu-btn {
   position: absolute;
   right: 0;
   background: none;
@@ -266,7 +266,7 @@ h1 {
   grid-column: 1 / -1;
 }
 
-input.game-input {
+.game-input {
   width: 100%;
   padding: var(--spacing-input);
   border: var(--border-width-thin) solid var(--color-border);
@@ -276,15 +276,15 @@ input.game-input {
   color: var(--color-text);
 }
 
-input.game-input:focus {
+.game-input:focus {
   outline: none;
   border-color: var(--color-primary);
 }
 
 /* Ensure autocomplete doesn't override text color */
-input.game-input:-webkit-autofill,
-input.game-input:-webkit-autofill:hover,
-input.game-input:-webkit-autofill:focus {
+.game-input:-webkit-autofill,
+.game-input:-webkit-autofill:hover,
+.game-input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--color-text) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
@@ -957,8 +957,7 @@ input.game-input:-webkit-autofill:focus {
   margin-bottom: var(--spacing-xs);
 }
 
-input.control-input,
-select.control-input {
+.control-input {
   width: 100%;
   padding: var(--spacing-button);
   border: 2px solid var(--color-border-light);
@@ -972,8 +971,7 @@ select.control-input {
   box-sizing: border-box;
 }
 
-input.control-input:focus,
-select.control-input:focus {
+.control-input:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-hover);
@@ -981,15 +979,14 @@ select.control-input:focus {
 }
 
 /* Ensure autocomplete doesn't override text color */
-input.control-input:-webkit-autofill,
-input.control-input:-webkit-autofill:hover,
-input.control-input:-webkit-autofill:focus {
+.control-input:-webkit-autofill,
+.control-input:-webkit-autofill:hover,
+.control-input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--color-text) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-input.control-input:disabled,
-select.control-input:disabled {
+.control-input:disabled {
   background: var(--color-surface-secondary);
   color: var(--color-text-light);
   border-color: var(--color-border-lighter);
@@ -1109,8 +1106,7 @@ select.control-input:disabled {
     font-size: 0.9rem;
   }
 
-  input.control-input,
-  select.control-input {
+  .control-input {
     padding: 0.75rem;
     font-size: 0.9rem;
   }
@@ -1153,8 +1149,7 @@ select.control-input:disabled {
     font-size: 0.85rem;
   }
 
-  input.control-input,
-  select.control-input {
+  .control-input {
     padding: var(--spacing-md);
     font-size: 0.85rem;
   }
@@ -1217,26 +1212,17 @@ select.control-input:disabled {
   }
 }
 
-/* Utility classes for dynamic styling - using higher specificity instead of !important */
-.page .hidden,
-.header .hidden,
-.nav-menu .hidden,
-.game-container .hidden,
-input.hidden,
-select.hidden,
-button.hidden {
+/* Utility classes for dynamic styling */
+.hidden {
   display: none;
 }
 
-.page .visible,
-.header .visible,
-.nav-menu .visible,
-.game-container .visible {
+.visible {
   display: block;
 }
 
 /* Specific display types for visible elements */
-button.btn.visible {
+.btn.visible {
   display: inline-flex;
 }
 

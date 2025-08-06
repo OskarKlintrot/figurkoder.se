@@ -2,7 +2,7 @@
 const serviceWorkerRegistration = navigator.serviceWorker.register("/sw.js");
 
 // Constants
-const DEBUG_TOGGLE_CLICK_COUNT = 10;
+const DEBUG_TOGGLE_CLICK_COUNT = 2;
 const MAX_DEBUG_CONSOLE_ENTRIES = 100;
 
 import gameData from "/gameData.js";

@@ -91,10 +91,10 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--color-surface-secondary);
   padding: var(--spacing-lg) var(--spacing-2xl);
   margin: 0;
-  border-top: var(--border-width-thin) solid rgba(0, 0, 0, 0.1);
+  border-top: var(--border-width-thin) solid var(--color-border);
 }
 
 /* Dark mode styles */
@@ -130,71 +130,6 @@
     --shadow-md: 0 0.25rem 0.5rem rgba(255, 255, 255, 0.1);
     --shadow-lg: 0 4px 12px rgba(255, 255, 255, 0.1);
     --shadow-xl: 0 0.125rem 0.375rem rgba(255, 255, 255, 0.02);
-  }
-
-  /* Dark mode specific overrides */
-  .current-item-display {
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-  }
-
-  .control-input:focus {
-    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
-  }
-
-  .tile-category {
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.05) 100%
-    );
-    border-top: var(--border-width-thin) solid rgba(255, 255, 255, 0.2);
-    color: var(--color-text-light);
-  }
-
-  .tile-title {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  }
-
-  .nav-setting {
-    background: linear-gradient(135deg, #1a1a1c 0%, #2c2c2e 100%) !important;
-    border: 1px solid #48484a !important;
-  }
-
-  .nav-item {
-    background: var(--color-surface-tertiary);
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-  }
-
-  .nav-item:hover {
-    background: var(--color-surface-secondary);
-    border: 1px solid var(--color-border-light);
-  }
-
-  .nav-close {
-    color: var(--color-text);
-  }
-
-  .nav-setting-label {
-    color: var(--color-text) !important;
-  }
-
-  .nav-setting-label span {
-    color: var(--color-text) !important;
-  }
-
-  .nav-version {
-    background: linear-gradient(135deg, #1a1a1c 0%, #2c2c2e 100%) !important;
-    border: 1px solid #48484a !important;
-  }
-
-  .version-label {
-    color: var(--color-text-muted) !important;
-  }
-
-  #version-display {
-    color: var(--color-text-light) !important;
-    background: rgba(255, 255, 255, 0.1) !important;
   }
 }
 
@@ -241,7 +176,7 @@ body {
   transition: transform 0.15s ease-out;
 }
 
-.back-btn {
+.header .back-btn {
   position: absolute;
   left: 0;
   background: none;
@@ -249,11 +184,11 @@ body {
   font-size: 1.125rem;
   cursor: pointer;
   padding: var(--spacing-md);
-  color: var(--color-text) !important;
+  color: var(--color-text);
   opacity: 1;
 }
 
-.menu-btn {
+.header .menu-btn {
   position: absolute;
   right: 0;
   background: none;
@@ -261,7 +196,7 @@ body {
   font-size: 1.125rem;
   cursor: pointer;
   padding: var(--spacing-md);
-  color: var(--color-text) !important;
+  color: var(--color-text);
   opacity: 1;
 }
 
@@ -331,25 +266,25 @@ h1 {
   grid-column: 1 / -1;
 }
 
-.game-input {
+input.game-input {
   width: 100%;
   padding: var(--spacing-input);
   border: var(--border-width-thin) solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: 1rem;
   background: var(--color-surface);
-  color: var(--color-text) !important;
+  color: var(--color-text);
 }
 
-.game-input:focus {
+input.game-input:focus {
   outline: none;
   border-color: var(--color-primary);
 }
 
 /* Ensure autocomplete doesn't override text color */
-.game-input:-webkit-autofill,
-.game-input:-webkit-autofill:hover,
-.game-input:-webkit-autofill:focus {
+input.game-input:-webkit-autofill,
+input.game-input:-webkit-autofill:hover,
+input.game-input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--color-text) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
@@ -596,9 +531,9 @@ h1 {
 .nav-setting {
   margin-top: var(--spacing-2xl);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
+  background: var(--color-surface-secondary);
   border-radius: var(--radius-xl);
-  border: 1px solid #d1e7ff;
+  border: 1px solid var(--color-border-light);
   box-shadow: var(--shadow-xl);
 }
 
@@ -676,9 +611,9 @@ h1 {
 .nav-version {
   margin-top: var(--spacing-2xl);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: var(--color-surface-secondary);
   border-radius: var(--radius-xl);
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--color-border-lighter);
   box-shadow: var(--shadow-xl);
   display: flex;
   justify-content: space-between;
@@ -695,7 +630,7 @@ h1 {
   font-size: 0.75rem;
   font-family: monospace;
   color: var(--color-text-light);
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--color-surface-tertiary);
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
 }
@@ -1022,7 +957,8 @@ h1 {
   margin-bottom: var(--spacing-xs);
 }
 
-.control-input {
+input.control-input,
+select.control-input {
   width: 100%;
   padding: var(--spacing-button);
   border: 2px solid var(--color-border-light);
@@ -1030,13 +966,14 @@ h1 {
   font-size: 1rem;
   text-align: center;
   background: var(--color-surface);
-  color: var(--color-text) !important;
+  color: var(--color-text);
   transition: all var(--transition-normal) ease;
   font-weight: 500;
   box-sizing: border-box;
 }
 
-.control-input:focus {
+input.control-input:focus,
+select.control-input:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-hover);
@@ -1044,14 +981,15 @@ h1 {
 }
 
 /* Ensure autocomplete doesn't override text color */
-.control-input:-webkit-autofill,
-.control-input:-webkit-autofill:hover,
-.control-input:-webkit-autofill:focus {
+input.control-input:-webkit-autofill,
+input.control-input:-webkit-autofill:hover,
+input.control-input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--color-text) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-.control-input:disabled {
+input.control-input:disabled,
+select.control-input:disabled {
   background: var(--color-surface-secondary);
   color: var(--color-text-light);
   border-color: var(--color-border-lighter);
@@ -1171,7 +1109,8 @@ select.control-input:disabled {
     font-size: 0.9rem;
   }
 
-  .control-input {
+  input.control-input,
+  select.control-input {
     padding: 0.75rem;
     font-size: 0.9rem;
   }
@@ -1214,7 +1153,8 @@ select.control-input:disabled {
     font-size: 0.85rem;
   }
 
-  .control-input {
+  input.control-input,
+  select.control-input {
     padding: var(--spacing-md);
     font-size: 0.85rem;
   }
@@ -1277,18 +1217,27 @@ select.control-input:disabled {
   }
 }
 
-/* Utility classes for dynamic styling */
-.hidden {
-  display: none !important;
+/* Utility classes for dynamic styling - using higher specificity instead of !important */
+.page .hidden,
+.header .hidden,
+.nav-menu .hidden,
+.game-container .hidden,
+input.hidden,
+select.hidden,
+button.hidden {
+  display: none;
 }
 
-.visible {
-  display: block !important;
+.page .visible,
+.header .visible,
+.nav-menu .visible,
+.game-container .visible {
+  display: block;
 }
 
 /* Specific display types for visible elements */
-.btn.visible {
-  display: inline-flex !important;
+button.btn.visible {
+  display: inline-flex;
 }
 
 /* Debug View */
@@ -1440,7 +1389,7 @@ body.debug-view-visible {
   .debug-view {
     background: var(--color-surface);
     border-top-color: var(--color-border);
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg);
   }
 
   .debug-console {
@@ -1449,10 +1398,10 @@ body.debug-view-visible {
   }
 
   .debug-console-entry.error {
-    color: #ff6666;
+    color: var(--color-error);
   }
 
   .debug-console-entry.warn {
-    color: #ffcc44;
+    color: var(--color-warning);
   }
 }

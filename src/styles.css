@@ -1391,11 +1391,11 @@ select.control-input:disabled {
 }
 
 .debug-console-entry.error {
-  color: #ff4444;
+  color: var(--color-error);
 }
 
 .debug-console-entry.warn {
-  color: #ffaa00;
+  color: var(--color-warning);
 }
 
 .debug-console-entry.info {

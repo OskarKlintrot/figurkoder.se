@@ -52,7 +52,7 @@
 
   <body>
     <!-- Global Header -->
-    <div class="header">
+    <div class="header" onclick="handleHeaderClick(event)">
       <button class="back-btn hidden" id="back-btn" onclick="goBack()">
         ←
       </button>
@@ -391,6 +391,28 @@
             >Gå tillbaka till startsidan</a
           >
         </p>
+      </div>
+    </div>
+
+    <!-- Debug View -->
+    <div id="debug-view" class="debug-view hidden">
+      <div class="debug-content">
+        <div class="debug-header">
+          <p><strong>Debug view</strong></p>
+          <div class="debug-buttons">
+            <button class="debug-clear-btn" onclick="clearDebugConsole()">
+              Rensa
+            </button>
+            <button class="debug-close-btn" onclick="toggleDebugViewSetting()">
+              ✕
+            </button>
+          </div>
+        </div>
+        <div class="debug-console-container">
+          <div id="debug-console" class="debug-console">
+            <!-- Console output will appear here -->
+          </div>
+        </div>
       </div>
     </div>
 

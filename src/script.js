@@ -54,6 +54,97 @@ const domCache = {
 // Debounced update button states to reduce reflows
 let updateButtonStatesTimer = null;
 
+// Console logging functionality for debug view
+const originalConsole = {
+  log: console.log,
+  error: console.error,
+  warn: console.warn,
+  info: console.info,
+};
+
+function addToDebugConsole(message, type = "log") {
+  const debugConsole = document.getElementById("debug-console");
+  if (!debugConsole) return;
+
+  const timestamp = new Date().toLocaleTimeString();
+  const entry = document.createElement("div");
+  entry.className = `debug-console-entry ${type}`;
+
+  const timestampSpan = document.createElement("span");
+  timestampSpan.className = "timestamp";
+  timestampSpan.textContent = `[${timestamp}]`;
+
+  const messageSpan = document.createElement("span");
+  messageSpan.textContent = message;
+
+  entry.appendChild(timestampSpan);
+  entry.appendChild(messageSpan);
+
+  debugConsole.appendChild(entry);
+  debugConsole.scrollTop = debugConsole.scrollHeight;
+
+  // Limit console entries to prevent memory issues
+  const entries = debugConsole.querySelectorAll(".debug-console-entry");
+  if (entries.length > 100) {
+    entries[0].remove();
+  }
+}
+
+function formatConsoleArgs(args) {
+  return Array.from(args)
+    .map((arg) => {
+      if (typeof arg === "object" && arg !== null) {
+        try {
+          return JSON.stringify(arg, null, 2);
+        } catch (e) {
+          return String(arg);
+        }
+      }
+      return String(arg);
+    })
+    .join(" ");
+}
+
+// Override console methods to capture logs
+console.log = function (...args) {
+  originalConsole.log.apply(console, args);
+  addToDebugConsole(formatConsoleArgs(args), "log");
+};
+
+console.error = function (...args) {
+  originalConsole.error.apply(console, args);
+  addToDebugConsole(formatConsoleArgs(args), "error");
+};
+
+console.warn = function (...args) {
+  originalConsole.warn.apply(console, args);
+  addToDebugConsole(formatConsoleArgs(args), "warn");
+};
+
+console.info = function (...args) {
+  originalConsole.info.apply(console, args);
+  addToDebugConsole(formatConsoleArgs(args), "info");
+};
+
+function clearDebugConsole() {
+  const debugConsole = document.getElementById("debug-console");
+  if (debugConsole) {
+    debugConsole.innerHTML = "";
+  }
+}
+
+// Capture uncaught errors and promise rejections
+window.addEventListener("error", function (event) {
+  addToDebugConsole(
+    `Uncaught Error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
+    "error"
+  );
+});
+
+window.addEventListener("unhandledrejection", function (event) {
+  addToDebugConsole(`Unhandled Promise Rejection: ${event.reason}`, "error");
+});
+
 // Function declarations
 
 /**
@@ -181,6 +272,8 @@ function updateHeader(title, showBackButton = false) {
  * @param {boolean} updateURL - Whether to update the browser URL
  */
 function navigateToPage(pageId, updateURL = true) {
+  console.log(`Navigating to page: ${pageId}`);
+
   // Check if we're leaving the game page to reset state
   const currentPageId = document.querySelector(".page.active")?.id;
   if (
@@ -390,6 +483,8 @@ function initializeFromURL() {
  * @param {string} gameType - The type of game to navigate to
  */
 function navigateToGame(gameType) {
+  console.log(`Starting game: ${gameType}`);
+
   // Reset any previous game state before starting a new game
   resetGameState();
 
@@ -422,6 +517,47 @@ function toggleVibrationSetting() {
     document.getElementById("vibration-setting").checked;
   // Save setting to localStorage
   localStorage.setItem("vibrationEnabled", gameState.vibrationEnabled);
+}
+
+/**
+ * Toggles the debug view setting and saves it to localStorage
+ */
+function toggleDebugViewSetting() {
+  const debugViewEnabled = localStorage.getItem("debugViewEnabled") === "true";
+  const newDebugViewState = !debugViewEnabled;
+  const debugView = document.getElementById("debug-view");
+  const body = document.body;
+
+  if (newDebugViewState) {
+    debugView.classList.remove("hidden");
+    debugView.classList.add("visible");
+    body.classList.add("debug-view-visible");
+  } else {
+    debugView.classList.remove("visible");
+    debugView.classList.add("hidden");
+    body.classList.remove("debug-view-visible");
+  }
+
+  // Save setting to localStorage
+  localStorage.setItem("debugViewEnabled", newDebugViewState);
+}
+
+/**
+ * Handles header clicks to detect the 5-click footer toggle
+ * @param {Event} event - The click event object
+ */
+function handleHeaderClick(event) {
+  // Check if we reached 10 clicks using the event's detail property
+  if (event.detail === 10) {
+    toggleDebugViewSetting();
+
+    // Add a subtle visual feedback
+    const header = document.querySelector(".header");
+    header.style.transform = "translateX(-40%)";
+    setTimeout(() => {
+      header.style.transform = "";
+    }, 150);
+  }
 }
 
 /**
@@ -739,6 +875,11 @@ function showRangeControls() {
  * Starts a new game or resumes a paused game
  */
 function startGame() {
+  console.log("startGame() called", {
+    paused: gameState.paused,
+    isGameRunning: gameState.isGameRunning,
+  });
+
   if (gameState.paused) {
     // Resume paused game
     gameState.isGameRunning = true;
@@ -1591,6 +1732,9 @@ window.stopGame = stopGame;
 window.replayAll = replayAll;
 window.replaySlow = replaySlow;
 window.toggleVibrationSetting = toggleVibrationSetting;
+window.toggleDebugViewSetting = toggleDebugViewSetting;
+window.clearDebugConsole = clearDebugConsole;
+window.handleHeaderClick = handleHeaderClick;
 window.updateLearningMode = updateLearningMode;
 
 // Initialize page based on URL when loaded
@@ -1606,8 +1750,28 @@ window.addEventListener("DOMContentLoaded", function () {
       gameState.vibrationEnabled;
   }
 
+  // Load debug view setting from localStorage
+  const savedDebugViewSetting = localStorage.getItem("debugViewEnabled");
+  if (savedDebugViewSetting !== null) {
+    const debugViewEnabled = savedDebugViewSetting === "true";
+    const debugView = document.getElementById("debug-view");
+    const body = document.body;
+
+    if (debugViewEnabled) {
+      debugView.classList.remove("hidden");
+      debugView.classList.add("visible");
+      body.classList.add("debug-view-visible");
+    }
+  }
+
   // Initialize learning mode state from checkbox
   gameState.isLearningMode = document.getElementById("learning-mode").checked;
+
+  // Initialize debug console with welcome message
+  addToDebugConsole(
+    "Debug console initialized. Console logs will appear here.",
+    "info"
+  );
 
   generateTiles();
   // Fetch and display service worker version

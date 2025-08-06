@@ -1167,7 +1167,11 @@ function nextItem(vibrate = false) {
     gameState.isLearningMode &&
     vibrate
   ) {
-    navigator.vibrate(100);
+    try {
+      navigator.vibrate(100);
+    } catch (error) {
+      console.warn('Vibration failed:', error);
+    }
   }
 
   // Record result for current item if not already recorded (i.e., user pressed NEXT)

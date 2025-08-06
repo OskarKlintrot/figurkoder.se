@@ -91,10 +91,10 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--color-surface-secondary);
   padding: var(--spacing-lg) var(--spacing-2xl);
   margin: 0;
-  border-top: var(--border-width-thin) solid rgba(0, 0, 0, 0.1);
+  border-top: var(--border-width-thin) solid var(--color-border);
 }
 
 /* Dark mode styles */
@@ -130,71 +130,6 @@
     --shadow-md: 0 0.25rem 0.5rem rgba(255, 255, 255, 0.1);
     --shadow-lg: 0 4px 12px rgba(255, 255, 255, 0.1);
     --shadow-xl: 0 0.125rem 0.375rem rgba(255, 255, 255, 0.02);
-  }
-
-  /* Dark mode specific overrides */
-  .current-item-display {
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-  }
-
-  .control-input:focus {
-    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
-  }
-
-  .tile-category {
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.05) 100%
-    );
-    border-top: var(--border-width-thin) solid rgba(255, 255, 255, 0.2);
-    color: var(--color-text-light);
-  }
-
-  .tile-title {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  }
-
-  .nav-setting {
-    background: linear-gradient(135deg, #1a1a1c 0%, #2c2c2e 100%) !important;
-    border: 1px solid #48484a !important;
-  }
-
-  .nav-item {
-    background: var(--color-surface-tertiary);
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-  }
-
-  .nav-item:hover {
-    background: var(--color-surface-secondary);
-    border: 1px solid var(--color-border-light);
-  }
-
-  .nav-close {
-    color: var(--color-text);
-  }
-
-  .nav-setting-label {
-    color: var(--color-text) !important;
-  }
-
-  .nav-setting-label span {
-    color: var(--color-text) !important;
-  }
-
-  .nav-version {
-    background: linear-gradient(135deg, #1a1a1c 0%, #2c2c2e 100%) !important;
-    border: 1px solid #48484a !important;
-  }
-
-  .version-label {
-    color: var(--color-text-muted) !important;
-  }
-
-  #version-display {
-    color: var(--color-text-light) !important;
-    background: rgba(255, 255, 255, 0.1) !important;
   }
 }
 
@@ -249,7 +184,7 @@ body {
   font-size: 1.125rem;
   cursor: pointer;
   padding: var(--spacing-md);
-  color: var(--color-text) !important;
+  color: var(--color-text);
   opacity: 1;
 }
 
@@ -261,7 +196,7 @@ body {
   font-size: 1.125rem;
   cursor: pointer;
   padding: var(--spacing-md);
-  color: var(--color-text) !important;
+  color: var(--color-text);
   opacity: 1;
 }
 
@@ -338,7 +273,7 @@ h1 {
   border-radius: var(--radius-md);
   font-size: 1rem;
   background: var(--color-surface);
-  color: var(--color-text) !important;
+  color: var(--color-text);
 }
 
 .game-input:focus {
@@ -596,9 +531,9 @@ h1 {
 .nav-setting {
   margin-top: var(--spacing-2xl);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
+  background: var(--color-surface-secondary);
   border-radius: var(--radius-xl);
-  border: 1px solid #d1e7ff;
+  border: 1px solid var(--color-border-light);
   box-shadow: var(--shadow-xl);
 }
 
@@ -676,9 +611,9 @@ h1 {
 .nav-version {
   margin-top: var(--spacing-2xl);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: var(--color-surface-secondary);
   border-radius: var(--radius-xl);
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--color-border-lighter);
   box-shadow: var(--shadow-xl);
   display: flex;
   justify-content: space-between;
@@ -695,7 +630,7 @@ h1 {
   font-size: 0.75rem;
   font-family: monospace;
   color: var(--color-text-light);
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--color-surface-tertiary);
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
 }
@@ -1030,7 +965,7 @@ h1 {
   font-size: 1rem;
   text-align: center;
   background: var(--color-surface);
-  color: var(--color-text) !important;
+  color: var(--color-text);
   transition: all var(--transition-normal) ease;
   font-weight: 500;
   box-sizing: border-box;
@@ -1279,16 +1214,16 @@ select.control-input:disabled {
 
 /* Utility classes for dynamic styling */
 .hidden {
-  display: none !important;
+  display: none;
 }
 
 .visible {
-  display: block !important;
+  display: block;
 }
 
 /* Specific display types for visible elements */
 .btn.visible {
-  display: inline-flex !important;
+  display: inline-flex;
 }
 
 /* Debug View */
@@ -1440,7 +1375,7 @@ body.debug-view-visible {
   .debug-view {
     background: var(--color-surface);
     border-top-color: var(--color-border);
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg);
   }
 
   .debug-console {
@@ -1449,10 +1384,10 @@ body.debug-view-visible {
   }
 
   .debug-console-entry.error {
-    color: #ff6666;
+    color: var(--color-error);
   }
 
   .debug-console-entry.warn {
-    color: #ffcc44;
+    color: var(--color-warning);
   }
 }

@@ -875,11 +875,6 @@ function showRangeControls() {
  * Starts a new game or resumes a paused game
  */
 function startGame() {
-  console.log("startGame() called", {
-    paused: gameState.paused,
-    isGameRunning: gameState.isGameRunning,
-  });
-
   if (gameState.paused) {
     // Resume paused game
     gameState.isGameRunning = true;

@@ -1,6 +1,10 @@
 // Register service worker and store the promise for later use
 const serviceWorkerRegistration = navigator.serviceWorker.register("/sw.js");
 
+// Constants
+const DEBUG_TOGGLE_CLICK_COUNT = 10;
+const MAX_DEBUG_CONSOLE_ENTRIES = 100;
+
 import gameData from "/gameData.js";
 
 // Global variables
@@ -85,7 +89,7 @@ function addToDebugConsole(message, type = "log") {
 
   // Limit console entries to prevent memory issues
   const entries = debugConsole.querySelectorAll(".debug-console-entry");
-  if (entries.length > 100) {
+  if (entries.length > MAX_DEBUG_CONSOLE_ENTRIES) {
     entries[0].remove();
   }
 }
@@ -539,12 +543,12 @@ function toggleDebugViewSetting() {
 }
 
 /**
- * Handles header clicks to detect the 5-click footer toggle
+ * Handles header clicks to detect the debug view toggle
  * @param {Event} event - The click event object
  */
 function handleHeaderClick(event) {
-  // Check if we reached 10 clicks using the event's detail property
-  if (event.detail === 10) {
+  // Check if we reached the required number of clicks using the event's detail property
+  if (event.detail === DEBUG_TOGGLE_CLICK_COUNT) {
     toggleDebugViewSetting();
 
     // Add a subtle visual feedback

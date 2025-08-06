@@ -78,6 +78,7 @@
   --max-width-game-controls: 400px;
   --max-width-solution: 300px;
   --max-width-replay-btn: 200px;
+  --debug-view-height: 25vh;
 
   /* Z-index */
   --z-header: 100;
@@ -1301,7 +1302,7 @@ select.control-input:disabled {
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   transition: transform 0.3s ease-in-out;
-  max-height: 25vh;
+  max-height: var(--debug-view-height);
 }
 
 .debug-view.hidden {
@@ -1431,7 +1432,7 @@ select.control-input:disabled {
 
 /* Add bottom padding to body when debug view is shown to prevent content from being hidden */
 body.debug-view-visible {
-  padding-bottom: 25vh;
+  padding-bottom: var(--debug-view-height);
 }
 
 /* Dark mode support for debug view */

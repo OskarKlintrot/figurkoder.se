@@ -272,8 +272,6 @@ function updateHeader(title, showBackButton = false) {
  * @param {boolean} updateURL - Whether to update the browser URL
  */
 function navigateToPage(pageId, updateURL = true) {
-  console.log(`Navigating to page: ${pageId}`);
-
   // Check if we're leaving the game page to reset state
   const currentPageId = document.querySelector(".page.active")?.id;
   if (
@@ -483,8 +481,6 @@ function initializeFromURL() {
  * @param {string} gameType - The type of game to navigate to
  */
 function navigateToGame(gameType) {
-  console.log(`Starting game: ${gameType}`);
-
   // Reset any previous game state before starting a new game
   resetGameState();
 

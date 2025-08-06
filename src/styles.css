@@ -905,6 +905,7 @@ h1 {
     var(--color-primary-hover) 100%
   );
   transition: width 0.1s linear;
+  z-index: -1;
 }
 
 .btn-content {

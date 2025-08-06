@@ -907,8 +907,7 @@ h1 {
   transition: width 0.1s linear;
 }
 
-.btn.primary.progress-bar .btn-content {
-  position: relative;
+.btn-content {
   display: flex;
   align-items: center;
   justify-content: center;

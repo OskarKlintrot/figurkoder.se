@@ -60,55 +60,6 @@
       <button class="menu-btn" onclick="openMenu()">☰</button>
     </div>
 
-    <!-- Navigation Menu -->
-    <div class="nav-overlay" onclick="closeMenu()"></div>
-    <div class="nav-menu" id="nav-menu">
-      <button class="nav-close" onclick="closeMenu()">×</button>
-      <button
-        class="nav-item"
-        onclick="navigateToPage('main-menu'); closeMenu();"
-      >
-        Hem
-      </button>
-      <button
-        class="nav-item"
-        onclick="navigateToPage('about-page'); closeMenu();"
-      >
-        Om sidan
-      </button>
-      <button
-        class="nav-item"
-        onclick="navigateToPage('faq-page'); closeMenu();"
-      >
-        Vanliga frågor
-      </button>
-      <button
-        class="nav-item"
-        onclick="navigateToPage('contact-page'); closeMenu();"
-      >
-        Kontakta mig
-      </button>
-
-      <!-- Vibration Setting -->
-      <div class="nav-setting">
-        <label class="nav-setting-label">
-          <input
-            type="checkbox"
-            id="vibration-setting"
-            checked
-            onchange="toggleVibrationSetting()"
-          />
-          <span>Vibration</span>
-        </label>
-      </div>
-
-      <!-- Version Display -->
-      <div class="nav-version">
-        <span class="version-label">Version:</span>
-        <span id="version-display">Laddar...</span>
-      </div>
-    </div>
-
     <!-- Main Menu Page -->
     <div id="main-menu" class="page">
       <div class="tiles-grid" id="tiles-grid">
@@ -413,6 +364,55 @@
             <!-- Console output will appear here -->
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu - positioned at end for proper stacking order -->
+    <div class="nav-overlay" onclick="closeMenu()"></div>
+    <div class="nav-menu" id="nav-menu">
+      <button class="nav-close" onclick="closeMenu()">×</button>
+      <button
+        class="nav-item"
+        onclick="navigateToPage('main-menu'); closeMenu();"
+      >
+        Hem
+      </button>
+      <button
+        class="nav-item"
+        onclick="navigateToPage('about-page'); closeMenu();"
+      >
+        Om sidan
+      </button>
+      <button
+        class="nav-item"
+        onclick="navigateToPage('faq-page'); closeMenu();"
+      >
+        Vanliga frågor
+      </button>
+      <button
+        class="nav-item"
+        onclick="navigateToPage('contact-page'); closeMenu();"
+      >
+        Kontakta mig
+      </button>
+
+      <!-- Vibration Setting -->
+      <div class="nav-setting">
+        <label class="nav-setting-label">
+          <input
+            type="checkbox"
+            id="vibration-setting"
+            checked
+            onchange="toggleVibrationSetting()"
+          />
+          <span>Vibration</span>
+        </label>
+      </div>
+
+      <!-- Version Display -->
+      <div class="nav-version">
+        <span class="version-label">Version:</span>
+        <span id="version-display">Laddar...</span>
       </div>
     </div>
 

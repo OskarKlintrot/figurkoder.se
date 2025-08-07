@@ -30,7 +30,7 @@ const gameState = {
   currentItemStartTime: null,
   pausedTime: 0, // Track time spent in pause for current item
   isReplayMode: false, // Flag to prevent initializeGame during replay
-  usePresetData: false, // Flag to indicate we're using preset replay data, skip range filtering
+  skipRangeFiltering: false, // Flag to skip range filtering when using replay data
   vibrationEnabled: true, // Flag to control vibration
   isLearningMode: false, // Flag to control learning mode
 };
@@ -216,7 +216,7 @@ function resetGameState() {
   gameState.currentItemStartTime = null;
   gameState.pausedTime = 0;
   gameState.isReplayMode = false;
-  gameState.usePresetData = false;
+  gameState.skipRangeFiltering = false;
   // Note: vibrationEnabled is kept as it's a user setting
 
   // Reset UI elements to default state
@@ -500,7 +500,7 @@ function navigateToGame(gameType) {
   const game = gameData[gameType];
 
   // Clear any replay flags when starting a new game
-  gameState.usePresetData = false;
+  gameState.skipRangeFiltering = false;
   gameState.isReplayMode = false;
 
   if (game) {
@@ -595,7 +595,7 @@ function initializeGame() {
   }
 
   // Clear preset data flag when initializing a new normal game
-  gameState.usePresetData = false;
+  gameState.skipRangeFiltering = false;
 
   const game = gameData[currentGame];
   gameState.currentGameData = [...game.data];
@@ -922,8 +922,8 @@ function startGame() {
   // Reset progress bar on NÄSTA button for fresh start
   resetProgressBar();
 
-  // Only filter data based on range if we're not using preset replay data
-  if (!gameState.usePresetData) {
+  // Only filter data based on range if we're not skipping range filtering
+  if (!gameState.skipRangeFiltering) {
     // Filter data based on range
     const game = gameData[currentGame];
     const useDropdown = game.dropdown || false;
@@ -959,7 +959,7 @@ function startGame() {
       gameState.masterGameData = [...filteredData]; // Save the master copy that never changes
     }
   } else {
-    // When using preset data, ensure originalGameData is set for future replays
+    // When skipping range filtering, ensure originalGameData is set for future replays
     if (!gameState.originalGameData.length) {
       gameState.originalGameData = [...gameState.currentGameData];
     }
@@ -1500,8 +1500,8 @@ function replay(slowOnly = false) {
       gameState.currentGameData = [];
       gameState.masterGameData = [];
     }
-    // Set usePresetData flag only for full replays
-    gameState.usePresetData = true; // Flag that we're using preset data, skip range filtering
+    // Set skipRangeFiltering flag only for full replays
+    gameState.skipRangeFiltering = true; // Flag that we're using preset data, skip range filtering
   }
 
   gameState.isReplayMode = true;

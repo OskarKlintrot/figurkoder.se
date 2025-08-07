@@ -1,18 +1,20 @@
 import {
   domCache,
   gameState,
-  generateTiles,
+} from "./game.js";
+import { replay } from "./game/result.js";
+import {
   startGame,
   pauseGame,
   stopGame,
   showAnswer,
   nextItem,
-  replay,
   toggleVibrationSetting,
   updateLearningMode,
   loadGameSettings,
   updateButtonStates,
-} from "./game.js";
+} from "./game/play.js";
+import { generateTiles } from "./game/menu.js";
 import {
   initializeFromURL,
   shouldUseHashRouting,

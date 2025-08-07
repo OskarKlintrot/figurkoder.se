@@ -1,6 +1,7 @@
 // Navigation state
 const navigationState = {
-  currentContext: null, // Current context (game, article, etc.)
+  currentContext: null, // Generic context instead of "game"
+  contextData: null, // Generic data store
   onLeavePageCallbacks: new Map(), // Callbacks for leaving specific pages
   onEnterPageCallbacks: new Map(), // Callbacks for entering specific pages
   onContextChangeCallback: null, // Callback when context changes
@@ -21,6 +22,20 @@ export function setCurrentContext(context) {
  */
 export function getCurrentContext() {
   return navigationState.currentContext;
+}
+
+/**
+ * Sets data associated with the current context
+ */
+export function setContextData(data) {
+  navigationState.contextData = data;
+}
+
+/**
+ * Gets data associated with the current context
+ */
+export function getContextData() {
+  return navigationState.contextData;
 }
 
 /**
@@ -264,3 +279,24 @@ export function closeMenu() {
   document.getElementById("nav-menu").classList.remove("open");
   document.querySelector(".nav-overlay").classList.remove("open");
 }
+
+// Register navigation callbacks
+registerPageEnterCallback("main-menu", () => {
+  updateHeader("Figurkoder.se", false);
+});
+
+registerPageEnterCallback("about-page", () => {
+  updateHeader("Om sidan", true);
+});
+
+registerPageEnterCallback("faq-page", () => {
+  updateHeader("Vanliga frågor", true);
+});
+
+registerPageEnterCallback("contact-page", () => {
+  updateHeader("Kontakta mig", true);
+});
+
+registerPageEnterCallback("404-page", () => {
+  updateHeader("404 - Sidan hittades inte", true);
+});

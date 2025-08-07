@@ -13,7 +13,7 @@ let imgID = `${version}_img`;
 let cacheIDs = [coreID, pageID, assetID, imgID];
 
 // Core assets
-let coreAssets = ["/", "/js/game-data.js"];
+let coreAssets = ["/", "/js/game/data.js"];
 
 //
 // Helper Methods

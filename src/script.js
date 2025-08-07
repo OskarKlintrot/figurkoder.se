@@ -1363,8 +1363,8 @@ function nextItem(vibrate = false) {
     } else {
       // In practice mode, navigate to results
       updateResults();
-      stopGame();
       navigateToPage("results-page");
+      stopGame();
       return;
     }
   }
@@ -1489,7 +1489,6 @@ function replayAll() {
     gameState.countdownTimer = null;
     gameState.pausedCountdownValue = null;
     gameState.countdownValue = 0;
-    gameState.totalCountdownTime = 0;
 
     // Update initial display and button states
     updateInitialDisplay();
@@ -1552,7 +1551,6 @@ function replaySlow() {
     gameState.countdownTimer = null;
     gameState.pausedCountdownValue = null;
     gameState.countdownValue = 0;
-    gameState.totalCountdownTime = 0;
 
     // Update initial display and button states - ensure we have data first
     if (gameState.currentGameData.length > 0) {

@@ -1238,16 +1238,16 @@ function startCountdown(resume = false) {
     }
 
     // Update progress bar on NÄSTA button
-    const progressPercentage =
+    const progressPercentage = Math.round(
       ((gameState.totalCountdownTime - gameState.countdownValue) /
         gameState.totalCountdownTime) *
-      100;
-    if (domCache.progressBar) {
-      domCache.progressBar.style.setProperty(
-        "--progress",
-        `${progressPercentage}%`
-      );
-    }
+        100
+    );
+
+    domCache.progressBar.style.setProperty(
+      "--progress",
+      `${progressPercentage}%`
+    );
 
     // Continue animation
     gameState.countdownTimer = requestAnimationFrame(countdownStep);

@@ -196,14 +196,14 @@
 
         <!-- Replay Buttons -->
         <div class="replay-buttons">
-          <button class="btn primary" onclick="replayAll()">
+          <button class="btn primary" onclick="replay(false)">
             <span class="material-icons">replay</span>
             Återställ
           </button>
           <button
             class="btn secondary"
             id="replay-slow-btn"
-            onclick="replaySlow()"
+            onclick="replay(true)"
           >
             <span class="material-icons">replay</span>
             <span id="replay-slow-text">Repetera långsamma</span>

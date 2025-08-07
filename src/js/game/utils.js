@@ -2,6 +2,52 @@
  * Utility functions for game functionality
  */
 
+// Game state object
+export const gameState = {
+  currentGameData: [],
+  originalGameData: [], // Store the original filtered data used in the game
+  masterGameData: [], // Store the very first filtered data from the initial game
+  currentItemIndex: 0,
+  gameTimer: null,
+  countdownTimer: null,
+  gameStartTime: null,
+  isGameRunning: false,
+  showingSolution: false,
+  countdownValue: 0,
+  totalCountdownTime: 0,
+  hasStarted: false,
+  pausedCountdownValue: null,
+  paused: false,
+  gameResults: [],
+  currentItemStartTime: null,
+  pausedTime: 0, // Track time spent in pause for current item
+  isReplayMode: false, // Flag to prevent initializeGame during replay
+  vibrationEnabled: true, // Flag to control vibration
+  isLearningMode: false, // Flag to control learning mode
+};
+
+// Cache frequently accessed DOM elements to reduce queries
+export const domCache = {
+  nextBtn: null,
+  progressBar: null,
+  currentItem: null,
+  solutionDisplay: null,
+  playBtn: null,
+  pauseBtn: null,
+  stopBtn: null,
+  showBtn: null,
+  init() {
+    this.nextBtn = document.getElementById("next-btn");
+    this.progressBar = this.nextBtn?.querySelector(".btn-progress-bar");
+    this.currentItem = document.getElementById("current-item");
+    this.solutionDisplay = document.getElementById("solution-display");
+    this.playBtn = document.getElementById("play-btn");
+    this.pauseBtn = document.getElementById("pause-btn");
+    this.stopBtn = document.getElementById("stop-btn");
+    this.showBtn = document.getElementById("show-btn");
+  },
+};
+
 /**
  * Resets the progress bar to 0% and removes progress bar styling
  */
@@ -90,12 +136,15 @@ export function resetGameState(gameState, domCache) {
  */
 export function prepareResultData(gameState, getCurrentGame, gameData) {
   const currentGameId = getCurrentGame();
-  const gameTitle = currentGameId && gameData[currentGameId] ? gameData[currentGameId].title : "Okänt spel";
-  
+  const gameTitle =
+    currentGameId && gameData[currentGameId]
+      ? gameData[currentGameId].title
+      : "Okänt spel";
+
   return {
     gameTitle: gameTitle,
     gameResults: [...gameState.gameResults], // Create a copy of the results
     originalGameData: [...gameState.originalGameData], // For replay functionality
-    masterGameData: [...gameState.masterGameData] // For slow replay functionality
+    masterGameData: [...gameState.masterGameData], // For slow replay functionality
   };
 }

@@ -1,7 +1,18 @@
-import { navigateToPage, setContextData, getCurrentContext, getContextData } from "../navigation.js";
+import {
+  navigateToPage,
+  setContextData,
+  getCurrentContext,
+  getContextData,
+} from "../navigation.js";
 import gameData from "./data.js";
-import { resetProgressBar, resetGameState, prepareResultData } from "./utils.js";
-import { gameState, domCache, setCurrentGame, getCurrentGame } from "../game.js";
+import {
+  resetProgressBar,
+  resetGameState,
+  prepareResultData,
+  gameState,
+  domCache,
+} from "./utils.js";
+import { setCurrentGame, getCurrentGame } from "./navigation.js";
 
 // ============================================================================
 //  GAME PLAY
@@ -219,7 +230,7 @@ export function showRangeControls() {
 export function initializeGame() {
   const currentGameId = getCurrentGame();
   const contextData = getContextData();
-  
+
   // Check if we're in replay mode with specific data
   if (contextData && contextData.replayType) {
     // Handle replay mode - use data from context
@@ -231,7 +242,7 @@ export function initializeGame() {
     gameState.gameResults = [];
     gameState.currentItemStartTime = null;
     gameState.isReplayMode = true;
-    
+
     // Reset game state to stopped
     gameState.isGameRunning = false;
     gameState.hasStarted = false;
@@ -244,13 +255,13 @@ export function initializeGame() {
     }
     gameState.pausedCountdownValue = null;
     gameState.countdownValue = 0;
-    
+
     // Set learning mode based on replay type
     const learningModeCheckbox = document.getElementById("learning-mode");
     if (contextData.replayType === "slow") {
       // Hide range controls for slow replay
       hideRangeControls();
-      
+
       // Enable learning mode for slow replay
       if (learningModeCheckbox) {
         learningModeCheckbox.checked = true;
@@ -259,19 +270,19 @@ export function initializeGame() {
     } else {
       // Show range controls for regular replay
       showRangeControls();
-      
+
       // Keep current learning mode setting for full replay
       if (learningModeCheckbox) {
         gameState.isLearningMode = learningModeCheckbox.checked;
       }
     }
-    
+
     // Update initial display and exit early
     updateInitialDisplay();
     updateButtonStates();
     return;
   }
-  
+
   if (!currentGameId || !gameData[currentGameId]) {
     return;
   }
@@ -528,8 +539,7 @@ function continueStartGame() {
 
   let fromIndex, toIndex;
   if (useDropdown) {
-    fromIndex =
-      parseInt(document.getElementById("from-dropdown")?.value) || 0;
+    fromIndex = parseInt(document.getElementById("from-dropdown")?.value) || 0;
     toIndex =
       parseInt(document.getElementById("to-dropdown")?.value) ||
       gameState.currentGameData.length - 1;
@@ -544,10 +554,7 @@ function continueStartGame() {
   fromIndex = Math.max(0, fromIndex);
   toIndex = Math.min(gameState.currentGameData.length - 1, toIndex);
 
-  const filteredData = gameState.currentGameData.slice(
-    fromIndex,
-    toIndex + 1
-  );
+  const filteredData = gameState.currentGameData.slice(fromIndex, toIndex + 1);
   gameState.currentGameData = filteredData;
 
   // Set originalGameData and masterGameData for potential replays

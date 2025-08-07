@@ -36,7 +36,7 @@ export function updateResults(domCache, gameState) {
       gameTitle: "Okänt spel",
       gameResults: gameState.gameResults || [],
       originalGameData: gameState.originalGameData || [],
-      masterGameData: gameState.masterGameData || []
+      masterGameData: gameState.masterGameData || [],
     };
   }
 
@@ -157,7 +157,7 @@ export function replay(slowOnly = false) {
       replayType: "slow",
       gameData: slowItems,
       originalGameData: resultData.originalGameData,
-      masterGameData: resultData.masterGameData
+      masterGameData: resultData.masterGameData,
     };
   } else {
     // For full replay, prepare data with original game data
@@ -167,10 +167,10 @@ export function replay(slowOnly = false) {
 
     replayData = {
       gameTitle: resultData.gameTitle,
-      replayType: "full", 
+      replayType: "full",
       gameData: resultData.originalGameData,
       originalGameData: resultData.originalGameData,
-      masterGameData: resultData.masterGameData
+      masterGameData: resultData.masterGameData,
     };
   }
 

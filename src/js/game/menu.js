@@ -1,7 +1,6 @@
 import { navigateToPageWithContext } from "../navigation.js";
 import gameData from "./data.js";
-import { resetGameState } from "./utils.js";
-import { gameState, domCache } from "../game.js";
+import { resetGameState, gameState, domCache } from "./utils.js";
 
 // ============================================================================
 //  GAME MENU

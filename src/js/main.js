@@ -1,8 +1,6 @@
-import {
-  domCache,
-  gameState,
-} from "./game.js";
-import { replay } from "./game/result.js";
+import { domCache, gameState } from "./game/utils.js";
+import { setupGameNavigation } from "./game/navigation.js";
+import { replay, updateResults } from "./game/result.js";
 import {
   startGame,
   pauseGame,
@@ -13,6 +11,7 @@ import {
   updateLearningMode,
   loadGameSettings,
   updateButtonStates,
+  initializeGame,
 } from "./game/play.js";
 import { generateTiles } from "./game/menu.js";
 import {
@@ -119,6 +118,9 @@ if (shouldUseHashRouting()) {
 window.addEventListener("DOMContentLoaded", function () {
   // Initialize DOM cache for better performance
   domCache.init();
+
+  // Setup game navigation callbacks
+  setupGameNavigation(gameState, domCache, { initializeGame, updateResults });
 
   // Load settings from localStorage
   loadGameSettings();

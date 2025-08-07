@@ -226,10 +226,10 @@ export function initializeFromURL() {
       // Initialize the game if we're on the game page
       if (page === "game-page") {
         // Import initializeGame dynamically to avoid circular dependencies
-        Promise.resolve().then(async () => {
+        (async () => {
           const { initializeGame } = await import("./game.js");
           initializeGame();
-        });
+        })();
       }
 
       navigateToPage(page, false);

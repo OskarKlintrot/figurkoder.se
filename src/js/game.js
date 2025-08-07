@@ -1270,7 +1270,7 @@ export function replay(slowOnly = false) {
     gameState.paused = false;
 
     // Reset timer state completely
-    clearInterval(gameState.countdownTimer);
+    cancelAnimationFrame(gameState.countdownTimer);
     gameState.countdownTimer = null;
     gameState.pausedCountdownValue = null;
     gameState.countdownValue = 0;

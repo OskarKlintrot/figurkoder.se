@@ -8,7 +8,6 @@ import gameData from "./data.js";
 import {
   resetProgressBar,
   resetGameState,
-  prepareResultData,
   gameState,
   domCache,
 } from "./utils.js";
@@ -620,6 +619,24 @@ export function pauseGame() {
   }
 
   updateButtonStates();
+}
+
+/**
+ * Prepares result data for passing to the results page
+ */
+function prepareResultData(gameState, getCurrentGame, gameData) {
+  const currentGameId = getCurrentGame();
+  const gameTitle =
+    currentGameId && gameData[currentGameId]
+      ? gameData[currentGameId].title
+      : "Okänt spel";
+
+  return {
+    gameTitle: gameTitle,
+    gameResults: [...gameState.gameResults], // Create a copy of the results
+    originalGameData: [...gameState.originalGameData], // For replay functionality
+    masterGameData: [...gameState.masterGameData], // For slow replay functionality
+  };
 }
 
 /**

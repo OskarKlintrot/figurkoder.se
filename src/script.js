@@ -168,6 +168,18 @@ function closeMenu() {
 }
 
 /**
+ * Resets the progress bar to 0% and removes progress bar styling
+ */
+function resetProgressBar() {
+  const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
+  nextBtn.classList.remove("progress-bar");
+  const progressBar = nextBtn.querySelector(".btn-progress-bar");
+  if (progressBar) {
+    progressBar.style.setProperty("--progress", "0%");
+  }
+}
+
+/**
  * Resets all game state variables and UI elements to their default values
  */
 function resetGameState() {
@@ -211,9 +223,7 @@ function resetGameState() {
 
   // Reset UI elements to default state
   // Reset progress bar on NÄSTA button
-  const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
-  nextBtn.classList.remove("progress-bar");
-  nextBtn.style.setProperty("--progress", "0%");
+  resetProgressBar();
 
   // Reset display elements
   (
@@ -912,9 +922,7 @@ function startGame() {
   gameState.gameStartTime = Date.now();
 
   // Reset progress bar on NÄSTA button for fresh start
-  const nextBtn = document.getElementById("next-btn");
-  nextBtn.classList.remove("progress-bar");
-  nextBtn.style.setProperty("--progress", "0%");
+  resetProgressBar();
 
   // Only filter data based on range if we're not using preset replay data
   if (!gameState.usePresetData) {
@@ -1062,9 +1070,7 @@ function stopGame() {
   gameState.currentItemStartTime = null;
 
   // Reset progress bar on NÄSTA button
-  const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
-  nextBtn.classList.remove("progress-bar");
-  nextBtn.style.setProperty("--progress", "0%");
+  resetProgressBar();
 
   // Only show initial display if not running
   if (!gameState.isGameRunning) updateInitialDisplay();
@@ -1199,7 +1205,9 @@ function startCountdown(resume = false) {
     ((gameState.totalCountdownTime - gameState.countdownValue) /
       gameState.totalCountdownTime) *
     100;
-  nextBtn.style.setProperty("--progress", `${progressPercentage}%`);
+  const progressBar = nextBtn.querySelector(".btn-progress-bar");
+  if (progressBar)
+    progressBar.style.setProperty("--progress", `${progressPercentage}%`);
 
   // Use requestAnimationFrame for smoother animation and better performance
   let lastUpdateTime = Date.now();
@@ -1248,11 +1256,23 @@ function startCountdown(resume = false) {
 
     // Update progress bar on NÄSTA button - batch DOM update
     requestAnimationFrame(() => {
+      // Only update progress bar if game is still running and countdown is active
+      if (
+        !gameState.isGameRunning ||
+        gameState.paused ||
+        !gameState.countdownTimer
+      ) {
+        return;
+      }
+
       const progressPercentage =
         ((gameState.totalCountdownTime - gameState.countdownValue) /
           gameState.totalCountdownTime) *
         100;
-      nextBtn.style.setProperty("--progress", `${progressPercentage}%`);
+      const progressBar = nextBtn.querySelector(".btn-progress-bar");
+      if (progressBar) {
+        progressBar.style.setProperty("--progress", `${progressPercentage}%`);
+      }
     });
 
     // Continue animation
@@ -1293,8 +1313,7 @@ function nextItem(vibrate = false) {
   }
 
   // Remove progress bar class when manually advancing
-  const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
-  nextBtn.classList.remove("progress-bar");
+  resetProgressBar();
 
   // Vibrate device for 100ms on auto-advance in learning mode (if enabled)
   if (
@@ -1344,8 +1363,8 @@ function nextItem(vibrate = false) {
     } else {
       // In practice mode, navigate to results
       updateResults();
-      navigateToPage("results-page");
       stopGame();
+      navigateToPage("results-page");
       return;
     }
   }
@@ -1362,6 +1381,9 @@ function updateResults() {
   const resultsList = document.getElementById("results-list");
   const averageTimeElement = document.getElementById("average-time");
   const resultsTitle = document.getElementById("results-title");
+
+  // Reset progress bar when preparing results page
+  resetProgressBar();
 
   // Update title to show game type
   if (currentGame && gameData[currentGame]) {
@@ -1467,6 +1489,7 @@ function replayAll() {
     gameState.countdownTimer = null;
     gameState.pausedCountdownValue = null;
     gameState.countdownValue = 0;
+    gameState.totalCountdownTime = 0;
 
     // Update initial display and button states
     updateInitialDisplay();
@@ -1529,6 +1552,7 @@ function replaySlow() {
     gameState.countdownTimer = null;
     gameState.pausedCountdownValue = null;
     gameState.countdownValue = 0;
+    gameState.totalCountdownTime = 0;
 
     // Update initial display and button states - ensure we have data first
     if (gameState.currentGameData.length > 0) {

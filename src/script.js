@@ -181,10 +181,8 @@ function resetProgressBar() {
     // Accessing offsetHeight intentionally triggers a forced reflow.
     // This ensures the progress bar reset is applied before restoring the transition.
     domCache.progressBar.offsetHeight;
-    // Restore transition after a frame
-    requestAnimationFrame(() => {
-      domCache.progressBar.style.transition = "";
-    });
+    // Restore transition immediately since progress-bar class will be removed
+    domCache.progressBar.style.transition = "";
   }
   domCache.nextBtn.classList.remove("progress-bar");
 }

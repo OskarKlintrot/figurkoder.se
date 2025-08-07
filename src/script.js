@@ -173,8 +173,18 @@ function closeMenu() {
  * Resets the progress bar to 0% and removes progress bar styling
  */
 function resetProgressBar() {
+  if (domCache.progressBar) {
+    // Temporarily remove transition to avoid layout issues during reset
+    domCache.progressBar.style.transition = "none";
+    domCache.progressBar.style.setProperty("--progress", "0%");
+    // Force a reflow to ensure the change takes effect immediately
+    // Accessing offsetHeight intentionally triggers a forced reflow.
+    // This ensures the progress bar reset is applied before restoring the transition.
+    domCache.progressBar.offsetHeight;
+    // Restore transition immediately since progress-bar class will be removed
+    domCache.progressBar.style.transition = "";
+  }
   domCache.nextBtn.classList.remove("progress-bar");
-  domCache.progressBar.style.setProperty("--progress", "0%");
 }
 
 /**

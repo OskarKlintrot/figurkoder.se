@@ -277,10 +277,10 @@ export function navigateToGame(gameType) {
   }
 
   navigateToPage("game-page");
-  (async () => {
-    const { initializeGame } = await import("./game.js");
-    initializeGame(); // This will handle dropdown vs input logic
-  })();
+  // Initialize the game after navigation
+  if (window.initializeGame) {
+    window.initializeGame();
+  }
 }
 
 /**

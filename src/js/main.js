@@ -12,6 +12,7 @@ import {
   updateLearningMode,
   loadGameSettings,
   updateButtonStates,
+  initializeGame,
 } from "./game.js";
 import {
   initializeFromURL,
@@ -114,6 +115,7 @@ window.toggleDebugViewSetting = toggleDebugViewSetting;
 window.clearDebugConsole = clearDebugConsole;
 window.handleHeaderClick = handleHeaderClick;
 window.updateLearningMode = updateLearningMode;
+window.initializeGame = initializeGame;
 
 // Initialize page based on URL when loaded
 window.addEventListener("DOMContentLoaded", function () {
@@ -123,10 +125,10 @@ window.addEventListener("DOMContentLoaded", function () {
   // Load settings from localStorage
   loadGameSettings();
   loadDebugSettings();
-  
+
   // Fetch and display service worker version
   fetchAndDisplayVersion();
-  
+
   generateTiles();
   initializeFromURL();
   updateButtonStates();

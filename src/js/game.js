@@ -1,4 +1,13 @@
-import { navigateToPage } from "./navigation.js";
+import {
+  navigateToPage,
+  updateHeader,
+  registerPageEnterCallback,
+  registerPageLeaveCallback,
+  registerContextChangeCallback,
+  setCurrentContext,
+  getCurrentContext,
+  navigateToPageWithContext,
+} from "./navigation.js";
 import gameData from "./game-data.js";
 
 // Game state object
@@ -26,15 +35,13 @@ export const gameState = {
   isLearningMode: false, // Flag to control learning mode
 };
 
-// Global variables
-export let currentGame = "";
-
+// Game-specific functions that use navigation's generic context system
 export function setCurrentGame(game) {
-  currentGame = game;
+  setCurrentContext(game);
 }
 
 export function getCurrentGame() {
-  return currentGame;
+  return getCurrentContext();
 }
 
 // Cache frequently accessed DOM elements to reduce queries
@@ -167,9 +174,7 @@ export function generateTiles() {
 
     // Use a closure to capture the gameId
     tile.addEventListener("click", () => {
-      import("./navigation.js").then(({ navigateToGame }) => {
-        navigateToGame(gameId);
-      });
+      navigateToGame(gameId);
     });
 
     tile.innerHTML = `
@@ -1289,3 +1294,81 @@ export function replay(slowOnly = false) {
     updateButtonStates();
   }, 100);
 }
+
+// Game-specific navigation function (internal use only)
+function navigateToGame(gameType) {
+  resetGameState();
+
+  // Clear any replay flags when starting a new game
+  gameState.skipRangeFiltering = false;
+  gameState.isReplayMode = false;
+
+  navigateToPageWithContext("game-page", gameType);
+}
+
+// Register game-specific navigation callbacks
+registerPageEnterCallback("game-page", () => {
+  const gameType = getCurrentGame();
+  if (gameType && gameData[gameType]) {
+    // Set up the game page with current game data
+    const game = gameData[gameType];
+
+    // Update header with game title
+    updateHeader(game.title, true);
+
+    // Set game description
+    const descElement = document.getElementById("game-description-text");
+    if (descElement) {
+      descElement.textContent = game.description;
+    }
+
+    // Initialize the game
+    initializeGame();
+  } else {
+    // No valid game context, show generic header
+    updateHeader("Spel", true);
+  }
+});
+
+registerPageEnterCallback("results-page", () => {
+  updateHeader("Resultat", true);
+});
+
+registerPageEnterCallback("main-menu", () => {
+  updateHeader("Figurkoder.se", false);
+});
+
+registerPageEnterCallback("about-page", () => {
+  updateHeader("Om sidan", true);
+});
+
+registerPageEnterCallback("faq-page", () => {
+  updateHeader("Vanliga frågor", true);
+});
+
+registerPageEnterCallback("contact-page", () => {
+  updateHeader("Kontakta mig", true);
+});
+
+registerPageEnterCallback("404-page", () => {
+  updateHeader("404 - Sidan hittades inte", true);
+});
+
+registerPageLeaveCallback("game-page", () => {
+  // Only reset if we're not going to results page
+  const activePageAfterLeave = document.querySelector(".page.active")?.id;
+  if (activePageAfterLeave !== "results-page") {
+    resetGameState();
+  }
+});
+
+registerContextChangeCallback((context) => {
+  // Handle context change - validate game exists
+  if (context && gameData && !gameData[context]) {
+    // Invalid game context, navigate to 404
+    navigateToPage("404-page");
+  }
+});
+
+// Expose initializeGame globally for backward compatibility
+window.initializeGame = initializeGame;

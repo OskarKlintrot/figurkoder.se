@@ -1,10 +1,48 @@
-import {
-  resetGameState,
-  gameState,
-  getCurrentGame,
-  setCurrentGame,
-} from "./game.js";
-import gameData from "./game-data.js";
+// Navigation state
+const navigationState = {
+  currentContext: null, // Current context (game, article, etc.)
+  onLeavePageCallbacks: new Map(), // Callbacks for leaving specific pages
+  onEnterPageCallbacks: new Map(), // Callbacks for entering specific pages
+  onContextChangeCallback: null, // Callback when context changes
+};
+
+/**
+ * Sets the current context
+ */
+export function setCurrentContext(context) {
+  navigationState.currentContext = context;
+  if (navigationState.onContextChangeCallback) {
+    navigationState.onContextChangeCallback(context);
+  }
+}
+
+/**
+ * Gets the current context
+ */
+export function getCurrentContext() {
+  return navigationState.currentContext;
+}
+
+/**
+ * Registers a callback for when leaving a specific page
+ */
+export function registerPageLeaveCallback(pageId, callback) {
+  navigationState.onLeavePageCallbacks.set(pageId, callback);
+}
+
+/**
+ * Registers a callback for when entering a specific page
+ */
+export function registerPageEnterCallback(pageId, callback) {
+  navigationState.onEnterPageCallbacks.set(pageId, callback);
+}
+
+/**
+ * Registers a callback for when context changes
+ */
+export function registerContextChangeCallback(callback) {
+  navigationState.onContextChangeCallback = callback;
+}
 
 /**
  * Handles navigation back to previous page based on current page context
@@ -12,19 +50,18 @@ import gameData from "./game-data.js";
 export function goBack() {
   const currentPageId = document.querySelector(".page.active").id;
 
-  if (currentPageId === "game-page") {
-    resetGameState(); // Reset game state before leaving game page
-    navigateToPage("main-menu");
-  } else if (currentPageId === "results-page") {
-    navigateToPage("game-page");
-  } else if (
-    currentPageId === "about-page" ||
-    currentPageId === "faq-page" ||
-    currentPageId === "contact-page" ||
-    currentPageId === "404-page"
-  ) {
-    navigateToPage("main-menu");
-  }
+  // Define simple back navigation rules
+  const backRoutes = {
+    "game-page": "main-menu",
+    "results-page": "game-page",
+    "about-page": "main-menu",
+    "faq-page": "main-menu",
+    "contact-page": "main-menu",
+    "404-page": "main-menu",
+  };
+
+  const targetPage = backRoutes[currentPageId] || "main-menu";
+  navigateToPage(targetPage);
 }
 
 /**
@@ -33,15 +70,21 @@ export function goBack() {
  * @param {boolean} showBackButton - Whether to show the back button
  */
 export function updateHeader(title, showBackButton = false) {
-  document.getElementById("page-title").textContent = title;
+  const titleElement = document.getElementById("page-title");
   const backBtn = document.getElementById("back-btn");
 
-  if (showBackButton) {
-    backBtn.classList.remove("hidden");
-    backBtn.classList.add("visible");
-  } else {
-    backBtn.classList.remove("visible");
-    backBtn.classList.add("hidden");
+  if (titleElement) {
+    titleElement.textContent = title;
+  }
+
+  if (backBtn) {
+    if (showBackButton) {
+      backBtn.classList.remove("hidden");
+      backBtn.classList.add("visible");
+    } else {
+      backBtn.classList.remove("visible");
+      backBtn.classList.add("hidden");
+    }
   }
 }
 
@@ -51,14 +94,14 @@ export function updateHeader(title, showBackButton = false) {
  * @param {boolean} updateURL - Whether to update the browser URL
  */
 export function navigateToPage(pageId, updateURL = true) {
-  // Check if we're leaving the game page to reset state
   const currentPageId = document.querySelector(".page.active")?.id;
+
+  // Call leave callback for current page
   if (
-    currentPageId === "game-page" &&
-    pageId !== "game-page" &&
-    pageId !== "results-page"
+    currentPageId &&
+    navigationState.onLeavePageCallbacks.has(currentPageId)
   ) {
-    resetGameState();
+    navigationState.onLeavePageCallbacks.get(currentPageId)();
   }
 
   // Hide all pages
@@ -67,47 +110,24 @@ export function navigateToPage(pageId, updateURL = true) {
   });
 
   // Show target page
-  document.getElementById(pageId).classList.add("active");
+  const targetPage = document.getElementById(pageId);
+  if (targetPage) {
+    targetPage.classList.add("active");
+  }
 
   // Update URL if requested
   if (updateURL) {
     const url = getURLForPage(pageId);
     if (shouldUseHashRouting()) {
-      window.location.hash = url.substring(1); // Remove the # prefix for setting hash
+      window.location.hash = url.substring(1);
     } else {
       history.pushState(null, "", url);
     }
   }
 
-  // Update header based on page
-  const currentGame = getCurrentGame();
-  switch (pageId) {
-    case "main-menu":
-      updateHeader("Figurkoder.se", false);
-      break;
-    case "game-page":
-      updateHeader(
-        currentGame && gameData && gameData[currentGame]
-          ? gameData[currentGame].title
-          : "Spel",
-        true
-      );
-      break;
-    case "results-page":
-      updateHeader("Resultat", true);
-      break;
-    case "about-page":
-      updateHeader("Om sidan", true);
-      break;
-    case "faq-page":
-      updateHeader("Vanliga frågor", true);
-      break;
-    case "contact-page":
-      updateHeader("Kontakta mig", true);
-      break;
-    case "404-page":
-      updateHeader("404 - Sidan hittades inte", true);
-      break;
+  // Call enter callback for new page
+  if (navigationState.onEnterPageCallbacks.has(pageId)) {
+    navigationState.onEnterPageCallbacks.get(pageId)();
   }
 }
 
@@ -131,33 +151,25 @@ export function shouldUseHashRouting() {
  */
 export function getURLForPage(pageId) {
   const prefix = shouldUseHashRouting() ? "#" : "";
-  const currentGame = getCurrentGame();
+  const context = getCurrentContext();
 
-  switch (pageId) {
-    case "main-menu":
-      return prefix + "/";
-    case "game-page":
-      return prefix + (currentGame ? `/game/${currentGame}` : "/game");
-    case "results-page":
-      return (
-        prefix + (currentGame ? `/game/${currentGame}/results` : "/results")
-      );
-    case "about-page":
-      return prefix + "/about";
-    case "faq-page":
-      return prefix + "/faq";
-    case "contact-page":
-      return prefix + "/contact";
-    case "404-page":
-      return prefix + "/404";
-    default:
-      return prefix + "/";
-  }
+  // Define URL patterns for each page
+  const urlPatterns = {
+    "main-menu": "/",
+    "game-page": context ? `/game/${context}` : "/game",
+    "results-page": context ? `/game/${context}/results` : "/results",
+    "about-page": "/about",
+    "faq-page": "/faq",
+    "contact-page": "/contact",
+    "404-page": "/404",
+  };
+
+  return prefix + (urlPatterns[pageId] || "/");
 }
 
 /**
- * Parses the current URL to determine which page and game should be displayed
- * @returns {Object} An object containing page and game information
+ * Parses the current URL to determine which page and context should be displayed
+ * @returns {Object} An object containing page and context information
  */
 export function parseURL() {
   let path;
@@ -174,113 +186,67 @@ export function parseURL() {
 
   // If no segments or root path, default to main menu
   if (segments.length === 0 || path === "/" || path === "") {
-    return { page: "main-menu", game: null };
+    return { page: "main-menu", context: null };
   }
 
+  // Handle different URL patterns
   if (segments[0] === "game") {
     if (segments.length === 1) {
-      return { page: "game-page", game: null };
+      return { page: "game-page", context: null };
     }
-    const gameType = segments[1];
-    // Don't check gameData here since it might not be loaded yet
-    // Let initializeFromURL handle the validation
+    const contextType = segments[1];
     if (segments.length === 3 && segments[2] === "results") {
-      return { page: "results-page", game: gameType };
+      return { page: "results-page", context: contextType };
     }
-    return { page: "game-page", game: gameType };
+    return { page: "game-page", context: contextType };
   }
 
-  switch (segments[0]) {
-    case "about":
-      return { page: "about-page", game: null };
-    case "faq":
-      return { page: "faq-page", game: null };
-    case "contact":
-      return { page: "contact-page", game: null };
-    default:
-      return { page: "404-page", game: null };
+  // Handle other static pages
+  const staticPages = {
+    about: "about-page",
+    faq: "faq-page",
+    contact: "contact-page",
+  };
+
+  const pageId = staticPages[segments[0]];
+  if (pageId) {
+    return { page: pageId, context: null };
   }
+
+  return { page: "404-page", context: null };
 }
 
 /**
  * Initializes the application based on the current URL
  */
 export function initializeFromURL() {
-  const { page, game } = parseURL();
+  const { page, context } = parseURL();
 
   // Hide loading spinner
-  document.getElementById("loading-spinner").classList.remove("active");
-
-  if (game) {
-    // Check if gameData is available and if the game exists
-    if (gameData && gameData[game]) {
-      setCurrentGame(game);
-      const gameDataObj = gameData[game];
-
-      // Safely set description if element exists
-      const descElement = document.getElementById("game-description-text");
-      if (descElement) {
-        descElement.textContent = gameDataObj.description;
-      }
-
-      // Initialize the game if we're on the game page
-      if (page === "game-page") {
-        // Import initializeGame dynamically to avoid circular dependencies
-        (async () => {
-          const { initializeGame } = await import("./game.js");
-          initializeGame();
-        })();
-      }
-
-      navigateToPage(page, false);
-
-      // Update header again now that currentGame and gameData are available
-      if (page === "game-page") {
-        updateHeader(gameDataObj.title, true);
-      }
-    } else if (gameData) {
-      // gameData is loaded but game doesn't exist - show 404
-      navigateToPage("404-page", false);
-    } else {
-      // gameData not loaded yet - wait a bit and try again
-      setTimeout(() => {
-        initializeFromURL();
-      }, 100);
-      return;
-    }
-  } else {
-    navigateToPage(page, false);
+  const loadingSpinner = document.getElementById("loading-spinner");
+  if (loadingSpinner) {
+    loadingSpinner.classList.remove("active");
   }
+
+  // Set the context if provided
+  if (context) {
+    setCurrentContext(context);
+  }
+
+  // Navigate to the appropriate page
+  navigateToPage(page, false);
 }
 
 /**
- * Navigates to a specific game type and initializes it
- * @param {string} gameType - The type of game to navigate to
+ * Navigates to a page with a specific context
+ * @param {string} pageId - The page to navigate to
+ * @param {string} context - The context to set (optional)
  */
-export function navigateToGame(gameType) {
-  // Reset any previous game state before starting a new game
-  resetGameState();
-
-  setCurrentGame(gameType);
-  const game = gameData[gameType];
-
-  // Clear any replay flags when starting a new game
-  gameState.skipRangeFiltering = false;
-  gameState.isReplayMode = false;
-
-  if (game) {
-    // Safely set description if element exists
-    const descElement = document.getElementById("game-description-text");
-    if (descElement) {
-      descElement.textContent = game.description;
-    }
+export function navigateToPageWithContext(pageId, context = null) {
+  if (context) {
+    setCurrentContext(context);
   }
-
-  navigateToPage("game-page");
-  // Initialize the game after navigation
-  if (window.initializeGame) {
-    window.initializeGame();
-  }
+  navigateToPage(pageId);
 }
 
 /**

@@ -21,7 +21,6 @@ import {
   closeMenu,
   goBack,
   navigateToPage,
-  navigateToGame,
 } from "./navigation.js";
 import {
   clearDebugConsole,
@@ -103,7 +102,6 @@ window.openMenu = openMenu;
 window.closeMenu = closeMenu;
 window.goBack = goBack;
 window.navigateToPage = navigateToPage;
-window.navigateToGame = navigateToGame;
 window.showAnswer = showAnswer;
 window.nextItem = nextItem;
 window.startGame = startGame;

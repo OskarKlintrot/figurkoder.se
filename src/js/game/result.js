@@ -2,6 +2,8 @@ import {
   navigateToPage,
   getContextData,
   setContextData,
+  registerPageEnterCallback,
+  updateHeader,
 } from "../navigation.js";
 
 // ============================================================================
@@ -14,9 +16,20 @@ import {
 // ============================================================================
 
 /**
+ * Sets up the results page navigation callback
+ * Should be called once during app initialization
+ */
+export function setupResultsPage() {
+  registerPageEnterCallback("results-page", () => {
+    updateHeader("Resultat", true);
+    updateResults(); // Update the results display when entering the page
+  });
+}
+
+/**
  * Updates the results page with game statistics and individual item results
  */
-export function updateResults(gameState) {
+export function updateResults() {
   const resultsList = document.getElementById("results-list");
   const averageTimeElement = document.getElementById("average-time");
   const resultsTitle = document.getElementById("results-title");
@@ -24,16 +37,13 @@ export function updateResults(gameState) {
   if (!resultsList || !averageTimeElement || !resultsTitle) return;
 
   // Get result data from context
-  let resultData = getContextData();
+  const resultData = getContextData();
   if (!resultData) {
-    // Fallback to gameState if no context data (shouldn't happen with new implementation)
-    console.warn("No result data found in context, falling back to gameState");
-    resultData = {
-      gameTitle: "Okänt spel",
-      gameResults: gameState.gameResults || [],
-      originalGameData: gameState.originalGameData || [],
-      masterGameData: gameState.masterGameData || [],
-    };
+    console.warn("No result data found in context");
+    resultsTitle.textContent = "Resultat";
+    resultsList.innerHTML = '<div class="result-item"><span>Inga resultat att visa</span><span>--</span></div>';
+    averageTimeElement.textContent = "--";
+    return;
   }
 
   // Update title to show game type

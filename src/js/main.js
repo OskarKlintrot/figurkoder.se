@@ -1,6 +1,5 @@
-import { gameState } from "./game/utils.js";
 import { setupGameNavigation } from "./game/navigation.js";
-import { replay, updateResults } from "./game/result.js";
+import { replay, setupResultsPage } from "./game/result.js";
 import {
   startGame,
   pauseGame,
@@ -84,25 +83,6 @@ window.clearDebugConsole = clearDebugConsole;
 window.handleHeaderClick = handleHeaderClick;
 window.updateLearningMode = updateLearningMode;
 
-// Handle keyboard shortcuts
-document.addEventListener("keydown", function (e) {
-  if (document.querySelector("#game-page.active")) {
-    if (e.key === " " || e.key === "Enter") {
-      // Space or Enter to show answer
-      e.preventDefault();
-      if (gameState.isGameRunning && !gameState.showingSolution) {
-        showAnswer();
-      }
-    } else if (e.key === "ArrowRight" || e.key === "n" || e.key === "N") {
-      // Right arrow or N to next
-      e.preventDefault();
-      if (gameState.isGameRunning) {
-        nextItem();
-      }
-    }
-  }
-});
-
 // Handle navigation changes (back/forward navigation)
 if (shouldUseHashRouting()) {
   window.addEventListener("hashchange", function () {
@@ -117,7 +97,10 @@ if (shouldUseHashRouting()) {
 // Initialize page based on URL when loaded
 window.addEventListener("DOMContentLoaded", function () {
   // Setup game navigation callbacks
-  setupGameNavigation(gameState, { initializeGame, updateResults });
+  setupGameNavigation({ initializeGame });
+  
+  // Setup results page callback
+  setupResultsPage();
 
   // Load settings from localStorage
   loadGameSettings();

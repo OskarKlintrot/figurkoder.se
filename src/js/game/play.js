@@ -82,13 +82,7 @@ function resetProgressBar(domCache) {
  * Resets all game state variables and UI elements to their default values
  */
 function resetGameState(gameState, domCache) {
-  // Don't reset if we're in replay mode (contextData indicates replay)
-  const contextData = getContextData();
-  if (contextData && contextData.replayType) {
-    return;
-  }
-
-  // Stop any running game
+  // Always stop any running game and clean up timers/wake locks
   if (gameState.isGameRunning || gameState.paused) {
     // Clear all timers
     clearTimeout(gameState.gameTimer);
@@ -102,6 +96,20 @@ function resetGameState(gameState, domCache) {
     if (window.deactivateScreenWakeLock) {
       window.deactivateScreenWakeLock();
     }
+  }
+
+  // Check if we're in replay mode - if so, only do essential cleanup above
+  const contextData = getContextData();
+  if (contextData && contextData.replayType) {
+    // Still reset running state even in replay mode
+    gameState.isGameRunning = false;
+    gameState.paused = false;
+    gameState.gameTimer = null;
+    gameState.countdownTimer = null;
+    
+    // Clear context data when navigating away to prevent replay mode persistence
+    setContextData(null);
+    return;
   }
 
   // Reset all game state variables to initial values
@@ -176,8 +184,6 @@ function setupGamePageObserver() {
     attributes: true,
     attributeFilter: ['class']
   });
-  
-  console.log('Game page observer set up successfully');
 }
 
 /**

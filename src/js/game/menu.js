@@ -54,7 +54,6 @@ export function generateTiles() {
  */
 function navigateToGame(gameType) {
   // Force reset game state when navigating to a new game
-  gameState.isReplayMode = false; // Clear replay mode first
   resetGameState(gameState, domCache);
 
   navigateToPageWithContext("game-page", gameType);

@@ -90,7 +90,8 @@ export function setupGameNavigation(
 
   registerPageLeaveCallback("game-page", () => {
     // Reset game state when leaving game page (unless in replay mode)
-    if (!gameState.isReplayMode) {
+    const contextData = getContextData();
+    if (!contextData || !contextData.replayType) {
       resetGameState(gameState, domCache);
     }
   });

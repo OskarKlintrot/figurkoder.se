@@ -240,7 +240,6 @@ export function initializeGame() {
     gameState.showingSolution = false;
     gameState.gameResults = [];
     gameState.currentItemStartTime = null;
-    gameState.isReplayMode = true;
 
     // Reset game state to stopped
     gameState.isGameRunning = false;
@@ -286,8 +285,8 @@ export function initializeGame() {
     return;
   }
 
-  // Skip initialization if we're in replay mode (but this shouldn't happen with new logic)
-  if (gameState.isReplayMode) {
+  // Skip initialization if we're in replay mode (contextData indicates replay)
+  if (contextData && contextData.replayType) {
     return;
   }
 
@@ -503,12 +502,6 @@ export function startGame() {
     showCurrentItem(true); // Resume with existing countdown
     updateButtonStates();
     return;
-  }
-
-  // Clear replay mode flag to ensure normal initialization can proceed
-  if (gameState.isReplayMode) {
-    // Clear replay mode when starting a new game
-    gameState.isReplayMode = false;
   }
 
   // If we have no data or empty data, initialize the game first

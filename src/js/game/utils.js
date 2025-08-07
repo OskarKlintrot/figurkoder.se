@@ -2,6 +2,8 @@
  * Utility functions for game functionality
  */
 
+import { getContextData } from "../navigation.js";
+
 // Game state object
 export const gameState = {
   currentGameData: [],
@@ -21,7 +23,6 @@ export const gameState = {
   gameResults: [],
   currentItemStartTime: null,
   pausedTime: 0, // Track time spent in pause for current item
-  isReplayMode: false, // Flag to prevent initializeGame during replay
   vibrationEnabled: true, // Flag to control vibration
   isLearningMode: false, // Flag to control learning mode
 };
@@ -70,8 +71,9 @@ export function resetProgressBar(domCache) {
  * Resets all game state variables and UI elements to their default values
  */
 export function resetGameState(gameState, domCache) {
-  // Don't reset if we're in replay mode
-  if (gameState.isReplayMode) {
+  // Don't reset if we're in replay mode (contextData indicates replay)
+  const contextData = getContextData();
+  if (contextData && contextData.replayType) {
     return;
   }
 
@@ -109,7 +111,6 @@ export function resetGameState(gameState, domCache) {
   gameState.gameResults = [];
   gameState.currentItemStartTime = null;
   gameState.pausedTime = 0;
-  gameState.isReplayMode = false;
   // Note: vibrationEnabled is kept as it's a user setting
 
   // Reset UI elements to default state

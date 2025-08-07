@@ -57,9 +57,6 @@ const domCache = {
   },
 };
 
-// Debounced update button states to reduce reflows
-let updateButtonStatesTimer = null;
-
 // Console logging functionality for debug view
 const originalConsole = {
   log: console.log,
@@ -304,19 +301,13 @@ function navigateToPage(pageId, updateURL = true) {
     resetGameState();
   }
 
-  // Batch DOM updates for page navigation to reduce reflows
-  const batch = () => {
-    // Hide all pages
-    document.querySelectorAll(".page").forEach((page) => {
-      page.classList.remove("active");
-    });
+  // Hide all pages
+  document.querySelectorAll(".page").forEach((page) => {
+    page.classList.remove("active");
+  });
 
-    // Show target page
-    document.getElementById(pageId).classList.add("active");
-  };
-
-  // Use requestAnimationFrame to batch the DOM updates
-  requestAnimationFrame(batch);
+  // Show target page
+  document.getElementById(pageId).classList.add("active");
 
   // Update URL if requested
   if (updateURL) {
@@ -741,26 +732,6 @@ function updateInitialDisplay() {
   }
 }
 
-/*
- * PERFORMANCE OPTIMIZATIONS TO REDUCE FORCED REFLOW:
- * 1. Replaced setInterval with requestAnimationFrame for smooth countdown animation
- * 2. Batched DOM updates using requestAnimationFrame to minimize layout recalculations
- * 3. Added DOM element caching to reduce repeated queries
- * 4. Debounced button state updates to prevent excessive DOM manipulations
- * 5. Batched page navigation DOM updates to reduce reflows
- * These changes should significantly reduce the 60ms forced reflow time.
- */
-
-/**
- * Debounced function to update button states and reduce reflows
- */
-function updateButtonStatesDebounced() {
-  if (updateButtonStatesTimer) {
-    cancelAnimationFrame(updateButtonStatesTimer);
-  }
-  updateButtonStatesTimer = requestAnimationFrame(updateButtonStates);
-}
-
 /**
  * Updates the state of all game control buttons based on current game state
  */
@@ -1143,7 +1114,7 @@ function showCurrentItem(resume = false) {
   }
 
   // Update button states based on current game state
-  updateButtonStatesDebounced();
+  updateButtonStates();
 }
 
 /**
@@ -1184,7 +1155,7 @@ function showAnswer() {
   }
 
   // Update button states after showing answer
-  updateButtonStatesDebounced();
+  updateButtonStates();
 }
 
 /**
@@ -1221,7 +1192,7 @@ function startCountdown(resume = false) {
       `${progressPercentage}%`
     );
   }
-  // Use requestAnimationFrame for smoother animation and better performance
+
   let lastUpdateTime = Date.now();
   const countdownStep = () => {
     if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused
@@ -1266,28 +1237,17 @@ function startCountdown(resume = false) {
       return;
     }
 
-    // Update progress bar on NÄSTA button - batch DOM update with cached element
-    requestAnimationFrame(() => {
-      // Only update progress bar if game is still running and countdown is active
-      if (
-        !gameState.isGameRunning ||
-        gameState.paused ||
-        !gameState.countdownTimer
-      ) {
-        return;
-      }
+    // Update progress bar on NÄSTA button
+    const progressPercentage = Math.round(
+      ((gameState.totalCountdownTime - gameState.countdownValue) /
+        gameState.totalCountdownTime) *
+        100
+    );
 
-      const progressPercentage =
-        ((gameState.totalCountdownTime - gameState.countdownValue) /
-          gameState.totalCountdownTime) *
-        100;
-      if (domCache.progressBar) {
-        domCache.progressBar.style.setProperty(
-          "--progress",
-          `${progressPercentage}%`
-        );
-      }
-    });
+    domCache.progressBar.style.setProperty(
+      "--progress",
+      `${progressPercentage}%`
+    );
 
     // Continue animation
     gameState.countdownTimer = requestAnimationFrame(countdownStep);

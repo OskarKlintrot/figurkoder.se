@@ -81,18 +81,6 @@ export function clearDebugConsole() {
   }
 }
 
-// Capture uncaught errors and promise rejections
-window.addEventListener("error", function (event) {
-  addToDebugConsole(
-    `Uncaught Error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
-    "error"
-  );
-});
-
-window.addEventListener("unhandledrejection", function (event) {
-  addToDebugConsole(`Unhandled Promise Rejection: ${event.reason}`, "error");
-});
-
 /**
  * Loads debug-related settings from localStorage
  */
@@ -160,3 +148,15 @@ export function toggleDebugViewSetting() {
   // Save setting to localStorage
   localStorage.setItem("debugViewEnabled", newDebugViewState);
 }
+
+// Capture uncaught errors and promise rejections
+window.addEventListener("error", function (event) {
+  addToDebugConsole(
+    `Uncaught Error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
+    "error"
+  );
+});
+
+window.addEventListener("unhandledrejection", function (event) {
+  addToDebugConsole(`Unhandled Promise Rejection: ${event.reason}`, "error");
+});

@@ -34,7 +34,7 @@ const serviceWorkerRegistration = navigator.serviceWorker.register("/sw.js");
 /**
  * Fetches the service worker version and displays it in the navigation menu
  */
-export async function fetchAndDisplayVersion() {
+async function fetchAndDisplayVersion() {
   try {
     // First wait for registration to complete
     await serviceWorkerRegistration;
@@ -66,6 +66,23 @@ export async function fetchAndDisplayVersion() {
   }
 }
 
+// Make functions globally accessible for onclick handlers
+window.openMenu = openMenu;
+window.closeMenu = closeMenu;
+window.goBack = goBack;
+window.navigateToPage = navigateToPage;
+window.showAnswer = showAnswer;
+window.nextItem = nextItem;
+window.startGame = startGame;
+window.pauseGame = pauseGame;
+window.stopGame = stopGame;
+window.replay = replay;
+window.toggleVibrationSetting = toggleVibrationSetting;
+window.toggleDebugViewSetting = toggleDebugViewSetting;
+window.clearDebugConsole = clearDebugConsole;
+window.handleHeaderClick = handleHeaderClick;
+window.updateLearningMode = updateLearningMode;
+
 // Handle keyboard shortcuts
 document.addEventListener("keydown", function (e) {
   if (document.querySelector("#game-page.active")) {
@@ -95,23 +112,6 @@ if (shouldUseHashRouting()) {
     initializeFromURL();
   });
 }
-
-// Make functions globally accessible for onclick handlers
-window.openMenu = openMenu;
-window.closeMenu = closeMenu;
-window.goBack = goBack;
-window.navigateToPage = navigateToPage;
-window.showAnswer = showAnswer;
-window.nextItem = nextItem;
-window.startGame = startGame;
-window.pauseGame = pauseGame;
-window.stopGame = stopGame;
-window.replay = replay;
-window.toggleVibrationSetting = toggleVibrationSetting;
-window.toggleDebugViewSetting = toggleDebugViewSetting;
-window.clearDebugConsole = clearDebugConsole;
-window.handleHeaderClick = handleHeaderClick;
-window.updateLearningMode = updateLearningMode;
 
 // Initialize page based on URL when loaded
 window.addEventListener("DOMContentLoaded", function () {

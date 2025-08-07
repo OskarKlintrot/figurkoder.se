@@ -1500,11 +1500,11 @@ function replay(slowOnly = false) {
       gameState.currentGameData = [];
       gameState.masterGameData = [];
     }
+    // Set usePresetData flag only for full replays
+    gameState.usePresetData = true; // Flag that we're using preset data, skip range filtering
   }
 
-  // Set replay mode flag
   gameState.isReplayMode = true;
-  gameState.usePresetData = true; // Flag that we're using preset data, skip range filtering
 
   navigateToPage("game-page");
   setTimeout(() => {

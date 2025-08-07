@@ -10,18 +10,17 @@
       if (isGameActive && wakeLock) {
         return; // Already active
       }
-      
+
       isGameActive = true;
-      
+
       try {
         wakeLock = await navigator.wakeLock.request("screen");
         console.log("Wake lock activated - screen will stay on during game");
-        
+
         // Listen for wake lock release (e.g., user switches tabs)
-        wakeLock.addEventListener('release', () => {
-          console.log('Wake lock was released');
+        wakeLock.addEventListener("release", () => {
+          console.log("Wake lock was released");
         });
-        
       } catch (err) {
         console.log("Wake lock request failed:", err);
         // Wake lock request fails - usually system related, such as battery saver mode
@@ -32,9 +31,9 @@
       if (!isGameActive) {
         return; // Already inactive
       }
-      
+
       isGameActive = false;
-      
+
       try {
         if (wakeLock) {
           await wakeLock.release();

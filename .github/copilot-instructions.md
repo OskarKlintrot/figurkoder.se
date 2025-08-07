@@ -85,11 +85,15 @@ Uses dual timing approach:
 ## Development Workflow
 
 ### Local Development
+The development site is always running at `http://localhost:61949`. Use **PowerShell** for all terminal commands.
+
 ```powershell
 # Simple HTTP server (required for ES6 modules)
 dotnet serve -d src -p 61949
 # Or use VS Code Live Server extension
 ```
+
+**Note**: Always use PowerShell when running terminal commands in this project.
 
 ### Version Management
 Service worker version auto-updates on deployment:

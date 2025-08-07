@@ -14,9 +14,8 @@ This is a Swedish **figurkod** (mnemonic image) training Progressive Web App (PW
 ```
 src/
 ├── index.html           # Main SPA with all pages as hidden divs
-├── styles.css           # Main CSS file that imports all modular CSS files
 ├── sw.js                # Service worker for caching and offline support
-├── css/                 # Modular CSS architecture
+├── css/                 # Modular CSS architecture (loaded directly in index.html)
 │   ├── variables.css    # CSS custom properties and design tokens
 │   ├── base.css         # Reset, typography, and base element styles
 │   ├── components.css   # Reusable UI components and page layouts
@@ -99,7 +98,8 @@ Uses CSS custom properties extensively:
 - `navigation.css`: Header, navigation menus, and page transitions
 - `responsive.css`: Media queries and breakpoint-specific styles
 - `utilities.css`: Helper classes and utility styles
-- `styles.css`: Main CSS file that imports all modular files
+
+All CSS files are loaded directly in `index.html` for parallel loading performance.
 
 ## Key Integrations
 - **Screen Wake Lock API**: Prevents screen timeout during games
@@ -118,4 +118,4 @@ Uses CSS custom properties extensively:
 - **Add new game type**: Extend `game-data.js` arrays and update game selection logic
 - **Modify game mechanics**: Focus on timer functions in `game.js` (~lines 1000-1200)
 - **Update PWA**: Modify `sw.js` cache strategy or `site.webmanifest`
-- **Style changes**: Use existing CSS custom properties when possible; edit specific CSS modules rather than the main `styles.css` file
+- **Style changes**: Use existing CSS custom properties when possible; edit specific CSS modules directly (all loaded in `index.html`)

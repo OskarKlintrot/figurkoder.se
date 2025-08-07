@@ -4,7 +4,7 @@
 This is a Swedish **figurkod** (mnemonic image) training Progressive Web App (PWA) built with vanilla JavaScript. Users memorize alphanumeric codes for names using visual mnemonics, then practice recall through timed exercises.
 
 ## Architecture
-- **Single-file monolith**: All HTML, inline CSS via `styles.css`, and JavaScript in `index.html` and `script.js`
+- **Modular JavaScript**: HTML in `index.html`, CSS in `styles.css`, and JavaScript split into ES6 modules in the `js/` directory
 - **Vanilla JavaScript**: No frameworks - uses DOM manipulation, ES6 modules, and Web APIs
 - **PWA**: Service worker (`sw.js`) enables offline functionality and app installation
 - **Static hosting**: Azure Static Web Apps with automatic deployment via GitHub Actions
@@ -13,19 +13,25 @@ This is a Swedish **figurkod** (mnemonic image) training Progressive Web App (PW
 ```
 src/
 ├── index.html           # Main SPA with all pages as hidden divs
-├── script.js            # Game logic, navigation, PWA features (~1600 lines)
-├── gameData.js          # Training data arrays (names + mnemonics)
-├── sw.js                # Service worker for caching and offline support
 ├── styles.css           # CSS variables + responsive design
+├── sw.js                # Service worker for caching and offline support
+├── js/                  # JavaScript modules (ES6)
+│   ├── main.js          # Entry point and event listeners (~120 lines)
+│   ├── game.js          # Core game logic and state management (~1200 lines)
+│   ├── navigation.js    # Page routing and navigation (~230 lines)
+│   ├── game-data.js     # Training data arrays (names + mnemonics) (~1300 lines)
+│   ├── debug.js         # Debug console and development tools (~140 lines)
+│   └── keep-screen-on.js # Screen wake lock functionality (~60 lines)
 └── staticwebapp.config.json # Azure SWA routing config
 ```
 
 ## Core Patterns
 
 ### Game State Management
-All game state lives in the global `gameState` object:
+All game state lives in the global `gameState` object exported from `game.js`:
 ```javascript
-const gameState = {
+// In js/game.js
+export const gameState = {
   currentGameData: [],      // Active filtered dataset
   originalGameData: [],     // Backup of original data
   isGameRunning: false,     // Game session state
@@ -36,12 +42,13 @@ const gameState = {
 
 ### Page Navigation
 Single-page app using CSS classes to show/hide page divs:
-- Use `navigateToPage(pageId)` to switch pages
+- Use `navigateToPage(pageId)` from `navigation.js` to switch pages
 - Each page is a `<div class="page">` with unique ID
 - Navigation updates URL history and header state
+- Context-aware navigation with callback system for page enter/leave events
 
 ### Game Types & Data Structure
-Games are defined in `gameData.js` as arrays of `[name, mnemonic]` pairs:
+Games are defined in `game-data.js` as arrays of `[name, mnemonic]` pairs:
 - `femaleNames`, `maleNames`: Person name training data
 - Range-based training: Users select numeric ranges (0-99) to filter data
 - Two modes: Learning (show answers) vs Training (timed recall)
@@ -87,7 +94,7 @@ Uses CSS custom properties extensively:
 - Validate Swedish language content rendering
 
 ## Common Tasks
-- **Add new game type**: Extend `gameData.js` arrays and update game selection logic
-- **Modify game mechanics**: Focus on timer functions in `script.js` (~lines 1000-1200)
+- **Add new game type**: Extend `game-data.js` arrays and update game selection logic
+- **Modify game mechanics**: Focus on timer functions in `game.js` (~lines 1000-1200)
 - **Update PWA**: Modify `sw.js` cache strategy or `site.webmanifest`
 - **Style changes**: Use existing CSS custom properties when possible

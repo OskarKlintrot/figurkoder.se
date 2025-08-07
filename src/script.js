@@ -1461,28 +1461,67 @@ function updateResults() {
 }
 
 /**
- * Replays the entire game with the same settings
+ * Replays the game with specified settings
+ * @param {boolean} slowOnly - If true, only replay slow/incorrect items
  */
-function replayAll() {
+function replay(slowOnly = false) {
+  // For slow replay, check if we have results and slow items
+  if (slowOnly) {
+    if (!gameState.gameResults.length || !gameState.masterGameData.length)
+      return;
+
+    // Filter master game data to only include items that were slow or showed answer
+    const slowItems = [];
+    gameState.gameResults.forEach((result) => {
+      if (result.timeSpent > 2 || result.showedAnswer) {
+        // Find the corresponding item in masterGameData (the original filtered data)
+        const foundItem = gameState.masterGameData.find(
+          (item) => item[0] === result.figurkod
+        );
+        if (foundItem && !slowItems.some((item) => item[0] === foundItem[0])) {
+          slowItems.push(foundItem);
+        }
+      }
+    });
+
+    if (slowItems.length === 0) return;
+
+    // Override current game data with only slow items
+    gameState.currentGameData = [...slowItems];
+    gameState.currentItemIndex = 0;
+    gameState.gameResults = [];
+    gameState.currentItemStartTime = null;
+  } else {
+    // For full replay, restore original game data
+    if (gameState.originalGameData.length > 0) {
+      gameState.currentGameData = [...gameState.originalGameData];
+    } else {
+      // If originalGameData is empty, we need to reset everything
+      gameState.currentGameData = [];
+      gameState.masterGameData = [];
+    }
+  }
+
   // Set replay mode flag
   gameState.isReplayMode = true;
-
-  // Restore original game data (the last used range) and restart with same settings
-  if (gameState.originalGameData.length > 0) {
-    gameState.currentGameData = [...gameState.originalGameData];
-    gameState.usePresetData = true; // Flag that we're using preset data, skip range filtering
-  } else {
-    // If originalGameData is empty, we need to reset everything
-    gameState.currentGameData = [];
-    gameState.masterGameData = [];
-  }
+  gameState.usePresetData = true; // Flag that we're using preset data, skip range filtering
 
   navigateToPage("game-page");
   setTimeout(() => {
-    // Show range controls for regular replay
-    showRangeControls();
+    // Configure UI based on replay type
+    if (slowOnly) {
+      // Hide "Till" and "Från" fields for slow replay
+      hideRangeControls();
 
-    // Clear replay mode flag and reset to stopped state
+      // Enable learning mode for slow replay
+      document.getElementById("learning-mode").checked = true;
+      gameState.isLearningMode = true;
+    } else {
+      // Show range controls for regular replay
+      showRangeControls();
+    }
+
+    // Reset game state to stopped
     gameState.isReplayMode = false;
     gameState.isGameRunning = false;
     gameState.hasStarted = false;
@@ -1495,68 +1534,6 @@ function replayAll() {
     gameState.countdownValue = 0;
 
     // Update initial display and button states
-    updateInitialDisplay();
-    updateButtonStates();
-  }, 100);
-}
-
-/**
- * Replays only the items that were answered slowly or incorrectly
- */
-function replaySlow() {
-  if (!gameState.gameResults.length || !gameState.masterGameData.length) return;
-
-  // Set replay mode flag
-  gameState.isReplayMode = true;
-
-  // Filter master game data to only include items that were slow or showed answer
-  const slowItems = [];
-  gameState.gameResults.forEach((result) => {
-    if (result.timeSpent > 2 || result.showedAnswer) {
-      // Find the corresponding item in masterGameData (the original filtered data)
-      const foundItem = gameState.masterGameData.find(
-        (item) => item[0] === result.figurkod
-      );
-      if (foundItem && !slowItems.some((item) => item[0] === foundItem[0])) {
-        slowItems.push(foundItem);
-      }
-    }
-  });
-
-  if (slowItems.length === 0) return;
-
-  // Override current game data with only slow items - but don't touch originalGameData or masterGameData
-  gameState.currentGameData = [...slowItems];
-  gameState.currentItemIndex = 0;
-  gameState.gameResults = [];
-  gameState.currentItemStartTime = null;
-
-  // Go back to game page
-  navigateToPage("game-page");
-  setTimeout(() => {
-    // Hide "Till" and "Från" fields for slow replay
-    hideRangeControls();
-
-    // Enable learning mode for slow replay
-    document.getElementById("learning-mode").checked = true;
-    gameState.isLearningMode = true;
-
-    // Set the preset data flag AFTER navigation but BEFORE clearing replay mode
-    gameState.usePresetData = true;
-
-    // Clear replay mode flag and reset to stopped state
-    gameState.isReplayMode = false;
-    gameState.isGameRunning = false;
-    gameState.hasStarted = false;
-    gameState.paused = false;
-
-    // Reset timer state completely
-    clearInterval(gameState.countdownTimer);
-    gameState.countdownTimer = null;
-    gameState.pausedCountdownValue = null;
-    gameState.countdownValue = 0;
-
-    // Update initial display and button states - ensure we have data first
     if (gameState.currentGameData.length > 0) {
       updateInitialDisplay();
     } else {
@@ -1750,8 +1727,7 @@ window.nextItem = nextItem;
 window.startGame = startGame;
 window.pauseGame = pauseGame;
 window.stopGame = stopGame;
-window.replayAll = replayAll;
-window.replaySlow = replaySlow;
+window.replay = replay;
 window.toggleVibrationSetting = toggleVibrationSetting;
 window.toggleDebugViewSetting = toggleDebugViewSetting;
 window.clearDebugConsole = clearDebugConsole;

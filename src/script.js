@@ -1192,7 +1192,7 @@ function startCountdown(resume = false) {
       `${progressPercentage}%`
     );
   }
-  // Use requestAnimationFrame for smoother animation and better performance
+
   let lastUpdateTime = Date.now();
   const countdownStep = () => {
     if (!gameState.isGameRunning || gameState.paused) return; // Prevent advancing if paused

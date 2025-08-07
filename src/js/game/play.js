@@ -153,27 +153,31 @@ let gamePageObserver = null;
  * Sets up the MutationObserver to watch for game page active state changes
  */
 function setupGamePageObserver() {
-  const gamePage = document.getElementById('game-page');
-  if (!gamePage || gamePageObserver) return;
+  // Only set up once per session
+  if (gamePageObserver) {
+    return;
+  }
 
   gamePageObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
         const target = mutation.target;
         const hasActive = target.classList.contains('active');
-        
-        // If the active class was removed, reset the game state
-        if (!hasActive && (gameState.isGameRunning || gameState.paused)) {
+        if (!hasActive) {
           resetGameState(gameState, domCache);
         }
       }
     });
   });
 
+  const gamePage = document.getElementById('game-page');
+
   gamePageObserver.observe(gamePage, {
     attributes: true,
     attributeFilter: ['class']
   });
+  
+  console.log('Game page observer set up successfully');
 }
 
 /**
@@ -381,9 +385,6 @@ export function showRangeControls() {
 export function initializeGame() {
   // Initialize DOM cache for better performance
   domCache.init();
-  
-  // Set up the game page observer to watch for active state changes
-  setupGamePageObserver();
   
   const currentGameId = getCurrentContext();
   const contextData = getContextData();
@@ -1173,3 +1174,17 @@ document.addEventListener("keydown", function (e) {
     }
   }
 });
+
+// Set up the game page observer when the module loads
+// This ensures it's only set up once and works reliably
+document.addEventListener('DOMContentLoaded', () => {
+  setupGamePageObserver();
+});
+
+// If DOM is already loaded, set up immediately
+if (document.readyState === 'loading') {
+  // DOM is still loading, event listener will handle it
+} else {
+  // DOM is already loaded
+  setupGamePageObserver();
+}

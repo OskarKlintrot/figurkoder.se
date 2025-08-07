@@ -130,8 +130,6 @@ window.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     initializeFromURL();
     // Initialize button states on page load
-    import("./game.js").then(({ updateButtonStates }) => {
-      updateButtonStates();
-    });
+    updateButtonStates();
   }, 100);
 });

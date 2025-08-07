@@ -38,6 +38,7 @@ const gameState = {
 // Cache frequently accessed DOM elements to reduce queries
 const domCache = {
   nextBtn: null,
+  progressBar: null,
   currentItem: null,
   solutionDisplay: null,
   playBtn: null,
@@ -46,6 +47,7 @@ const domCache = {
   showBtn: null,
   init() {
     this.nextBtn = document.getElementById("next-btn");
+    this.progressBar = this.nextBtn.querySelector(".btn-progress-bar");
     this.currentItem = document.getElementById("current-item");
     this.solutionDisplay = document.getElementById("solution-display");
     this.playBtn = document.getElementById("play-btn");
@@ -171,12 +173,8 @@ function closeMenu() {
  * Resets the progress bar to 0% and removes progress bar styling
  */
 function resetProgressBar() {
-  const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
-  nextBtn.classList.remove("progress-bar");
-  const progressBar = nextBtn.querySelector(".btn-progress-bar");
-  if (progressBar) {
-    progressBar.style.setProperty("--progress", "0%");
-  }
+  domCache.nextBtn.classList.remove("progress-bar");
+  domCache.progressBar.style.setProperty("--progress", "0%");
 }
 
 /**
@@ -1196,18 +1194,22 @@ function startCountdown(resume = false) {
     gameState.pausedCountdownValue = null;
   }
 
+  // Use cached DOM elements
+  if (!domCache.nextBtn) return;
+
   // Add progress bar class to NÄSTA button
-  const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
-  nextBtn.classList.add("progress-bar");
+  domCache.nextBtn.classList.add("progress-bar");
 
   // Set initial progress bar on NÄSTA button
   const progressPercentage =
     ((gameState.totalCountdownTime - gameState.countdownValue) /
       gameState.totalCountdownTime) *
     100;
-  const progressBar = nextBtn.querySelector(".btn-progress-bar");
-  if (progressBar) {
-    progressBar.style.setProperty("--progress", `${progressPercentage}%`);
+  if (domCache.progressBar) {
+    domCache.progressBar.style.setProperty(
+      "--progress",
+      `${progressPercentage}%`
+    );
   }
   // Use requestAnimationFrame for smoother animation and better performance
   let lastUpdateTime = Date.now();
@@ -1227,7 +1229,7 @@ function startCountdown(resume = false) {
         gameState.countdownTimer = null;
       }
       // Remove progress bar class when countdown ends
-      nextBtn.classList.remove("progress-bar");
+      domCache.nextBtn.classList.remove("progress-bar");
 
       if (gameState.isGameRunning && !gameState.paused) {
         // Record timeout result before advancing with exact time limit
@@ -1254,7 +1256,7 @@ function startCountdown(resume = false) {
       return;
     }
 
-    // Update progress bar on NÄSTA button - batch DOM update
+    // Update progress bar on NÄSTA button - batch DOM update with cached element
     requestAnimationFrame(() => {
       // Only update progress bar if game is still running and countdown is active
       if (
@@ -1269,9 +1271,11 @@ function startCountdown(resume = false) {
         ((gameState.totalCountdownTime - gameState.countdownValue) /
           gameState.totalCountdownTime) *
         100;
-      const progressBar = nextBtn.querySelector(".btn-progress-bar");
-      if (progressBar) {
-        progressBar.style.setProperty("--progress", `${progressPercentage}%`);
+      if (domCache.progressBar) {
+        domCache.progressBar.style.setProperty(
+          "--progress",
+          `${progressPercentage}%`
+        );
       }
     });
 

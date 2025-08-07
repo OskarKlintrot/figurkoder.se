@@ -392,7 +392,7 @@ export function showRangeControls() {
 /**
  * Initializes a game with the selected settings and data
  */
-export function initializeGame() {
+function initializeGame() {
   const currentGameId = getCurrentGame();
   if (!currentGameId || !gameData[currentGameId]) {
     return;
@@ -1369,6 +1369,3 @@ registerContextChangeCallback((context) => {
     navigateToPage("404-page");
   }
 });
-
-// Expose initializeGame globally for backward compatibility
-window.initializeGame = initializeGame;

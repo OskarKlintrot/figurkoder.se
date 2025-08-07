@@ -48,7 +48,7 @@ export function registerContextChangeCallback(callback) {
  * Handles navigation back to previous page based on current page context
  */
 export function goBack() {
-  const currentPageId = document.querySelector(".page.active").id;
+  const currentPageId = document.querySelector(".page.active")?.id;
 
   // Define simple back navigation rules
   const backRoutes = {

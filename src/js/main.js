@@ -12,7 +12,6 @@ import {
   updateLearningMode,
   loadGameSettings,
   updateButtonStates,
-  initializeGame,
 } from "./game.js";
 import {
   initializeFromURL,
@@ -113,7 +112,6 @@ window.toggleDebugViewSetting = toggleDebugViewSetting;
 window.clearDebugConsole = clearDebugConsole;
 window.handleHeaderClick = handleHeaderClick;
 window.updateLearningMode = updateLearningMode;
-window.initializeGame = initializeGame;
 
 // Initialize page based on URL when loaded
 window.addEventListener("DOMContentLoaded", function () {

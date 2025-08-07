@@ -1,0 +1,125 @@
+/* ================================================
+   VARIABLES
+   ================================================ */
+
+:root {
+  /* Colors */
+  --color-primary: #007aff;
+  --color-primary-hover: #0056cc;
+  --color-secondary: #dc3545;
+  --color-secondary-hover: #c82333;
+  --color-text: #333;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: #666;
+  --color-text-light: #6c757d;
+  --color-text-lighter: #adb5bd;
+  --color-background: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f8f8f8;
+  --color-surface-secondary: #f8f9fa;
+  --color-surface-tertiary: #f0f0f0;
+  --color-border: #ddd;
+  --color-border-light: #e9ecef;
+  --color-border-lighter: #dee2e6;
+  --color-border-lightest: #eee;
+  --color-nav-hover: #e8e8e8;
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-warning-bg: #fff3cd;
+  --color-warning-text: #856404;
+  --color-error: #dc3545;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.625rem;
+  --spacing-lg: 0.75rem;
+  --spacing-xl: 1rem;
+  --spacing-2xl: 1.25rem;
+  --spacing-3xl: 1.5rem;
+  --spacing-4xl: 2rem;
+  --spacing-5xl: 2.5rem;
+
+  /* Additional specific spacing values */
+  --spacing-button: 0.875rem;
+  --spacing-input: 0.9375rem;
+
+  /* Border widths */
+  --border-width-thin: 0.0625rem;
+  --border-width-thick: 2px;
+
+  /* Progress bar */
+  --progress: 0%;
+
+  /* Font sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 3rem;
+
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 12px;
+  --radius-full: 50%;
+
+  /* Shadows */
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.05);
+
+  /* Transitions */
+  --transition-fast: 0.1s;
+  --transition-normal: 0.2s;
+  --transition-slow: 0.3s;
+
+  /* Layout */
+  --max-width-page: 25rem;
+  --max-width-game: 500px;
+  --max-width-game-controls: 400px;
+  --max-width-solution: 300px;
+  --max-width-replay-btn: 200px;
+  --debug-view-height: 25vh;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Colors for dark mode */
+    --color-primary: #0a84ff;
+    --color-primary-hover: #409cff;
+    --color-secondary: #ff453a;
+    --color-secondary-hover: #ff6961;
+    --color-text: #f2f2f7;
+    --color-text-muted: #d1d1d6;
+    --color-text-light: #c7c7cc;
+    --color-text-lighter: #aeaeb2;
+    --color-background: #000000;
+    --color-surface: #1c1c1e;
+    --color-surface-hover: #2c2c2e;
+    --color-surface-secondary: #2c2c2e;
+    --color-surface-tertiary: #3a3a3c;
+    --color-border: #38383a;
+    --color-border-light: #48484a;
+    --color-border-lighter: #545456;
+    --color-border-lightest: #636366;
+    --color-nav-hover: #3a3a3c;
+    --color-success: #30d158;
+    --color-warning: #ff9f0a;
+    --color-warning-bg: #1f1611;
+    --color-warning-text: #ffcc02;
+    --color-error: #ff453a;
+
+    /* Shadows for dark mode - lighter for visibility */
+    --shadow-sm: 0 0.125rem 0.25rem rgba(255, 255, 255, 0.05);
+    --shadow-md: 0 0.25rem 0.5rem rgba(255, 255, 255, 0.1);
+    --shadow-lg: 0 4px 12px rgba(255, 255, 255, 0.1);
+    --shadow-xl: 0 0.125rem 0.375rem rgba(255, 255, 255, 0.02);
+  }
+}

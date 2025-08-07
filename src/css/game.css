@@ -1,0 +1,123 @@
+/* ================================================
+   GAME
+   ================================================ */
+
+/* Game Container */
+.game-container {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2xl);
+  max-width: var(--max-width-game);
+  width: 100%;
+  margin: 0 auto;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.current-item-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  position: relative;
+  overflow: visible;
+}
+
+.current-item-display {
+  background: var(--color-surface-secondary);
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-4xl) var(--spacing-3xl);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: center;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  word-break: break-all;
+}
+
+.solution-container {
+  width: 100%;
+  max-width: var(--max-width-solution);
+}
+
+.solution-display {
+  width: 100%;
+  padding: var(--spacing-button);
+  font-size: 1.125rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+  text-align: center;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--spacing-lg);
+  width: 100%;
+  max-width: var(--max-width-solution);
+}
+
+.action-buttons .btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-button) var(--spacing-3xl);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.game-controls {
+  width: 100%;
+  max-width: var(--max-width-game-controls);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-3xl);
+}
+
+.control-row {
+  display: flex;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+  align-items: end;
+}
+
+.control-row:last-child {
+  margin-bottom: 0;
+}
+
+.control-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.control-group label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xs);
+}
+
+.playback-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}

@@ -905,14 +905,15 @@ h1 {
     var(--color-primary-hover) 100%
   );
   transition: width 0.1s linear;
-  z-index: -1;
 }
 
 .btn-content {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
+  z-index: 1;
 }
 
 .game-controls {

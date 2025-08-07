@@ -1206,9 +1206,9 @@ function startCountdown(resume = false) {
       gameState.totalCountdownTime) *
     100;
   const progressBar = nextBtn.querySelector(".btn-progress-bar");
-  if (progressBar)
+  if (progressBar) {
     progressBar.style.setProperty("--progress", `${progressPercentage}%`);
-
+  }
   // Use requestAnimationFrame for smoother animation and better performance
   let lastUpdateTime = Date.now();
   const countdownStep = () => {

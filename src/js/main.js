@@ -11,6 +11,7 @@ import {
   toggleVibrationSetting,
   updateLearningMode,
   loadGameSettings,
+  updateButtonStates,
 } from "./game.js";
 import {
   initializeFromURL,

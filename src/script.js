@@ -178,6 +178,8 @@ function resetProgressBar() {
     domCache.progressBar.style.transition = "none";
     domCache.progressBar.style.setProperty("--progress", "0%");
     // Force a reflow to ensure the change takes effect immediately
+    // Accessing offsetHeight intentionally triggers a forced reflow.
+    // This ensures the progress bar reset is applied before restoring the transition.
     domCache.progressBar.offsetHeight;
     // Restore transition after a frame
     requestAnimationFrame(() => {

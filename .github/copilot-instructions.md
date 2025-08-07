@@ -4,7 +4,8 @@
 This is a Swedish **figurkod** (mnemonic image) training Progressive Web App (PWA) built with vanilla JavaScript. Users memorize alphanumeric codes for names using visual mnemonics, then practice recall through timed exercises.
 
 ## Architecture
-- **Modular JavaScript**: HTML in `index.html`, CSS in `styles.css`, and JavaScript split into ES6 modules in the `js/` directory
+- **Modular JavaScript**: HTML in `index.html`, modular CSS in `css/` directory, and JavaScript split into ES6 modules in the `js/` directory
+- **Modular CSS**: Split into focused files - variables, base styles, components, forms, game UI, navigation, responsive design, and utilities
 - **Vanilla JavaScript**: No frameworks - uses DOM manipulation, ES6 modules, and Web APIs
 - **PWA**: Service worker (`sw.js`) enables offline functionality and app installation
 - **Static hosting**: Azure Static Web Apps with automatic deployment via GitHub Actions
@@ -13,8 +14,17 @@ This is a Swedish **figurkod** (mnemonic image) training Progressive Web App (PW
 ```
 src/
 ├── index.html           # Main SPA with all pages as hidden divs
-├── styles.css           # CSS variables + responsive design
+├── styles.css           # Main CSS file that imports all modular CSS files
 ├── sw.js                # Service worker for caching and offline support
+├── css/                 # Modular CSS architecture
+│   ├── variables.css    # CSS custom properties and design tokens
+│   ├── base.css         # Reset, typography, and base element styles
+│   ├── components.css   # Reusable UI components and page layouts
+│   ├── forms.css        # Form controls and input styling
+│   ├── game.css         # Game-specific UI components and layouts
+│   ├── navigation.css   # Header, navigation, and menu styling
+│   ├── responsive.css   # Media queries and responsive breakpoints
+│   └── utilities.css    # Utility classes and helper styles
 ├── js/                  # JavaScript modules (ES6)
 │   ├── main.js          # Entry point and event listeners (~120 lines)
 │   ├── game.js          # Core game logic and state management (~1200 lines)
@@ -80,6 +90,17 @@ Uses CSS custom properties extensively:
 - Spacing scale: `--spacing-xs` through `--spacing-5xl`
 - Dark mode support via `@media (prefers-color-scheme: dark)`
 
+**Modular CSS Structure:**
+- `variables.css`: Design tokens (colors, spacing, shadows, borders, typography)
+- `base.css`: CSS reset, body styles, and base element styling
+- `components.css`: Page layouts and reusable UI components
+- `forms.css`: Form controls, inputs, buttons, and form-specific styling
+- `game.css`: Game interface components (timers, counters, overlays)
+- `navigation.css`: Header, navigation menus, and page transitions
+- `responsive.css`: Media queries and breakpoint-specific styles
+- `utilities.css`: Helper classes and utility styles
+- `styles.css`: Main CSS file that imports all modular files
+
 ## Key Integrations
 - **Screen Wake Lock API**: Prevents screen timeout during games
 - **Vibration API**: Haptic feedback for mobile users
@@ -97,4 +118,4 @@ Uses CSS custom properties extensively:
 - **Add new game type**: Extend `game-data.js` arrays and update game selection logic
 - **Modify game mechanics**: Focus on timer functions in `game.js` (~lines 1000-1200)
 - **Update PWA**: Modify `sw.js` cache strategy or `site.webmanifest`
-- **Style changes**: Use existing CSS custom properties when possible
+- **Style changes**: Use existing CSS custom properties when possible; edit specific CSS modules rather than the main `styles.css` file

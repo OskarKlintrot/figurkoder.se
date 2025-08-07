@@ -1,0 +1,17 @@
+/* ================================================
+   UTILITIES
+   ================================================ */
+
+/* Utility classes for dynamic styling */
+.hidden {
+  display: none;
+}
+
+.visible {
+  display: block;
+}
+
+/* Specific display types for visible elements */
+.btn.visible {
+  display: inline-flex;
+}

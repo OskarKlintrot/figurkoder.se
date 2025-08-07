@@ -1,0 +1,26 @@
+/* ================================================
+   BASE
+   ================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: 300;
+}
+
+/* Add bottom padding to body when debug view is shown to prevent content from being hidden */
+body.debug-view-visible {
+  padding-bottom: var(--debug-view-height);
+}

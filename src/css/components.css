@@ -516,7 +516,7 @@
   background: var(--color-primary);
   color: var(--color-text-inverse);
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--radius-sm);
   padding: var(--spacing-xs) var(--spacing-sm);
   font-size: var(--font-size-xs);
   cursor: pointer;
@@ -546,7 +546,7 @@
 .debug-console {
   background: var(--color-background);
   border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--radius-sm);
   padding: var(--spacing-sm);
   height: 120px;
   overflow-y: auto;

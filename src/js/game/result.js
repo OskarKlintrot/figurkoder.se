@@ -3,7 +3,6 @@ import {
   getContextData,
   setContextData,
 } from "../navigation.js";
-import { resetProgressBar } from "./utils.js";
 
 // ============================================================================
 //  GAME RESULT
@@ -23,9 +22,6 @@ export function updateResults(domCache, gameState) {
   const resultsTitle = document.getElementById("results-title");
 
   if (!resultsList || !averageTimeElement || !resultsTitle) return;
-
-  // Reset progress bar when preparing results page
-  resetProgressBar(domCache);
 
   // Get result data from context
   let resultData = getContextData();

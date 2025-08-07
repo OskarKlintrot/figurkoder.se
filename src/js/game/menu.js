@@ -1,6 +1,5 @@
 import { navigateToPageWithContext } from "../navigation.js";
 import gameData from "./data.js";
-import { resetGameState, gameState, domCache } from "./utils.js";
 
 // ============================================================================
 //  GAME MENU
@@ -37,7 +36,7 @@ export function generateTiles() {
 
     // Use a closure to capture the gameId
     tile.addEventListener("click", () => {
-      navigateToGame(gameId);
+      navigateToPageWithContext("game-page", gameId);
     });
 
     tile.innerHTML = `
@@ -47,14 +46,4 @@ export function generateTiles() {
 
     tilesGrid.appendChild(tile);
   });
-}
-
-/**
- * Game-specific navigation function (internal use only)
- */
-function navigateToGame(gameType) {
-  // Force reset game state when navigating to a new game
-  resetGameState(gameState, domCache);
-
-  navigateToPageWithContext("game-page", gameType);
 }

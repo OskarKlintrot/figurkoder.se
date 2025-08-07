@@ -131,3 +131,29 @@ export function resetGameState(gameState, domCache) {
   }
   gameState.isLearningMode = false;
 }
+
+/**
+ * Cleanup function for when leaving game page - stops timers and deactivates wake lock
+ * without resetting the entire game state
+ */
+export function cleanupGameResources() {
+  // Stop any running timers
+  if (gameState.isGameRunning || gameState.paused) {
+    // Clear all timers
+    clearTimeout(gameState.gameTimer);
+    // Cancel animation frame instead of clearing interval
+    if (gameState.countdownTimer) {
+      cancelAnimationFrame(gameState.countdownTimer);
+      gameState.countdownTimer = null;
+    }
+
+    // Deactivate wake lock when leaving game
+    if (window.deactivateScreenWakeLock) {
+      window.deactivateScreenWakeLock();
+    }
+    
+    // Set game as not running to prevent timers from continuing
+    gameState.isGameRunning = false;
+    gameState.paused = false;
+  }
+}

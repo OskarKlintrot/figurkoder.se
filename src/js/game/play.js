@@ -11,7 +11,6 @@ import {
   gameState,
   domCache,
 } from "./utils.js";
-import { setCurrentGame, getCurrentGame } from "./navigation.js";
 
 // ============================================================================
 //  GAME PLAY
@@ -227,7 +226,7 @@ export function showRangeControls() {
  * Initializes a game with the selected settings and data
  */
 export function initializeGame() {
-  const currentGameId = getCurrentGame();
+  const currentGameId = getCurrentContext();
   const contextData = getContextData();
 
   // Check if we're in replay mode with specific data
@@ -289,6 +288,10 @@ export function initializeGame() {
   if (contextData && contextData.replayType) {
     return;
   }
+
+  // Reset game state when starting a new game (not in replay mode)
+  // This ensures clean state for fresh game initialization
+  resetGameState(gameState, domCache);
 
   const game = gameData[currentGameId];
   gameState.currentGameData = [...game.data];
@@ -525,7 +528,7 @@ function continueStartGame() {
   resetProgressBar(domCache);
 
   // Filter data based on range (only applies to normal games, not replays)
-  const currentGameId = getCurrentGame();
+  const currentGameId = getCurrentContext();
   const game = gameData[currentGameId];
   const useDropdown = game.dropdown || false;
 
@@ -617,8 +620,8 @@ export function pauseGame() {
 /**
  * Prepares result data for passing to the results page
  */
-function prepareResultData(gameState, getCurrentGame, gameData) {
-  const currentGameId = getCurrentGame();
+function prepareResultData(gameState, getCurrentContext, gameData) {
+  const currentGameId = getCurrentContext();
   const gameTitle =
     currentGameId && gameData[currentGameId]
       ? gameData[currentGameId].title
@@ -692,7 +695,7 @@ export function stopGame() {
 
   // Navigate to results if we should show them
   if (shouldShowResults) {
-    const resultData = prepareResultData(gameState, getCurrentGame, gameData);
+    const resultData = prepareResultData(gameState, getCurrentContext, gameData);
     setContextData(resultData);
     navigateToPage("results-page");
   }
@@ -980,7 +983,7 @@ export function nextItem(vibrate = false) {
       return;
     } else {
       // In practice mode, navigate to results
-      const resultData = prepareResultData(gameState, getCurrentGame, gameData);
+      const resultData = prepareResultData(gameState, getCurrentContext, gameData);
       setContextData(resultData);
       navigateToPage("results-page");
       stopGame();

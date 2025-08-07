@@ -4,29 +4,16 @@ import {
   registerPageEnterCallback,
   registerPageLeaveCallback,
   registerContextChangeCallback,
-  setCurrentContext,
-  getCurrentContext,
-  setContextData,
   getContextData,
+  getCurrentContext,
 } from "../navigation.js";
 import gameData from "./data.js";
-import { resetGameState } from "./utils.js";
+import { cleanupGameResources } from "./utils.js";
 
 // ============================================================================
 //  GAME CONTEXT AND NAVIGATION
 //  Functions for managing game context and page navigation callbacks
 // ============================================================================
-
-/**
- * Game-specific functions that use navigation's generic context system
- */
-export function setCurrentGame(game) {
-  setCurrentContext(game);
-}
-
-export function getCurrentGame() {
-  return getCurrentContext();
-}
 
 /**
  * Registers all game-related navigation callbacks
@@ -39,7 +26,7 @@ export function setupGameNavigation(
 ) {
   // Register game-specific navigation callbacks
   registerPageEnterCallback("game-page", () => {
-    const gameType = getCurrentGame();
+    const gameType = getCurrentContext();
     const contextData = getContextData();
 
     // Check if we have replay data in context
@@ -89,11 +76,7 @@ export function setupGameNavigation(
   });
 
   registerPageLeaveCallback("game-page", () => {
-    // Reset game state when leaving game page (unless in replay mode)
-    const contextData = getContextData();
-    if (!contextData || !contextData.replayType) {
-      resetGameState(gameState, domCache);
-    }
+    cleanupGameResources();
   });
 
   registerContextChangeCallback((context) => {

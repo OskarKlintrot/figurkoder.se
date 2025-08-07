@@ -2,13 +2,11 @@ import {
   navigateToPage,
   updateHeader,
   registerPageEnterCallback,
-  registerPageLeaveCallback,
   registerContextChangeCallback,
   getContextData,
   getCurrentContext,
 } from "../navigation.js";
 import gameData from "./data.js";
-import { cleanupGameResources } from "./play.js";
 
 // ============================================================================
 //  GAME CONTEXT AND NAVIGATION
@@ -66,10 +64,6 @@ export function setupGameNavigation(
       // No valid game context, show generic header
       updateHeader("Spel", true);
     }
-  });
-
-  registerPageLeaveCallback("game-page", () => {
-    cleanupGameResources();
   });
 
   registerContextChangeCallback((context) => {

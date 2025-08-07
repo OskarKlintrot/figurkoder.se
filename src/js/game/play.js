@@ -5,9 +5,6 @@ import {
   getContextData,
 } from "../navigation.js";
 import gameData from "./data.js";
-import {
-  gameState,
-} from "./utils.js";
 
 // Cache frequently accessed DOM elements to reduce queries
 const domCache = {
@@ -147,29 +144,36 @@ function resetGameState(gameState, domCache) {
 }
 
 /**
- * Cleanup function for when leaving game page - stops timers and deactivates wake lock
- * without resetting the entire game state
+ * MutationObserver to watch for changes to the game page's active class
+ * Resets game state when the page becomes inactive
  */
-export function cleanupGameResources() {
-  // Stop any running timers
-  if (gameState.isGameRunning || gameState.paused) {
-    // Clear all timers
-    clearTimeout(gameState.gameTimer);
-    // Cancel animation frame instead of clearing interval
-    if (gameState.countdownTimer) {
-      cancelAnimationFrame(gameState.countdownTimer);
-      gameState.countdownTimer = null;
-    }
+let gamePageObserver = null;
 
-    // Deactivate wake lock when leaving game
-    if (window.deactivateScreenWakeLock) {
-      window.deactivateScreenWakeLock();
-    }
-    
-    // Set game as not running to prevent timers from continuing
-    gameState.isGameRunning = false;
-    gameState.paused = false;
-  }
+/**
+ * Sets up the MutationObserver to watch for game page active state changes
+ */
+function setupGamePageObserver() {
+  const gamePage = document.getElementById('game-page');
+  if (!gamePage || gamePageObserver) return;
+
+  gamePageObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const target = mutation.target;
+        const hasActive = target.classList.contains('active');
+        
+        // If the active class was removed, reset the game state
+        if (!hasActive && (gameState.isGameRunning || gameState.paused)) {
+          resetGameState(gameState, domCache);
+        }
+      }
+    });
+  });
+
+  gamePageObserver.observe(gamePage, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
 }
 
 /**
@@ -377,6 +381,9 @@ export function showRangeControls() {
 export function initializeGame() {
   // Initialize DOM cache for better performance
   domCache.init();
+  
+  // Set up the game page observer to watch for active state changes
+  setupGamePageObserver();
   
   const currentGameId = getCurrentContext();
   const contextData = getContextData();

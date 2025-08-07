@@ -277,10 +277,10 @@ export function navigateToGame(gameType) {
   }
 
   navigateToPage("game-page");
-  setTimeout(async () => {
+  (async () => {
     const { initializeGame } = await import("./game.js");
     initializeGame(); // This will handle dropdown vs input logic
-  }, 100);
+  })();
 }
 
 /**

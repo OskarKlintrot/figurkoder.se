@@ -732,13 +732,6 @@ function updateInitialDisplay() {
   }
 }
 
-/*
- * PERFORMANCE OPTIMIZATIONS TO REDUCE FORCED REFLOW:
- * 1. Replaced setInterval with requestAnimationFrame for smooth countdown animation
- * 2. Added DOM element caching to reduce repeated queries
- * These changes should significantly reduce the 60ms forced reflow time.
- */
-
 /**
  * Updates the state of all game control buttons based on current game state
  */

@@ -1,4 +1,4 @@
-import { domCache, gameState } from "./game/utils.js";
+import { gameState } from "./game/utils.js";
 import { setupGameNavigation } from "./game/navigation.js";
 import { replay, updateResults } from "./game/result.js";
 import {
@@ -116,11 +116,8 @@ if (shouldUseHashRouting()) {
 
 // Initialize page based on URL when loaded
 window.addEventListener("DOMContentLoaded", function () {
-  // Initialize DOM cache for better performance
-  domCache.init();
-
   // Setup game navigation callbacks
-  setupGameNavigation(gameState, domCache, { initializeGame, updateResults });
+  setupGameNavigation(gameState, { initializeGame, updateResults });
 
   // Load settings from localStorage
   loadGameSettings();

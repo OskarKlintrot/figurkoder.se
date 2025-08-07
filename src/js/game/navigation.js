@@ -21,7 +21,6 @@ import { cleanupGameResources } from "./utils.js";
  */
 export function setupGameNavigation(
   gameState,
-  domCache,
   { initializeGame, updateResults }
 ) {
   // Register game-specific navigation callbacks
@@ -72,7 +71,7 @@ export function setupGameNavigation(
 
   registerPageEnterCallback("results-page", () => {
     updateHeader("Resultat", true);
-    updateResults(domCache, gameState); // Update the results display when entering the page
+    updateResults(gameState); // Update the results display when entering the page
   });
 
   registerPageLeaveCallback("game-page", () => {

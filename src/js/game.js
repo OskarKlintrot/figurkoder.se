@@ -33,6 +33,7 @@ export const gameState = {
   skipRangeFiltering: false, // Flag to skip range filtering when using replay data
   vibrationEnabled: true, // Flag to control vibration
   isLearningMode: false, // Flag to control learning mode
+  preserveDataForResults: false, // Flag to preserve game data when navigating to results
 };
 
 // Game-specific functions that use navigation's generic context system
@@ -88,6 +89,11 @@ export function resetProgressBar() {
  * Resets all game state variables and UI elements to their default values
  */
 export function resetGameState() {
+  // Don't reset if we're in replay mode
+  if (gameState.isReplayMode) {
+    return;
+  }
+
   // Stop any running game
   if (gameState.isGameRunning || gameState.paused) {
     // Clear all timers
@@ -124,6 +130,7 @@ export function resetGameState() {
   gameState.pausedTime = 0;
   gameState.isReplayMode = false;
   gameState.skipRangeFiltering = false;
+  gameState.preserveDataForResults = false; // Reset the preservation flag
   // Note: vibrationEnabled is kept as it's a user setting
 
   // Reset UI elements to default state
@@ -623,7 +630,10 @@ export function startGame() {
   }
 
   // Clear replay mode flag to ensure normal initialization can proceed
-  gameState.isReplayMode = false;
+  if (gameState.isReplayMode) {
+    // Clear replay mode when starting a new game
+    gameState.isReplayMode = false;
+  }
 
   // If we have no data or empty data, initialize the game first
   if (!gameState.currentGameData.length) {
@@ -808,6 +818,7 @@ export function stopGame() {
 
   // Navigate to results if we should show them
   if (shouldShowResults) {
+    gameState.preserveDataForResults = true; // Set flag to preserve data
     updateResults();
     navigateToPage("results-page");
   }
@@ -1209,8 +1220,9 @@ export function updateResults() {
 export function replay(slowOnly = false) {
   // For slow replay, check if we have results and slow items
   if (slowOnly) {
-    if (!gameState.gameResults.length || !gameState.masterGameData.length)
+    if (!gameState.gameResults.length || !gameState.masterGameData.length) {
       return;
+    }
 
     // Filter master game data to only include items that were slow or showed answer
     const slowItems = [];
@@ -1226,7 +1238,9 @@ export function replay(slowOnly = false) {
       }
     });
 
-    if (slowItems.length === 0) return;
+    if (slowItems.length === 0) {
+      return;
+    }
 
     // Override current game data with only slow items
     gameState.currentGameData = [...slowItems];
@@ -1266,8 +1280,7 @@ export function replay(slowOnly = false) {
       showRangeControls();
     }
 
-    // Reset game state to stopped
-    gameState.isReplayMode = false;
+    // Reset game state to stopped (but keep isReplayMode = true to prevent initializeGame override)
     gameState.isGameRunning = false;
     gameState.hasStarted = false;
     gameState.paused = false;
@@ -1295,6 +1308,8 @@ export function replay(slowOnly = false) {
 
 // Game-specific navigation function (internal use only)
 function navigateToGame(gameType) {
+  // Force reset game state when navigating to a new game
+  gameState.isReplayMode = false; // Clear replay mode first
   resetGameState();
 
   // Clear any replay flags when starting a new game
@@ -1332,6 +1347,10 @@ registerPageEnterCallback("results-page", () => {
   updateHeader("Resultat", true);
 });
 
+registerPageLeaveCallback("results-page", () => {
+  gameState.preserveDataForResults = false; // Clear the flag when leaving results
+});
+
 registerPageEnterCallback("main-menu", () => {
   updateHeader("Figurkoder.se", false);
 });
@@ -1353,9 +1372,8 @@ registerPageEnterCallback("404-page", () => {
 });
 
 registerPageLeaveCallback("game-page", () => {
-  // Only reset if we're not going to results page
-  const activePageAfterLeave = document.querySelector(".page.active")?.id;
-  if (activePageAfterLeave !== "results-page") {
+  // Only reset if we're not preserving data for results
+  if (!gameState.preserveDataForResults) {
     resetGameState();
   }
 });

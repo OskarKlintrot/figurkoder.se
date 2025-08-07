@@ -123,14 +123,11 @@ window.addEventListener("DOMContentLoaded", function () {
   // Load settings from localStorage
   loadGameSettings();
   loadDebugSettings();
-
-  generateTiles();
+  
   // Fetch and display service worker version
   fetchAndDisplayVersion();
-  // Add a small delay to ensure gameData is loaded
-  setTimeout(() => {
-    initializeFromURL();
-    // Initialize button states on page load
-    updateButtonStates();
-  }, 100);
+  
+  generateTiles();
+  initializeFromURL();
+  updateButtonStates();
 });

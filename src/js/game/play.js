@@ -733,14 +733,6 @@ export function startGame() {
     return;
   }
 
-  //   // If we have no data or empty data, initialize the game first
-  //   if (!gameState.currentGameDataSet.length) {
-  //     initializeGame();
-  //     if (!gameState.currentGameDataSet.length) {
-  //       return;
-  //     }
-  //   }
-
   gameState.isGameRunning = true;
   gameState.hasStarted = true;
   gameState.paused = false;

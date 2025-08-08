@@ -129,55 +129,21 @@ export function replay(slowOnly = false) {
     return;
   }
 
-  let replayData;
+  const replayData = {
+      ...resultData,
+      replayType: slowOnly ? "slow" : "full",
+    };
 
-  // For slow replay, prepare data with only slow items
   if (slowOnly) {
-    if (!resultData.gameResults.length || !resultData.masterGameData.length) {
-      console.warn("Missing game results or master game data for slow replay");
+    if (!resultData.gameResults.length) {
+      console.warn("Missing game results data for slow replay");
       return;
     }
-
-    // Filter master game data to only include items that were slow or showed answer
-    const slowItems = [];
-    resultData.gameResults.forEach((result) => {
-      if (result.timeSpent > 2 || result.showedAnswer) {
-        // Find the corresponding item in masterGameData (the original filtered data)
-        const foundItem = resultData.masterGameData.find(
-          (item) => item[0] === result.figurkod
-        );
-        if (foundItem && !slowItems.some((item) => item[0] === foundItem[0])) {
-          slowItems.push(foundItem);
-        }
-      }
-    });
-
-    if (slowItems.length === 0) {
-      console.warn("No slow items found for replay");
-      return;
-    }
-
-    // Prepare replay data for slow items
-    replayData = {
-      gameTitle: resultData.gameTitle,
-      replayType: "slow",
-      gameData: slowItems,
-      originalGameData: resultData.originalGameData,
-      masterGameData: resultData.masterGameData,
-    };
   } else {
-    // For full replay, prepare data with original game data
-    if (!resultData.originalGameData.length) {
+    if (!resultData.fullGameDataSet.length) {
+      console.warn("Missing original game data for full replay");
       return;
     }
-
-    replayData = {
-      gameTitle: resultData.gameTitle,
-      replayType: "full",
-      gameData: resultData.originalGameData,
-      originalGameData: resultData.originalGameData,
-      masterGameData: resultData.masterGameData,
-    };
   }
 
   // Set the replay data in context for initializeGame to use

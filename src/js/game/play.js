@@ -44,9 +44,10 @@ const domCache = {
 
 // Game state object
 const gameState = {
-  currentGameData: [],
-  originalGameData: [], // Store the original filtered data used in the game
-  masterGameData: [], // Store the very first filtered data from the initial game
+  currentGameDataSet: [],
+  fullGameDataSet: [], // Unfiltered full set
+  rangeStart: 0,
+  rangeEnd: 0,
   currentItemIndex: 0,
   gameTimer: null,
   countdownTimer: null,
@@ -125,9 +126,7 @@ function resetGameState() {
   }
 
   // Reset all game state variables to initial values
-  gameState.currentGameData = [];
-  gameState.originalGameData = [];
-  gameState.masterGameData = [];
+  gameState.currentGameDataSet = [];
   gameState.currentItemIndex = 0;
   gameState.gameTimer = null;
   gameState.countdownTimer = null;
@@ -236,13 +235,13 @@ export function loadGameSettings() {
  * Updates the initial display when game is not running
  */
 export function updateInitialDisplay() {
-  if (!gameState.currentGameData.length) {
+  if (!gameState.currentGameDataSet.length) {
     domCache.currentItem.textContent = "---";
     domCache.solutionDisplay.textContent = "---";
     domCache.solutionDisplay.classList.add("visible");
     return;
   }
-  const currentItem = gameState.currentGameData[0];
+  const currentItem = gameState.currentGameDataSet[0];
   if (!currentItem || !currentItem[0]) {
     domCache.currentItem.textContent = "---";
     domCache.solutionDisplay.textContent = "---";
@@ -389,10 +388,37 @@ export function initializeGame() {
 
   // Check if we're in replay mode with specific data
   if (contextData && contextData.replayType) {
-    // Handle replay mode - use data from context
-    gameState.currentGameData = [...contextData.gameData];
-    gameState.originalGameData = [...contextData.originalGameData];
-    gameState.masterGameData = [...contextData.masterGameData];
+    // Restore full game data and range indices for replay/range controls
+    gameState.fullGameDataSet = contextData.fullGameDataSet
+      ? [...contextData.fullGameDataSet]
+      : [];
+    gameState.rangeStart =
+      typeof contextData.rangeStart === "number" ? contextData.rangeStart : 0;
+    gameState.rangeEnd =
+      typeof contextData.rangeEnd === "number"
+        ? contextData.rangeEnd
+        : contextData.fullGameDataSet
+        ? contextData.fullGameDataSet.length - 1
+        : 0;
+
+    // Filter for slow replay if needed
+    if (
+      contextData.replayType === "slow" &&
+      Array.isArray(contextData.gameResults)
+    ) {
+      // Only include items that were slow or showed answer
+      const slowSet = new Set();
+      contextData.gameResults.forEach((result) => {
+        if (result.timeSpent > 2 || result.showedAnswer) {
+          slowSet.add(result.figurkod);
+        }
+      });
+      gameState.currentGameDataSet = contextData.fullGameDataSet.filter(
+        (item) => slowSet.has(item[0])
+      );
+    } else {
+      gameState.currentGameDataSet = [...contextData.fullGameDataSet];
+    }
     gameState.currentItemIndex = 0;
     gameState.showingSolution = false;
     gameState.gameResults = [];
@@ -411,11 +437,35 @@ export function initializeGame() {
     gameState.pausedCountdownValue = null;
     gameState.countdownValue = 0;
 
+    // Set range controls to restored values, supporting dropdowns
+    if (contextData.dropdown) {
+      domCache.fromDropdown.value = contextData.rangeStart || "0";
+      domCache.toDropdown.value =
+        contextData.rangeEnd ||
+        (gameState.fullGameDataSet
+          ? String(gameState.fullGameDataSet.length - 1)
+          : "0");
+    } else {
+      domCache.fromInput.value =
+        typeof contextData.rangeStart === "number"
+          ? contextData.rangeStart
+          : parseInt(contextData.rangeStart) || 0;
+      domCache.toInput.value =
+        typeof contextData.rangeEnd === "number"
+          ? contextData.rangeEnd
+          : parseInt(contextData.rangeEnd) ||
+            (gameState.fullGameDataSet
+              ? gameState.fullGameDataSet.length - 1
+              : 0);
+    }
+
     // Set learning mode based on replay type
     const learningModeCheckbox = domCache.learningModeCheckbox;
     if (contextData.replayType === "slow") {
       // Hide range controls for slow replay
       hideRangeControls();
+      domCache.fromInput.value = "0";
+      domCache.toInput.value = String(gameState.currentGameDataSet.length - 1);
 
       // Enable learning mode for slow replay
       if (learningModeCheckbox) {
@@ -452,7 +502,7 @@ export function initializeGame() {
   resetGameState();
 
   const game = gameData[currentGameId];
-  gameState.currentGameData = [...game.data];
+  gameState.currentGameDataSet = [...game.data];
   gameState.currentItemIndex = 0;
   gameState.showingSolution = false;
   gameState.gameResults = [];
@@ -495,7 +545,7 @@ export function initializeGame() {
     // Set default values to first and last items
     domCache.fromDropdown.value = "0";
     domCache.toDropdown.value = (
-      gameState.currentGameData.length - 1
+      gameState.currentGameDataSet.length - 1
     ).toString();
   } else {
     // Show inputs, hide dropdowns
@@ -509,7 +559,7 @@ export function initializeGame() {
     // Set "Till" to "Från + 9", but not exceeding the data length
     const defaultToValue = Math.min(
       0 + 9,
-      gameState.currentGameData.length - 1
+      gameState.currentGameDataSet.length - 1
     );
     newToInput.value = defaultToValue;
 
@@ -519,16 +569,16 @@ export function initializeGame() {
       // Automatically set "Till" to "Från + 9", but not exceeding the data length
       const newToValue = Math.min(
         fromValue + 9,
-        gameState.currentGameData.length - 1
+        gameState.currentGameDataSet.length - 1
       );
       newToInput.value = newToValue;
 
       // Update current-item display to show the new "from" item when game is not running
       if (
         !gameState.isGameRunning &&
-        gameState.currentGameData.length > fromValue
+        gameState.currentGameDataSet.length > fromValue
       ) {
-        const newCurrentItem = gameState.currentGameData[fromValue];
+        const newCurrentItem = gameState.currentGameDataSet[fromValue];
         domCache.currentItem.textContent = newCurrentItem[0];
 
         // Also update solution display based on learning mode
@@ -543,7 +593,7 @@ export function initializeGame() {
     newToInput.addEventListener("change", function () {
       const fromValue = parseInt(newFromInput.value) || 0;
       const toValue =
-        parseInt(this.value) || gameState.currentGameData.length - 1;
+        parseInt(this.value) || gameState.currentGameDataSet.length - 1;
 
       // If "Till" is less than "Från", update "Från" to be equal to "Till"
       if (toValue < fromValue) {
@@ -683,18 +733,14 @@ export function startGame() {
     return;
   }
 
-  // If we have no data or empty data, initialize the game first
-  if (!gameState.currentGameData.length) {
-    initializeGame();
-    if (!gameState.currentGameData.length) {
-      return;
-    }
-  }
+  //   // If we have no data or empty data, initialize the game first
+  //   if (!gameState.currentGameDataSet.length) {
+  //     initializeGame();
+  //     if (!gameState.currentGameDataSet.length) {
+  //       return;
+  //     }
+  //   }
 
-  continueStartGame();
-}
-
-function continueStartGame() {
   gameState.isGameRunning = true;
   gameState.hasStarted = true;
   gameState.paused = false;
@@ -711,27 +757,28 @@ function continueStartGame() {
     fromIndex = parseInt(domCache.fromDropdown?.value) || 0;
     toIndex =
       parseInt(domCache.toDropdown?.value) ||
-      gameState.currentGameData.length - 1;
+      gameState.currentGameDataSet.length - 1;
   } else {
     fromIndex = parseInt(domCache.fromInput?.value) || 0;
     toIndex =
-      parseInt(domCache.toInput?.value) || gameState.currentGameData.length - 1;
+      parseInt(domCache.toInput?.value) ||
+      gameState.currentGameDataSet.length - 1;
   }
 
   // Ensure indices are within bounds
   fromIndex = Math.max(0, fromIndex);
-  toIndex = Math.min(gameState.currentGameData.length - 1, toIndex);
+  toIndex = Math.min(gameState.currentGameDataSet.length - 1, toIndex);
 
-  const filteredData = gameState.currentGameData.slice(fromIndex, toIndex + 1);
-  gameState.currentGameData = filteredData;
+  const filteredData = gameState.currentGameDataSet.slice(
+    fromIndex,
+    toIndex + 1
+  );
+  gameState.currentGameDataSet = filteredData;
 
-  // Set originalGameData and masterGameData for potential replays
-  if (!gameState.originalGameData.length) {
-    gameState.originalGameData = [...filteredData]; // Save the original filtered data
-  }
-  if (!gameState.masterGameData.length) {
-    gameState.masterGameData = [...filteredData]; // Save the master copy that never changes
-  }
+  // Always set fullGameDataSet to the original game data for result/replay
+  gameState.fullGameDataSet = [...game.data];
+  gameState.rangeStart = fromIndex;
+  gameState.rangeEnd = toIndex;
 
   // Initialize results tracking
   gameState.gameResults = [];
@@ -740,11 +787,11 @@ function continueStartGame() {
 
   // Shuffle data only if NOT in learning mode
   if (!gameState.isLearningMode) {
-    for (let i = gameState.currentGameData.length - 1; i > 0; i--) {
+    for (let i = gameState.currentGameDataSet.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [gameState.currentGameData[i], gameState.currentGameData[j]] = [
-        gameState.currentGameData[j],
-        gameState.currentGameData[i],
+      [gameState.currentGameDataSet[i], gameState.currentGameDataSet[j]] = [
+        gameState.currentGameDataSet[j],
+        gameState.currentGameDataSet[i],
       ];
     }
   }
@@ -793,8 +840,9 @@ export function pauseGame() {
 /**
  * Prepares result data for passing to the results page
  */
-function prepareResultData(gameState, getCurrentContext, gameData) {
+function prepareResultData(gameData) {
   const currentGameId = getCurrentContext();
+  const currentGameData = getContextData();
   const gameTitle =
     currentGameId && gameData[currentGameId]
       ? gameData[currentGameId].title
@@ -803,8 +851,19 @@ function prepareResultData(gameState, getCurrentContext, gameData) {
   return {
     gameTitle: gameTitle,
     gameResults: [...gameState.gameResults], // Create a copy of the results
-    originalGameData: [...gameState.originalGameData], // For replay functionality
-    masterGameData: [...gameState.masterGameData], // For slow replay functionality
+    rangeStart:
+      currentGameData && currentGameData.replayType === "slow"
+        ? currentGameData.rangeStart
+        : typeof gameState.rangeStart === "number"
+        ? gameState.rangeStart
+        : 0,
+    rangeEnd:
+      currentGameData && currentGameData.replayType === "slow"
+        ? currentGameData.rangeEnd
+        : typeof gameState.rangeEnd === "number"
+        ? gameState.rangeEnd
+        : 0,
+    fullGameDataSet: [...gameState.fullGameDataSet], // Unfiltered full set
   };
 }
 
@@ -816,9 +875,10 @@ export function stopGame() {
   if (
     (gameState.isGameRunning || gameState.paused) &&
     gameState.currentItemStartTime &&
-    gameState.currentItemIndex < gameState.currentGameData.length
+    gameState.currentItemIndex < gameState.currentGameDataSet.length
   ) {
-    const currentItem = gameState.currentGameData[gameState.currentItemIndex];
+    const currentItem =
+      gameState.currentGameDataSet[gameState.currentItemIndex];
     const totalTimeSpent =
       (Date.now() - gameState.currentItemStartTime + gameState.pausedTime) /
       1000;
@@ -868,11 +928,7 @@ export function stopGame() {
 
   // Navigate to results if we should show them
   if (shouldShowResults) {
-    const resultData = prepareResultData(
-      gameState,
-      getCurrentContext,
-      gameData
-    );
+    const resultData = prepareResultData(gameData);
     setContextData(resultData);
     navigateToPage("results-page");
   }
@@ -883,11 +939,11 @@ export function stopGame() {
  * @param {boolean} resume - Whether this is resuming from a pause
  */
 export function showCurrentItem(resume = false) {
-  if (gameState.currentItemIndex >= gameState.currentGameData.length) {
+  if (gameState.currentItemIndex >= gameState.currentGameDataSet.length) {
     stopGame();
     return;
   }
-  const currentItem = gameState.currentGameData[gameState.currentItemIndex];
+  const currentItem = gameState.currentGameDataSet[gameState.currentItemIndex];
   domCache.currentItem.textContent = currentItem[0];
   domCache.solutionDisplay.classList.add("visible");
   if (gameState.isLearningMode || gameState.showingSolution) {
@@ -981,10 +1037,10 @@ export function startCountdown(resume = false) {
         // Record timeout result before advancing with exact time limit
         if (
           gameState.currentItemStartTime &&
-          gameState.currentItemIndex < gameState.currentGameData.length
+          gameState.currentItemIndex < gameState.currentGameDataSet.length
         ) {
           const currentItem =
-            gameState.currentGameData[gameState.currentItemIndex];
+            gameState.currentGameDataSet[gameState.currentItemIndex];
           const timeSpent = gameState.totalCountdownTime; // Use exact time limit instead of actual elapsed time
 
           gameState.gameResults.push({
@@ -1028,7 +1084,7 @@ export function startCountdown(resume = false) {
  * Shows the answer for the current item and records the action
  */
 export function showAnswer() {
-  if (gameState.currentItemIndex >= gameState.currentGameData.length) return;
+  if (gameState.currentItemIndex >= gameState.currentGameDataSet.length) return;
 
   // Cancel animation frame instead of clearing interval
   if (gameState.countdownTimer) {
@@ -1036,7 +1092,7 @@ export function showAnswer() {
     gameState.countdownTimer = null;
   }
 
-  const currentItem = gameState.currentGameData[gameState.currentItemIndex];
+  const currentItem = gameState.currentGameDataSet[gameState.currentItemIndex];
   domCache.solutionDisplay.textContent = currentItem[1];
   domCache.solutionDisplay.classList.add("visible");
   gameState.showingSolution = true;
@@ -1111,9 +1167,10 @@ export function nextItem(vibrate = false) {
   // Record result for current item if not already recorded (i.e., user pressed NEXT)
   if (
     gameState.currentItemStartTime &&
-    gameState.currentItemIndex < gameState.currentGameData.length
+    gameState.currentItemIndex < gameState.currentGameDataSet.length
   ) {
-    const currentItem = gameState.currentGameData[gameState.currentItemIndex];
+    const currentItem =
+      gameState.currentGameDataSet[gameState.currentItemIndex];
     const totalTimeSpent =
       (Date.now() - gameState.currentItemStartTime + gameState.pausedTime) /
       1000;
@@ -1136,7 +1193,7 @@ export function nextItem(vibrate = false) {
 
   gameState.currentItemIndex++;
 
-  if (gameState.currentItemIndex >= gameState.currentGameData.length) {
+  if (gameState.currentItemIndex >= gameState.currentGameDataSet.length) {
     if (gameState.isLearningMode) {
       // In learning mode, loop back to the beginning
       gameState.currentItemIndex = 0;

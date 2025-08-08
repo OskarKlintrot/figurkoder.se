@@ -44,7 +44,7 @@ src/
 ### Game State Management
 All game state lives in the `gameState` object in `game/play.js`:
 ```javascript
-// In js/game/utils.js
+// In js/game/play.js
 const gameState = {
   currentGameData: [],      // Active filtered dataset
   originalGameData: [],     // Backup of original data

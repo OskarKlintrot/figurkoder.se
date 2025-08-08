@@ -938,6 +938,12 @@ export function showCurrentItem(resume = false) {
   const currentItem = gameState.currentGameDataSet[gameState.currentItemIndex];
   domCache.currentItem.textContent = currentItem[0];
   domCache.solutionDisplay.classList.add("visible");
+
+  // Reset showingSolution for new item unless in learning mode, BEFORE displaying solution
+  if (!gameState.isLearningMode && !resume) {
+    gameState.showingSolution = false;
+  }
+
   if (gameState.isLearningMode || gameState.showingSolution) {
     domCache.solutionDisplay.textContent = currentItem[1];
   } else {
@@ -948,11 +954,6 @@ export function showCurrentItem(resume = false) {
   if (gameState.isGameRunning && !resume) {
     gameState.currentItemStartTime = Date.now();
     gameState.pausedTime = 0; // Reset paused time for new item
-  }
-
-  // Reset showingSolution for new item unless in learning mode
-  if (!gameState.isLearningMode && !resume) {
-    gameState.showingSolution = false;
   }
 
   if (gameState.isLearningMode) {

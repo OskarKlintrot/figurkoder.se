@@ -29,7 +29,7 @@ export function setupResultsPage() {
 /**
  * Updates the results page with game statistics and individual item results
  */
-export function updateResults() {
+function updateResults() {
   const resultsList = document.getElementById("results-list");
   const averageTimeElement = document.getElementById("average-time");
   const resultsTitle = document.getElementById("results-title");

@@ -16,6 +16,13 @@ const domCache = {
   pauseBtn: null,
   stopBtn: null,
   showBtn: null,
+  learningModeCheckbox: null,
+  vibrationCheckbox: null,
+  fromInput: null,
+  toInput: null,
+  fromDropdown: null,
+  toDropdown: null,
+  timeInput: null,
   init() {
     this.nextBtn = document.getElementById("next-btn");
     this.progressBar = this.nextBtn?.querySelector(".btn-progress-bar");
@@ -25,9 +32,18 @@ const domCache = {
     this.pauseBtn = document.getElementById("pause-btn");
     this.stopBtn = document.getElementById("stop-btn");
     this.showBtn = document.getElementById("show-btn");
+    this.learningModeCheckbox = document.getElementById("learning-mode");
+    this.vibrationCheckbox = document.getElementById("vibration-setting");
+    this.fromInput = document.getElementById("from-input");
+    this.toInput = document.getElementById("to-input");
+    this.fromDropdown = document.getElementById("from-dropdown");
+    this.toDropdown = document.getElementById("to-dropdown");
+    this.timeInput = document.getElementById("time-input");
   },
-};// Game state object
-export const gameState = {
+};
+
+// Game state object
+const gameState = {
   currentGameData: [],
   originalGameData: [], // Store the original filtered data used in the game
   masterGameData: [], // Store the very first filtered data from the initial game
@@ -63,25 +79,21 @@ export const gameState = {
 /**
  * Resets the progress bar to 0% and removes progress bar styling
  */
-function resetProgressBar(domCache) {
-  if (domCache.progressBar) {
-    // Temporarily remove transition to avoid layout issues during reset
-    domCache.progressBar.style.transition = "none";
-    domCache.progressBar.style.setProperty("--progress", "0%");
-    // Restore transition on the next animation frame to avoid forced reflow
-    requestAnimationFrame(() => {
-      domCache.progressBar.style.transition = "";
-    });
-  }
-  if (domCache.nextBtn) {
-    domCache.nextBtn.classList.remove("progress-bar");
-  }
+function resetProgressBar() {
+  // Temporarily remove transition to avoid layout issues during reset
+  domCache.progressBar.style.transition = "none";
+  domCache.progressBar.style.setProperty("--progress", "0%");
+  // Restore transition on the next animation frame to avoid forced reflow
+  requestAnimationFrame(() => {
+    domCache.progressBar.style.transition = "";
+  });
+  domCache.nextBtn.classList.remove("progress-bar");
 }
 
 /**
  * Resets all game state variables and UI elements to their default values
  */
-function resetGameState(gameState, domCache) {
+function resetGameState() {
   // Always stop any running game and clean up timers/wake locks
   if (gameState.isGameRunning || gameState.paused) {
     // Clear all timers
@@ -106,7 +118,7 @@ function resetGameState(gameState, domCache) {
     gameState.paused = false;
     gameState.gameTimer = null;
     gameState.countdownTimer = null;
-    
+
     // Clear context data when navigating away to prevent replay mode persistence
     setContextData(null);
     return;
@@ -133,21 +145,14 @@ function resetGameState(gameState, domCache) {
   // Note: vibrationEnabled is kept as it's a user setting
 
   // Reset UI elements to default state
-  resetProgressBar(domCache);
+  resetProgressBar();
 
   // Reset display elements
-  (
-    domCache.currentItem || document.getElementById("current-item")
-  ).textContent = "---";
-  (
-    domCache.solutionDisplay || document.getElementById("solution-display")
-  ).textContent = "---";
+  domCache.currentItem.textContent = "---";
+  domCache.solutionDisplay.textContent = "---";
 
   // Reset learning mode to default (unchecked)
-  const learningModeCheckbox = document.getElementById("learning-mode");
-  if (learningModeCheckbox) {
-    learningModeCheckbox.checked = false;
-  }
+  domCache.learningModeCheckbox.checked = false;
   gameState.isLearningMode = false;
 }
 
@@ -168,21 +173,24 @@ function setupGamePageObserver() {
 
   gamePageObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+      if (
+        mutation.type === "attributes" &&
+        mutation.attributeName === "class"
+      ) {
         const target = mutation.target;
-        const hasActive = target.classList.contains('active');
+        const hasActive = target.classList.contains("active");
         if (!hasActive) {
-          resetGameState(gameState, domCache);
+          resetGameState();
         }
       }
     });
   });
 
-  const gamePage = document.getElementById('game-page');
+  const gamePage = document.getElementById("game-page");
 
   gamePageObserver.observe(gamePage, {
     attributes: true,
-    attributeFilter: ['class']
+    attributeFilter: ["class"],
   });
 }
 
@@ -190,8 +198,7 @@ function setupGamePageObserver() {
  * Toggles the vibration setting and saves it to localStorage
  */
 export function toggleVibrationSetting() {
-  gameState.vibrationEnabled =
-    document.getElementById("vibration-setting").checked;
+  gameState.vibrationEnabled = domCache.vibrationCheckbox.checked;
   // Save setting to localStorage
   localStorage.setItem("vibrationEnabled", gameState.vibrationEnabled);
 }
@@ -200,7 +207,7 @@ export function toggleVibrationSetting() {
  * Updates the learning mode state when checkbox changes
  */
 export function updateLearningMode() {
-  gameState.isLearningMode = document.getElementById("learning-mode").checked;
+  gameState.isLearningMode = domCache.learningModeCheckbox.checked;
   // Update button states when learning mode changes
   updateButtonStates();
   // If game is not running, update the initial display
@@ -213,21 +220,16 @@ export function updateLearningMode() {
  * Loads game-related settings from localStorage
  */
 export function loadGameSettings() {
+  // Ensure DOM cache is initialized before accessing cached elements
+  domCache.init();
   // Load vibration setting from localStorage
   const savedVibrationSetting = localStorage.getItem("vibrationEnabled");
   if (savedVibrationSetting !== null) {
     gameState.vibrationEnabled = savedVibrationSetting === "true";
-    const vibrationCheckbox = document.getElementById("vibration-setting");
-    if (vibrationCheckbox) {
-      vibrationCheckbox.checked = gameState.vibrationEnabled;
-    }
+    domCache.vibrationCheckbox.checked = gameState.vibrationEnabled;
   }
-
   // Initialize learning mode state from checkbox
-  const learningModeCheckbox = document.getElementById("learning-mode");
-  if (learningModeCheckbox) {
-    gameState.isLearningMode = learningModeCheckbox.checked;
-  }
+  gameState.isLearningMode = domCache.learningModeCheckbox.checked;
 }
 
 /**
@@ -235,26 +237,23 @@ export function loadGameSettings() {
  */
 export function updateInitialDisplay() {
   if (!gameState.currentGameData.length) {
-    document.getElementById("current-item").textContent = "---";
-    document.getElementById("solution-display").textContent = "---";
-    document.getElementById("solution-display").classList.add("visible");
+    domCache.currentItem.textContent = "---";
+    domCache.solutionDisplay.textContent = "---";
+    domCache.solutionDisplay.classList.add("visible");
     return;
   }
-
   const currentItem = gameState.currentGameData[0];
   if (!currentItem || !currentItem[0]) {
-    document.getElementById("current-item").textContent = "---";
-    document.getElementById("solution-display").textContent = "---";
+    domCache.currentItem.textContent = "---";
+    domCache.solutionDisplay.textContent = "---";
     return;
   }
-
-  document.getElementById("current-item").textContent = currentItem[0];
-  const solutionDisplay = document.getElementById("solution-display");
-  solutionDisplay.classList.add("visible");
+  domCache.currentItem.textContent = currentItem[0];
+  domCache.solutionDisplay.classList.add("visible");
   if (gameState.isLearningMode) {
-    solutionDisplay.textContent = currentItem[1];
+    domCache.solutionDisplay.textContent = currentItem[1];
   } else {
-    solutionDisplay.textContent = "•••";
+    domCache.solutionDisplay.textContent = "•••";
   }
 }
 
@@ -262,84 +261,77 @@ export function updateInitialDisplay() {
  * Updates the state of all game control buttons based on current game state
  */
 export function updateButtonStates() {
-  // Use cached DOM elements where possible
-  const playBtn = domCache.playBtn || document.getElementById("play-btn");
-  const pauseBtn = domCache.pauseBtn || document.getElementById("pause-btn");
-  const stopBtn = domCache.stopBtn || document.getElementById("stop-btn");
-  const showBtn = domCache.showBtn || document.getElementById("show-btn");
-  const nextBtn = domCache.nextBtn || document.getElementById("next-btn");
-  const fromInput = document.getElementById("from-input");
-  const toInput = document.getElementById("to-input");
-  const fromDropdown = document.getElementById("from-dropdown");
-  const toDropdown = document.getElementById("to-dropdown");
-  const timeInput = document.getElementById("time-input");
-  const learningModeCheckbox = document.getElementById("learning-mode");
-  const learningModeLabel = learningModeCheckbox?.closest(".checkbox-label");
+  // Use domCache properties directly
+  const learningModeLabel =
+    domCache.learningModeCheckbox.closest(".checkbox-label");
 
   // Batch DOM updates to reduce reflows
   const updateBatch = () => {
     // Always show all control buttons
-    if (playBtn) playBtn.classList.add("visible");
-    if (pauseBtn) pauseBtn.classList.add("visible");
-    if (stopBtn) stopBtn.classList.add("visible");
+    if (domCache.playBtn) domCache.playBtn.classList.add("visible");
+    if (domCache.pauseBtn) domCache.pauseBtn.classList.add("visible");
+    if (domCache.stopBtn) domCache.stopBtn.classList.add("visible");
 
     if (gameState.isGameRunning) {
       // During game: disable play, enable pause/stop, disable inputs
-      if (playBtn) playBtn.disabled = true;
-      if (pauseBtn) pauseBtn.disabled = false;
-      if (stopBtn) stopBtn.disabled = false;
+      if (domCache.playBtn) domCache.playBtn.disabled = true;
+      if (domCache.pauseBtn) domCache.pauseBtn.disabled = false;
+      if (domCache.stopBtn) domCache.stopBtn.disabled = false;
 
       // Disable game configuration inputs during play
-      if (fromInput) fromInput.disabled = true;
-      if (toInput) toInput.disabled = true;
-      if (fromDropdown) fromDropdown.disabled = true;
-      if (toDropdown) toDropdown.disabled = true;
-      if (timeInput) timeInput.disabled = true;
-      if (learningModeCheckbox) learningModeCheckbox.disabled = true;
+      if (domCache.fromInput) domCache.fromInput.disabled = true;
+      if (domCache.toInput) domCache.toInput.disabled = true;
+      if (domCache.fromDropdown) domCache.fromDropdown.disabled = true;
+      if (domCache.toDropdown) domCache.toDropdown.disabled = true;
+      if (domCache.timeInput) domCache.timeInput.disabled = true;
+      if (domCache.learningModeCheckbox)
+        domCache.learningModeCheckbox.disabled = true;
       if (learningModeLabel) learningModeLabel.classList.add("disabled");
 
       // In learning mode, disable "Visa" button since answer is always shown
       // Also disable if answer is already shown for current item
-      if (showBtn)
-        showBtn.disabled =
+      if (domCache.showBtn)
+        domCache.showBtn.disabled =
           gameState.isLearningMode || gameState.showingSolution;
-      if (nextBtn) nextBtn.disabled = false;
+      if (domCache.nextBtn) domCache.nextBtn.disabled = false;
     } else if (gameState.paused) {
       // During pause: enable play/stop, disable pause, disable inputs
-      if (playBtn) playBtn.disabled = false;
-      if (pauseBtn) pauseBtn.disabled = true;
-      if (stopBtn) stopBtn.disabled = false;
+      if (domCache.playBtn) domCache.playBtn.disabled = false;
+      if (domCache.pauseBtn) domCache.pauseBtn.disabled = true;
+      if (domCache.stopBtn) domCache.stopBtn.disabled = false;
 
       // Keep inputs disabled during pause
-      if (fromInput) fromInput.disabled = true;
-      if (toInput) toInput.disabled = true;
-      if (fromDropdown) fromDropdown.disabled = true;
-      if (toDropdown) toDropdown.disabled = true;
-      if (timeInput) timeInput.disabled = true;
-      if (learningModeCheckbox) learningModeCheckbox.disabled = true;
+      if (domCache.fromInput) domCache.fromInput.disabled = true;
+      if (domCache.toInput) domCache.toInput.disabled = true;
+      if (domCache.fromDropdown) domCache.fromDropdown.disabled = true;
+      if (domCache.toDropdown) domCache.toDropdown.disabled = true;
+      if (domCache.timeInput) domCache.timeInput.disabled = true;
+      if (domCache.learningModeCheckbox)
+        domCache.learningModeCheckbox.disabled = true;
       if (learningModeLabel) learningModeLabel.classList.add("disabled");
 
       // Action buttons during pause - enable NÄSTA to resume, disable VISA
-      if (showBtn) showBtn.disabled = true;
-      if (nextBtn) nextBtn.disabled = false;
+      if (domCache.showBtn) domCache.showBtn.disabled = true;
+      if (domCache.nextBtn) domCache.nextBtn.disabled = false;
     } else {
       // Game stopped: enable play, disable pause/stop, enable inputs
-      if (playBtn) playBtn.disabled = false;
-      if (pauseBtn) pauseBtn.disabled = true;
-      if (stopBtn) stopBtn.disabled = true;
+      if (domCache.playBtn) domCache.playBtn.disabled = false;
+      if (domCache.pauseBtn) domCache.pauseBtn.disabled = true;
+      if (domCache.stopBtn) domCache.stopBtn.disabled = true;
 
       // Enable game configuration inputs when stopped
-      if (fromInput) fromInput.disabled = false;
-      if (toInput) toInput.disabled = false;
-      if (fromDropdown) fromDropdown.disabled = false;
-      if (toDropdown) toDropdown.disabled = false;
-      if (timeInput) timeInput.disabled = false;
-      if (learningModeCheckbox) learningModeCheckbox.disabled = false;
+      if (domCache.fromInput) domCache.fromInput.disabled = false;
+      if (domCache.toInput) domCache.toInput.disabled = false;
+      if (domCache.fromDropdown) domCache.fromDropdown.disabled = false;
+      if (domCache.toDropdown) domCache.toDropdown.disabled = false;
+      if (domCache.timeInput) domCache.timeInput.disabled = false;
+      if (domCache.learningModeCheckbox)
+        domCache.learningModeCheckbox.disabled = false;
       if (learningModeLabel) learningModeLabel.classList.remove("disabled");
 
       // Action buttons disabled when stopped
-      if (showBtn) showBtn.disabled = true;
-      if (nextBtn) nextBtn.disabled = true;
+      if (domCache.showBtn) domCache.showBtn.disabled = true;
+      if (domCache.nextBtn) domCache.nextBtn.disabled = true;
     }
   };
 
@@ -391,7 +383,7 @@ export function showRangeControls() {
 export function initializeGame() {
   // Initialize DOM cache for better performance
   domCache.init();
-  
+
   const currentGameId = getCurrentContext();
   const contextData = getContextData();
 
@@ -420,7 +412,7 @@ export function initializeGame() {
     gameState.countdownValue = 0;
 
     // Set learning mode based on replay type
-    const learningModeCheckbox = document.getElementById("learning-mode");
+    const learningModeCheckbox = domCache.learningModeCheckbox;
     if (contextData.replayType === "slow") {
       // Hide range controls for slow replay
       hideRangeControls();
@@ -457,7 +449,7 @@ export function initializeGame() {
 
   // Reset game state when starting a new game (not in replay mode)
   // This ensures clean state for fresh game initialization
-  resetGameState(gameState, domCache);
+  resetGameState();
 
   const game = gameData[currentGameId];
   gameState.currentGameData = [...game.data];
@@ -471,40 +463,46 @@ export function initializeGame() {
 
   // Handle dropdown vs input controls
   const useDropdown = game.dropdown || false;
-  const fromInput = document.getElementById("from-input");
-  const toInput = document.getElementById("to-input");
-  const fromDropdown = document.getElementById("from-dropdown");
-  const toDropdown = document.getElementById("to-dropdown");
-
-  if (!fromInput || !toInput || !fromDropdown || !toDropdown) {
+  // Use domCache directly for input elements
+  if (
+    !domCache.fromInput ||
+    !domCache.toInput ||
+    !domCache.fromDropdown ||
+    !domCache.toDropdown
+  ) {
     return; // Elements not found
   }
 
   // Remove any existing event listeners by cloning and replacing elements
-  const newFromInput = fromInput.cloneNode(true);
-  const newToInput = toInput.cloneNode(true);
-  fromInput.parentNode.replaceChild(newFromInput, fromInput);
-  toInput.parentNode.replaceChild(newToInput, toInput);
+  const newFromInput = domCache.fromInput.cloneNode(true);
+  const newToInput = domCache.toInput.cloneNode(true);
+  domCache.fromInput.parentNode.replaceChild(newFromInput, domCache.fromInput);
+  domCache.toInput.parentNode.replaceChild(newToInput, domCache.toInput);
+  // Update cache with new elements
+  domCache.fromInput = newFromInput;
+  domCache.toInput = newToInput;
 
   if (useDropdown) {
     // Show dropdowns, hide inputs
     newFromInput.classList.add("hidden");
     newToInput.classList.add("hidden");
-    fromDropdown.classList.remove("hidden");
-    toDropdown.classList.remove("hidden");
+    domCache.fromDropdown.classList.remove("hidden");
+    domCache.toDropdown.classList.remove("hidden");
 
     // Populate dropdown options
     populateDropdowns(game.data);
 
     // Set default values to first and last items
-    fromDropdown.value = "0";
-    toDropdown.value = (gameState.currentGameData.length - 1).toString();
+    domCache.fromDropdown.value = "0";
+    domCache.toDropdown.value = (
+      gameState.currentGameData.length - 1
+    ).toString();
   } else {
     // Show inputs, hide dropdowns
     newFromInput.classList.remove("hidden");
     newToInput.classList.remove("hidden");
-    fromDropdown.classList.add("hidden");
-    toDropdown.classList.add("hidden");
+    domCache.fromDropdown.classList.add("hidden");
+    domCache.toDropdown.classList.add("hidden");
 
     // Set default range for numeric data
     newFromInput.value = 0;
@@ -531,14 +529,13 @@ export function initializeGame() {
         gameState.currentGameData.length > fromValue
       ) {
         const newCurrentItem = gameState.currentGameData[fromValue];
-        document.getElementById("current-item").textContent = newCurrentItem[0];
+        domCache.currentItem.textContent = newCurrentItem[0];
 
         // Also update solution display based on learning mode
-        const solutionDisplay = document.getElementById("solution-display");
         if (gameState.isLearningMode) {
-          solutionDisplay.textContent = newCurrentItem[1];
+          domCache.solutionDisplay.textContent = newCurrentItem[1];
         } else {
-          solutionDisplay.textContent = "•••";
+          domCache.solutionDisplay.textContent = "•••";
         }
       }
     });
@@ -555,10 +552,14 @@ export function initializeGame() {
     });
 
     // Add event listener for time input to update countdown display
-    const timeInput = document.getElementById("time-input");
-    if (timeInput) {
-      const newTimeInput = timeInput.cloneNode(true);
-      timeInput.parentNode.replaceChild(newTimeInput, timeInput);
+    if (domCache.timeInput) {
+      const newTimeInput = domCache.timeInput.cloneNode(true);
+      domCache.timeInput.parentNode.replaceChild(
+        newTimeInput,
+        domCache.timeInput
+      );
+      // Update cache with new element
+      domCache.timeInput = newTimeInput;
 
       newTimeInput.addEventListener("change", function () {
         // No special handling needed when time changes
@@ -576,25 +577,33 @@ export function initializeGame() {
  * @param {Array} data - The game data array to populate dropdowns with
  */
 export function populateDropdowns(data) {
-  const fromDropdown = document.getElementById("from-dropdown");
-  const toDropdown = document.getElementById("to-dropdown");
-
-  if (!fromDropdown || !toDropdown) return;
+  // Use domCache directly for dropdowns
+  if (!domCache.fromDropdown || !domCache.toDropdown) return;
 
   // Clear existing options
-  fromDropdown.innerHTML = "";
-  toDropdown.innerHTML = "";
+  domCache.fromDropdown.innerHTML = "";
+  domCache.toDropdown.innerHTML = "";
 
   // Remove existing event listeners by cloning and replacing elements
-  const newFromDropdown = fromDropdown.cloneNode(false);
-  const newToDropdown = toDropdown.cloneNode(false);
-  newFromDropdown.id = fromDropdown.id;
-  newFromDropdown.className = fromDropdown.className;
-  newToDropdown.id = toDropdown.id;
-  newToDropdown.className = toDropdown.className;
+  const newFromDropdown = domCache.fromDropdown.cloneNode(false);
+  const newToDropdown = domCache.toDropdown.cloneNode(false);
+  newFromDropdown.id = domCache.fromDropdown.id;
+  newFromDropdown.className = domCache.fromDropdown.className;
+  newToDropdown.id = domCache.toDropdown.id;
+  newToDropdown.className = domCache.toDropdown.className;
 
-  fromDropdown.parentNode.replaceChild(newFromDropdown, fromDropdown);
-  toDropdown.parentNode.replaceChild(newToDropdown, toDropdown);
+  domCache.fromDropdown.parentNode.replaceChild(
+    newFromDropdown,
+    domCache.fromDropdown
+  );
+  domCache.toDropdown.parentNode.replaceChild(
+    newToDropdown,
+    domCache.toDropdown
+  );
+
+  // Update cache with new elements
+  domCache.fromDropdown = newFromDropdown;
+  domCache.toDropdown = newToDropdown;
 
   // Add options for each data item
   data.forEach((item, index) => {
@@ -622,14 +631,15 @@ export function populateDropdowns(data) {
     // Update current-item display to show the new "from" item when game is not running
     if (!gameState.isGameRunning && data.length > fromIndex) {
       const newCurrentItem = data[fromIndex];
-      document.getElementById("current-item").textContent = newCurrentItem[0];
+      domCache.currentItem.textContent = newCurrentItem[0];
 
       // Also update solution display based on learning mode
-      const solutionDisplay = document.getElementById("solution-display");
-      if (gameState.isLearningMode) {
-        solutionDisplay.textContent = newCurrentItem[1];
-      } else {
-        solutionDisplay.textContent = "•••";
+      if (domCache.solutionDisplay) {
+        if (gameState.isLearningMode) {
+          domCache.solutionDisplay.textContent = newCurrentItem[1];
+        } else {
+          domCache.solutionDisplay.textContent = "•••";
+        }
       }
     }
   });
@@ -690,25 +700,22 @@ function continueStartGame() {
   gameState.paused = false;
   gameState.gameStartTime = Date.now();
 
-  // Reset progress bar on NÄSTA button for fresh start
-  resetProgressBar(domCache);
-
   // Filter data based on range (only applies to normal games, not replays)
   const currentGameId = getCurrentContext();
   const game = gameData[currentGameId];
   const useDropdown = game.dropdown || false;
 
+  // Use domCache directly for indices
   let fromIndex, toIndex;
   if (useDropdown) {
-    fromIndex = parseInt(document.getElementById("from-dropdown")?.value) || 0;
+    fromIndex = parseInt(domCache.fromDropdown?.value) || 0;
     toIndex =
-      parseInt(document.getElementById("to-dropdown")?.value) ||
+      parseInt(domCache.toDropdown?.value) ||
       gameState.currentGameData.length - 1;
   } else {
-    fromIndex = parseInt(document.getElementById("from-input")?.value) || 0;
+    fromIndex = parseInt(domCache.fromInput?.value) || 0;
     toIndex =
-      parseInt(document.getElementById("to-input")?.value) ||
-      gameState.currentGameData.length - 1;
+      parseInt(domCache.toInput?.value) || gameState.currentGameData.length - 1;
   }
 
   // Ensure indices are within bounds
@@ -847,7 +854,7 @@ export function stopGame() {
   gameState.currentItemStartTime = null;
 
   // Reset progress bar on NÄSTA button
-  resetProgressBar(domCache);
+  resetProgressBar();
 
   // Only show initial display if not running
   if (!gameState.isGameRunning) updateInitialDisplay();
@@ -861,7 +868,11 @@ export function stopGame() {
 
   // Navigate to results if we should show them
   if (shouldShowResults) {
-    const resultData = prepareResultData(gameState, getCurrentContext, gameData);
+    const resultData = prepareResultData(
+      gameState,
+      getCurrentContext,
+      gameData
+    );
     setContextData(resultData);
     navigateToPage("results-page");
   }
@@ -877,9 +888,13 @@ export function showCurrentItem(resume = false) {
     return;
   }
   const currentItem = gameState.currentGameData[gameState.currentItemIndex];
-  (
-    domCache.currentItem || document.getElementById("current-item")
-  ).textContent = currentItem[0];
+  domCache.currentItem.textContent = currentItem[0];
+  domCache.solutionDisplay.classList.add("visible");
+  if (gameState.isLearningMode || gameState.showingSolution) {
+    domCache.solutionDisplay.textContent = currentItem[1];
+  } else {
+    domCache.solutionDisplay.textContent = "•••";
+  }
 
   // Always start timing for this item when game is running, unless resuming
   if (gameState.isGameRunning && !resume) {
@@ -887,25 +902,9 @@ export function showCurrentItem(resume = false) {
     gameState.pausedTime = 0; // Reset paused time for new item
   }
 
-  const solutionDisplay =
-    domCache.solutionDisplay || document.getElementById("solution-display");
-  if (solutionDisplay) {
-    solutionDisplay.classList.add("visible");
-  }
-
   // Reset showingSolution for new item unless in learning mode
   if (!gameState.isLearningMode && !resume) {
     gameState.showingSolution = false;
-  }
-
-  if (gameState.isLearningMode || gameState.showingSolution) {
-    if (solutionDisplay) {
-      solutionDisplay.textContent = currentItem[1];
-    }
-  } else {
-    if (solutionDisplay) {
-      solutionDisplay.textContent = "•••";
-    }
   }
 
   if (gameState.isLearningMode) {
@@ -928,9 +927,9 @@ export function showCurrentItem(resume = false) {
  * @param {boolean} resume - Whether this is resuming from a pause
  */
 export function startCountdown(resume = false) {
-  const timeInput = document.getElementById("time-input");
+  const timeInput = domCache.timeInput;
   const timeLimit =
-    parseInt(timeInput?.value) || parseInt(timeInput?.defaultValue) || 5;
+    parseInt(timeInput.value) || parseInt(timeInput.defaultValue) || 5;
 
   gameState.totalCountdownTime = timeLimit;
   // Only reset countdownValue if not resuming
@@ -1038,11 +1037,8 @@ export function showAnswer() {
   }
 
   const currentItem = gameState.currentGameData[gameState.currentItemIndex];
-  const solutionDisplay = document.getElementById("solution-display");
-  if (solutionDisplay) {
-    solutionDisplay.textContent = currentItem[1];
-    solutionDisplay.classList.add("visible");
-  }
+  domCache.solutionDisplay.textContent = currentItem[1];
+  domCache.solutionDisplay.classList.add("visible");
   gameState.showingSolution = true;
 
   // Record that user needed to see the answer
@@ -1100,7 +1096,7 @@ export function nextItem(vibrate = false) {
   }
 
   // Remove progress bar class when manually advancing
-  resetProgressBar(domCache);
+  resetProgressBar();
 
   // Vibrate device for 100ms on auto-advance in learning mode (if enabled)
   if (
@@ -1110,7 +1106,6 @@ export function nextItem(vibrate = false) {
     vibrate
   ) {
     navigator.vibrate(100);
-    console.log("Vibration triggered");
   }
 
   // Record result for current item if not already recorded (i.e., user pressed NEXT)
@@ -1149,7 +1144,11 @@ export function nextItem(vibrate = false) {
       return;
     } else {
       // In practice mode, navigate to results
-      const resultData = prepareResultData(gameState, getCurrentContext, gameData);
+      const resultData = prepareResultData(
+        gameState,
+        getCurrentContext,
+        gameData
+      );
       setContextData(resultData);
       navigateToPage("results-page");
       stopGame();
@@ -1183,12 +1182,12 @@ document.addEventListener("keydown", function (e) {
 
 // Set up the game page observer when the module loads
 // This ensures it's only set up once and works reliably
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   setupGamePageObserver();
 });
 
 // If DOM is already loaded, set up immediately
-if (document.readyState === 'loading') {
+if (document.readyState === "loading") {
   // DOM is still loading, event listener will handle it
 } else {
   // DOM is already loaded

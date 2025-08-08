@@ -42,10 +42,10 @@ src/
 ## Core Patterns
 
 ### Game State Management
-All game state lives in the global `gameState` object exported from `game/utils.js`:
+All game state lives in the `gameState` object in `game/play.js`:
 ```javascript
 // In js/game/utils.js
-export const gameState = {
+const gameState = {
   currentGameData: [],      // Active filtered dataset
   originalGameData: [],     // Backup of original data
   isGameRunning: false,     // Game session state

@@ -1201,11 +1201,7 @@ export function nextItem(vibrate = false) {
       return;
     } else {
       // In practice mode, navigate to results
-      const resultData = prepareResultData(
-        gameState,
-        getCurrentContext,
-        gameData
-      );
+      const resultData = prepareResultData(gameData);
       setContextData(resultData);
       navigateToPage("results-page");
       stopGame();

@@ -1,18 +1,18 @@
+import { setupGameNavigation } from "./game/navigation.js";
+import { replay, setupResultsPage } from "./game/result.js";
 import {
-  domCache,
-  gameState,
-  generateTiles,
   startGame,
   pauseGame,
   stopGame,
   showAnswer,
   nextItem,
-  replay,
   toggleVibrationSetting,
   updateLearningMode,
   loadGameSettings,
   updateButtonStates,
-} from "./game.js";
+  initializeGame,
+} from "./game/play.js";
+import { generateTiles } from "./game/menu.js";
 import {
   initializeFromURL,
   shouldUseHashRouting,
@@ -83,25 +83,6 @@ window.clearDebugConsole = clearDebugConsole;
 window.handleHeaderClick = handleHeaderClick;
 window.updateLearningMode = updateLearningMode;
 
-// Handle keyboard shortcuts
-document.addEventListener("keydown", function (e) {
-  if (document.querySelector("#game-page.active")) {
-    if (e.key === " " || e.key === "Enter") {
-      // Space or Enter to show answer
-      e.preventDefault();
-      if (gameState.isGameRunning && !gameState.showingSolution) {
-        showAnswer();
-      }
-    } else if (e.key === "ArrowRight" || e.key === "n" || e.key === "N") {
-      // Right arrow or N to next
-      e.preventDefault();
-      if (gameState.isGameRunning) {
-        nextItem();
-      }
-    }
-  }
-});
-
 // Handle navigation changes (back/forward navigation)
 if (shouldUseHashRouting()) {
   window.addEventListener("hashchange", function () {
@@ -115,8 +96,11 @@ if (shouldUseHashRouting()) {
 
 // Initialize page based on URL when loaded
 window.addEventListener("DOMContentLoaded", function () {
-  // Initialize DOM cache for better performance
-  domCache.init();
+  // Setup game navigation callbacks
+  setupGameNavigation({ initializeGame });
+  
+  // Setup results page callback
+  setupResultsPage();
 
   // Load settings from localStorage
   loadGameSettings();

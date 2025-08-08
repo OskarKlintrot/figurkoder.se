@@ -25,22 +25,27 @@ src/
 │   ├── responsive.css   # Media queries and responsive breakpoints
 │   └── utilities.css    # Utility classes and helper styles
 ├── js/                  # JavaScript modules (ES6)
-│   ├── main.js          # Entry point and event listeners (~120 lines)
-│   ├── game.js          # Core game logic and state management (~1200 lines)
+│   ├── main.js          # Entry point and event listeners (~130 lines)
 │   ├── navigation.js    # Page routing and navigation (~230 lines)
-│   ├── game-data.js     # Training data arrays (names + mnemonics) (~1300 lines)
 │   ├── debug.js         # Debug console and development tools (~140 lines)
-│   └── keep-screen-on.js # Screen wake lock functionality (~60 lines)
+│   ├── keep-screen-on.js # Screen wake lock functionality (~60 lines)
+│   └── game/            # Game-specific modules (~2400 lines total)
+│       ├── data.js      # Training data arrays (names + mnemonics) (~1300 lines)
+│       ├── navigation.js # Game-specific navigation callbacks (~80 lines)
+│       ├── menu.js      # Game selection and tile generation (~60 lines)
+│       ├── play.js      # Core game logic and controls (~980 lines)
+│       ├── result.js    # Results display and replay functionality (~180 lines)
+│       └── utils.js     # Game state and utility functions (~150 lines)
 └── staticwebapp.config.json # Azure SWA routing config
 ```
 
 ## Core Patterns
 
 ### Game State Management
-All game state lives in the global `gameState` object exported from `game.js`:
+All game state lives in the `gameState` object in `game/play.js`:
 ```javascript
-// In js/game.js
-export const gameState = {
+// In js/game/play.js
+const gameState = {
   currentGameData: [],      // Active filtered dataset
   originalGameData: [],     // Backup of original data
   isGameRunning: false,     // Game session state
@@ -48,6 +53,15 @@ export const gameState = {
   // ... other state properties
 }
 ```
+
+### Modular Game Architecture
+Game functionality is split into focused modules in the `js/game/` directory:
+- **`data.js`**: Training data arrays (`femaleNames`, `maleNames`) with `[name, mnemonic]` pairs
+- **`menu.js`**: Game selection interface and tile generation for the main menu
+- **`play.js`**: Core game logic including timers, controls, and item progression
+- **`result.js`**: Results display, statistics, and replay functionality
+- **`navigation.js`**: Game-specific navigation callbacks and context management  
+- **`utils.js`**: Shared game state, DOM caching, and utility functions
 
 ### Page Navigation
 Single-page app using CSS classes to show/hide page divs:
@@ -57,7 +71,7 @@ Single-page app using CSS classes to show/hide page divs:
 - Context-aware navigation with callback system for page enter/leave events
 
 ### Game Types & Data Structure
-Games are defined in `game-data.js` as arrays of `[name, mnemonic]` pairs:
+Games are defined in `game/data.js` as arrays of `[name, mnemonic]` pairs:
 - `femaleNames`, `maleNames`: Person name training data
 - Range-based training: Users select numeric ranges (0-99) to filter data
 - Two modes: Learning (show answers) vs Training (timed recall)
@@ -71,11 +85,15 @@ Uses dual timing approach:
 ## Development Workflow
 
 ### Local Development
+The development site is always running at `http://localhost:61949`. Use **PowerShell** for all terminal commands.
+
 ```powershell
 # Simple HTTP server (required for ES6 modules)
 dotnet serve -d src -p 61949
 # Or use VS Code Live Server extension
 ```
+
+**Note**: Always use PowerShell when running terminal commands in this project.
 
 ### Version Management
 Service worker version auto-updates on deployment:
@@ -115,7 +133,7 @@ All CSS files are loaded directly in `index.html` for parallel loading performan
 - Validate Swedish language content rendering
 
 ## Common Tasks
-- **Add new game type**: Extend `game-data.js` arrays and update game selection logic
-- **Modify game mechanics**: Focus on timer functions in `game.js` (~lines 1000-1200)
+- **Add new game type**: Extend `game/data.js` arrays and update game selection logic
+- **Modify game mechanics**: Focus on timer functions in `game/play.js` (~lines 800-1000)
 - **Update PWA**: Modify `sw.js` cache strategy or `site.webmanifest`
 - **Style changes**: Use existing CSS custom properties when possible; edit specific CSS modules directly (all loaded in `index.html`)

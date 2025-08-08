@@ -1154,6 +1154,7 @@ export function nextItem(vibrate = false) {
     vibrate
   ) {
     navigator.vibrate(100);
+    console.log("Vibration triggered: 100ms");
   }
 
   // Record result for current item if not already recorded (i.e., user pressed NEXT)

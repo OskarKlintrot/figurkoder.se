@@ -799,26 +799,17 @@ export function startGame() {
   gameState.rangeStart = fromIndex;
   gameState.rangeEnd = toIndex;
 
-  // If in slow replay mode, only shuffle the already filtered slow set
-  if (contextData && contextData.replayType === "slow") {
-    // Shuffle the filtered slow set in place
-    let filteredData = [...gameState.currentGameDataSet];
-    for (let i = filteredData.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
-    }
-    gameState.currentGameDataSet = filteredData;
-    gameState.currentItemIndex = 0;
-  } else {
-    // Normal/full replay: filter and shuffle from original data
-    let filteredData = game.data.slice(fromIndex, toIndex + 1);
-    for (let i = filteredData.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
-    }
-    gameState.currentGameDataSet = filteredData;
-    gameState.currentItemIndex = 0;
+  const filteredData =
+    contextData && contextData.replayType === "slow"
+      ? [...gameState.currentGameDataSet]
+      : game.data.slice(fromIndex, toIndex + 1);
+
+  for (let i = filteredData.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
   }
+  gameState.currentGameDataSet = filteredData;
+  gameState.currentItemIndex = 0;
 
   // Initialize results tracking
   gameState.gameResults = [];

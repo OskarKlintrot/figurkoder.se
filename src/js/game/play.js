@@ -1407,7 +1407,6 @@ export function replay(slowOnly = false) {
 
   // Set the replay data in context for initializeGame to use
   setContextData(replayData);
-  console.log("Replay data set in context:", replayData);
   activatePage("game-page", setupGamePage);
 }
 

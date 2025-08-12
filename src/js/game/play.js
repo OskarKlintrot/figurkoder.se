@@ -209,9 +209,32 @@ export function updateLearningMode() {
   gameState.isLearningMode = domCache.learningModeCheckbox.checked;
   // Update button states when learning mode changes
   updateButtonStates();
-  // If game is not running, update the initial display
-  if (!gameState.isGameRunning) {
-    updateInitialDisplay();
+  // Update the display based on selected range
+  let fromIndex = 0;
+  if (
+    domCache.fromDropdown &&
+    !domCache.fromDropdown.classList.contains("hidden")
+  ) {
+    fromIndex = parseInt(domCache.fromDropdown.value) || 0;
+  } else if (
+    domCache.fromInput &&
+    !domCache.fromInput.classList.contains("hidden")
+  ) {
+    fromIndex = parseInt(domCache.fromInput.value) || 0;
+  }
+  if (gameState.currentGameDataSet.length > fromIndex) {
+    const currentItem = gameState.currentGameDataSet[fromIndex];
+    domCache.currentItem.textContent = currentItem[0];
+    domCache.solutionDisplay.classList.add("visible");
+    if (gameState.isLearningMode) {
+      domCache.solutionDisplay.textContent = currentItem[1];
+    } else {
+      domCache.solutionDisplay.textContent = "•••";
+    }
+  } else {
+    domCache.currentItem.textContent = "---";
+    domCache.solutionDisplay.textContent = "---";
+    domCache.solutionDisplay.classList.add("visible");
   }
 }
 

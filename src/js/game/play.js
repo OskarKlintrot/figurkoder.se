@@ -209,21 +209,31 @@ export function updateLearningMode() {
   gameState.isLearningMode = domCache.learningModeCheckbox.checked;
   // Update button states when learning mode changes
   updateButtonStates();
-  // Update the display based on selected range
-  let fromIndex = 0;
-  if (
-    domCache.fromDropdown &&
-    !domCache.fromDropdown.classList.contains("hidden")
-  ) {
-    fromIndex = parseInt(domCache.fromDropdown.value) || 0;
-  } else if (
-    domCache.fromInput &&
-    !domCache.fromInput.classList.contains("hidden")
-  ) {
-    fromIndex = parseInt(domCache.fromInput.value) || 0;
+  // Use currentItemIndex if game is running/paused, otherwise use 'Från' value
+  let index;
+  if (gameState.isGameRunning || gameState.paused) {
+    index = gameState.currentItemIndex;
+  } else {
+    // Use 'Från' value from dropdown or input
+    if (
+      domCache.fromDropdown &&
+      !domCache.fromDropdown.classList.contains("hidden")
+    ) {
+      index = parseInt(domCache.fromDropdown.value) || 0;
+    } else if (
+      domCache.fromInput &&
+      !domCache.fromInput.classList.contains("hidden")
+    ) {
+      index = parseInt(domCache.fromInput.value) || 0;
+    } else {
+      index = 0;
+    }
   }
-  if (gameState.currentGameDataSet.length > fromIndex) {
-    const currentItem = gameState.currentGameDataSet[fromIndex];
+  if (index < 0 || index >= gameState.currentGameDataSet.length) {
+    index = 0;
+  }
+  if (gameState.currentGameDataSet.length > 0) {
+    const currentItem = gameState.currentGameDataSet[index];
     domCache.currentItem.textContent = currentItem[0];
     domCache.solutionDisplay.classList.add("visible");
     if (gameState.isLearningMode) {

@@ -60,25 +60,6 @@ export function registerContextChangeCallback(callback) {
 }
 
 /**
- * Handles navigation back to previous page based on current page context
- */
-export function goBack() {
-  const currentPageId = document.querySelector(".page.active")?.id;
-
-  // Define simple back navigation rules
-  const backRoutes = {
-    "game-page": "main-menu",
-    "about-page": "main-menu",
-    "faq-page": "main-menu",
-    "contact-page": "main-menu",
-    "404-page": "main-menu",
-  };
-
-  const targetPage = backRoutes[currentPageId] || "main-menu";
-  navigateToPage(targetPage);
-}
-
-/**
  * Updates the page header with title and back button visibility
  * @param {string} title - The title to display in the header
  * @param {boolean} showBackButton - Whether to show the back button

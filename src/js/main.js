@@ -16,7 +16,6 @@ import {
   shouldUseHashRouting,
   openMenu,
   closeMenu,
-  goBack,
   navigateToPage,
 } from "./navigation.js";
 import {
@@ -67,7 +66,6 @@ async function fetchAndDisplayVersion() {
 // Make functions globally accessible for onclick handlers
 window.openMenu = openMenu;
 window.closeMenu = closeMenu;
-window.goBack = goBack;
 window.navigateToPage = navigateToPage;
 window.showAnswer = showAnswer;
 window.nextItem = nextItem;

@@ -800,15 +800,13 @@ export function startGame() {
   gameState.currentItemStartTime = null;
   gameState.pausedTime = 0; // Reset paused time for new game
 
-  // Shuffle data only if NOT in learning mode
-  if (!gameState.isLearningMode) {
-    for (let i = gameState.currentGameDataSet.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [gameState.currentGameDataSet[i], gameState.currentGameDataSet[j]] = [
-        gameState.currentGameDataSet[j],
-        gameState.currentGameDataSet[i],
-      ];
-    }
+  // Always shuffle data, including in learning mode
+  for (let i = gameState.currentGameDataSet.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [gameState.currentGameDataSet[i], gameState.currentGameDataSet[j]] = [
+      gameState.currentGameDataSet[j],
+      gameState.currentGameDataSet[i],
+    ];
   }
   gameState.currentItemIndex = 0;
   // Only call showCurrentItem to handle display logic

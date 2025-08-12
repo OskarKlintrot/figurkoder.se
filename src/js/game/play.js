@@ -1,8 +1,10 @@
 import {
-  navigateToPage,
   setContextData,
   getCurrentContext,
   getContextData,
+  updateHeader,
+  registerPageEnterCallback,
+  registerContextChangeCallback,
 } from "../navigation.js";
 import gameData from "./data.js";
 
@@ -274,7 +276,16 @@ export function updateInitialDisplay() {
     domCache.solutionDisplay.classList.add("visible");
     return;
   }
-  const currentItem = gameState.currentGameDataSet[0];
+  // Use rangeStart for initial display if set, otherwise default to 0
+  let initialIndex = 0;
+  if (
+    typeof gameState.rangeStart === "number" &&
+    gameState.rangeStart >= 0 &&
+    gameState.rangeStart < gameState.currentGameDataSet.length
+  ) {
+    initialIndex = gameState.rangeStart;
+  }
+  const currentItem = gameState.currentGameDataSet[initialIndex];
   if (!currentItem || !currentItem[0]) {
     domCache.currentItem.textContent = "---";
     domCache.solutionDisplay.textContent = "---";
@@ -412,7 +423,7 @@ export function showRangeControls() {
 /**
  * Initializes a game with the selected settings and data
  */
-export function initializeGame() {
+function initializeGame() {
   // Initialize DOM cache for better performance
   domCache.init();
 
@@ -495,11 +506,7 @@ export function initializeGame() {
     // Set learning mode based on replay type
     const learningModeCheckbox = domCache.learningModeCheckbox;
     if (contextData.replayType === "slow") {
-      // Hide range controls for slow replay
       hideRangeControls();
-      domCache.fromInput.value = "0";
-      domCache.toInput.value = String(gameState.currentGameDataSet.length - 1);
-
       // Enable learning mode for slow replay
       if (learningModeCheckbox) {
         learningModeCheckbox.checked = true;
@@ -508,7 +515,6 @@ export function initializeGame() {
     } else {
       // Show range controls for regular replay
       showRangeControls();
-
       // Keep current learning mode setting for full replay
       if (learningModeCheckbox) {
         gameState.isLearningMode = learningModeCheckbox.checked;
@@ -775,6 +781,7 @@ export function startGame() {
   const currentGameId = getCurrentContext();
   const game = gameData[currentGameId];
   const useDropdown = game.dropdown || false;
+  const contextData = getContextData();
 
   let fromIndex, toIndex;
   if (useDropdown) {
@@ -792,14 +799,26 @@ export function startGame() {
   gameState.rangeStart = fromIndex;
   gameState.rangeEnd = toIndex;
 
-  // Filter and shuffle from original data
-  let filteredData = game.data.slice(fromIndex, toIndex + 1);
-  for (let i = filteredData.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
+  // If in slow replay mode, only shuffle the already filtered slow set
+  if (contextData && contextData.replayType === "slow") {
+    // Shuffle the filtered slow set in place
+    let filteredData = [...gameState.currentGameDataSet];
+    for (let i = filteredData.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
+    }
+    gameState.currentGameDataSet = filteredData;
+    gameState.currentItemIndex = 0;
+  } else {
+    // Normal/full replay: filter and shuffle from original data
+    let filteredData = game.data.slice(fromIndex, toIndex + 1);
+    for (let i = filteredData.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
+    }
+    gameState.currentGameDataSet = filteredData;
+    gameState.currentItemIndex = 0;
   }
-  gameState.currentGameDataSet = filteredData;
-  gameState.currentItemIndex = 0;
 
   // Initialize results tracking
   gameState.gameResults = [];
@@ -946,7 +965,7 @@ export function stopGame() {
   if (shouldShowResults) {
     const resultData = prepareResultData(gameData);
     setContextData(resultData);
-    navigateToPage("results-page");
+    activatePage("results-page", updateResults);
   }
 }
 
@@ -1221,7 +1240,7 @@ export function nextItem(vibrate = false) {
       // In practice mode, navigate to results
       const resultData = prepareResultData(gameData);
       setContextData(resultData);
-      navigateToPage("results-page");
+      activatePage("results-page", updateResults);
       stopGame();
       return;
     }
@@ -1264,3 +1283,221 @@ if (document.readyState === "loading") {
   // DOM is already loaded
   setupGamePageObserver();
 }
+
+// ============================================================================
+//  GAME RESULT
+//  Results page functionality:
+//  - Display game statistics and performance metrics
+//  - Individual item results with timing information
+//  - Replay functionality (full game or slow items only)
+//  - Result data preparation and context management
+// ============================================================================
+
+/**
+ * Updates the results page with game statistics and individual item results
+ */
+function updateResults() {
+  const resultsList = document.getElementById("results-list");
+  const averageTimeElement = document.getElementById("average-time");
+  const resultsTitle = document.getElementById("results-title");
+
+  if (!resultsList || !averageTimeElement || !resultsTitle) return;
+
+  // Get result data from context
+  const resultData = getContextData();
+  if (!resultData) {
+    console.warn("No result data found in context");
+    resultsTitle.textContent = "Resultat";
+    resultsList.innerHTML =
+      '<div class="result-item"><span>Inga resultat att visa</span><span>--</span></div>';
+    averageTimeElement.textContent = "--";
+    return;
+  }
+
+  // Update title to show game type
+  resultsTitle.textContent = resultData.gameTitle;
+
+  // Clear previous results
+  resultsList.innerHTML = "";
+
+  if (resultData.gameResults.length === 0) {
+    resultsList.innerHTML =
+      '<div class="result-item"><span>Inga resultat att visa</span><span>--</span></div>';
+    averageTimeElement.textContent = "--";
+    return;
+  }
+
+  // Calculate average time for items where answer wasn't shown
+  const completedItems = resultData.gameResults.filter(
+    (result) => !result.showedAnswer
+  );
+  const totalTime = completedItems.reduce(
+    (sum, result) => sum + result.timeSpent,
+    0
+  );
+  const averageTime =
+    completedItems.length > 0 ? totalTime / completedItems.length : 0;
+
+  // Display each result
+  resultData.gameResults.forEach((result) => {
+    const resultItem = document.createElement("div");
+    resultItem.className = "result-item";
+
+    const figurkodSpan = document.createElement("span");
+    figurkodSpan.textContent = result.figurkod;
+
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "time-display";
+
+    if (result.showedAnswer) {
+      timeSpan.textContent = result.answer;
+      timeSpan.classList.add("error"); // Red color for shown answers
+    } else {
+      timeSpan.textContent = result.timeSpent.toFixed(1) + " sek";
+      // Yellow background for times over 2 seconds
+      if (result.timeSpent > 2) {
+        timeSpan.classList.add("slow");
+      }
+    }
+
+    resultItem.appendChild(figurkodSpan);
+    resultItem.appendChild(timeSpan);
+    resultsList.appendChild(resultItem);
+  });
+
+  // Update average time
+  if (averageTime > 0) {
+    averageTimeElement.textContent = averageTime.toFixed(1) + " sek";
+  } else {
+    averageTimeElement.textContent = "--";
+  }
+
+  // Update replay slow button
+  const replaySlowBtn = document.getElementById("replay-slow-btn");
+  const replaySlowText = document.getElementById("replay-slow-text");
+  if (replaySlowBtn && replaySlowText) {
+    const slowOrErrorCount = resultData.gameResults.filter(
+      (result) => result.timeSpent > 2 || result.showedAnswer
+    ).length;
+
+    replaySlowBtn.disabled = slowOrErrorCount === 0;
+    replaySlowText.textContent = `Repetera långsamma (${slowOrErrorCount})`;
+  }
+}
+
+/**
+ * Replays the game with specified settings
+ * @param {boolean} slowOnly - If true, only replay slow/incorrect items
+ */
+export function replay(slowOnly = false) {
+  // Get result data from context
+  const resultData = getContextData();
+  if (!resultData) {
+    console.warn("No result data found for replay");
+    return;
+  }
+
+  const replayData = {
+    ...resultData,
+    replayType: slowOnly ? "slow" : "full",
+  };
+
+  if (slowOnly) {
+    if (!resultData.gameResults.length) {
+      console.warn("Missing game results data for slow replay");
+      return;
+    }
+  } else {
+    if (!resultData.fullGameDataSet.length) {
+      console.warn("Missing original game data for full replay");
+      return;
+    }
+  }
+
+  // Set the replay data in context for initializeGame to use
+  setContextData(replayData);
+  console.log("Replay data set in context:", replayData);
+  activatePage("game-page", setupGamePage);
+}
+
+// ============================================================================
+//  UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Utility to activate a page by id and optionally run a callback
+ * @param {string} pageId - The id of the page to activate
+ * @param {function} [callback] - Optional callback to run after activation
+ */
+function activatePage(pageId, callback) {
+  document.querySelectorAll(".page").forEach((page) => {
+    page.classList.remove("active");
+  });
+  const pageEl = document.getElementById(pageId);
+  if (pageEl) {
+    pageEl.classList.add("active");
+    if (typeof callback === "function") callback();
+  }
+}
+
+/**
+ * Registers all game-related navigation callbacks
+ * Should be called once during app initialization
+ */
+function setupGamePage() {
+  const gameType = getCurrentContext();
+  const contextData = getContextData();
+
+  // Check if we have replay data in context
+  if (contextData && contextData.replayType) {
+    // Update header with game title from replay data
+    updateHeader(contextData.gameTitle, true);
+
+    // Set game description for replay
+    const descElement = document.getElementById("game-description-text");
+    if (descElement) {
+      if (contextData.replayType === "slow") {
+        descElement.textContent = `Repetition av långsamma svar från ${contextData.gameTitle}`;
+      } else {
+        descElement.textContent = `Repetition av ${contextData.gameTitle}`;
+      }
+    }
+
+    // Initialize the game with replay data
+    initializeGame();
+    return;
+  }
+
+  if (gameType && gameData[gameType]) {
+    // Set up the game page with current game data
+    const game = gameData[gameType];
+
+    // Update header with game title
+    updateHeader(game.title, true);
+
+    // Set game description
+    const descElement = document.getElementById("game-description-text");
+    if (descElement) {
+      descElement.textContent = game.description;
+    }
+
+    // Initialize the game
+    initializeGame();
+  } else {
+    // No valid game context, show generic header
+    updateHeader("Spel", true);
+  }
+}
+
+// Register game-specific navigation callbacks
+registerPageEnterCallback("game-page", () => {
+  setupGamePage();
+});
+
+registerContextChangeCallback((context) => {
+  // Handle context change - validate game exists
+  if (context && gameData && !gameData[context]) {
+    // Invalid game context, navigate to 404
+    navigateToPage("404-page");
+  }
+});

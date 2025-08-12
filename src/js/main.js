@@ -1,6 +1,5 @@
-import { setupGameNavigation } from "./game/navigation.js";
-import { replay, setupResultsPage } from "./game/result.js";
 import {
+  replay,
   startGame,
   pauseGame,
   stopGame,
@@ -10,7 +9,6 @@ import {
   updateLearningMode,
   loadGameSettings,
   updateButtonStates,
-  initializeGame,
 } from "./game/play.js";
 import { generateTiles } from "./game/menu.js";
 import {
@@ -96,12 +94,6 @@ if (shouldUseHashRouting()) {
 
 // Initialize page based on URL when loaded
 window.addEventListener("DOMContentLoaded", function () {
-  // Setup game navigation callbacks
-  setupGameNavigation({ initializeGame });
-  
-  // Setup results page callback
-  setupResultsPage();
-
   // Load settings from localStorage
   loadGameSettings();
   loadDebugSettings();

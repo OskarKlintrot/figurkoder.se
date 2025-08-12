@@ -68,7 +68,6 @@ export function goBack() {
   // Define simple back navigation rules
   const backRoutes = {
     "game-page": "main-menu",
-    "results-page": "game-page",
     "about-page": "main-menu",
     "faq-page": "main-menu",
     "contact-page": "main-menu",
@@ -172,7 +171,6 @@ export function getURLForPage(pageId) {
   const urlPatterns = {
     "main-menu": "/",
     "game-page": context ? `/game/${context}` : "/game",
-    "results-page": context ? `/game/${context}/results` : "/results",
     "about-page": "/about",
     "faq-page": "/faq",
     "contact-page": "/contact",
@@ -210,9 +208,6 @@ export function parseURL() {
       return { page: "game-page", context: null };
     }
     const contextType = segments[1];
-    if (segments.length === 3 && segments[2] === "results") {
-      return { page: "results-page", context: contextType };
-    }
     return { page: "game-page", context: contextType };
   }
 

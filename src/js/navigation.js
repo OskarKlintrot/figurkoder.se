@@ -281,22 +281,16 @@ export function closeMenu() {
 }
 
 // Register navigation callbacks
-registerPageEnterCallback("main-menu", () => {
-  updateHeader("Figurkoder.se", false);
-});
-
-registerPageEnterCallback("about-page", () => {
-  updateHeader("Om sidan", true);
-});
-
-registerPageEnterCallback("faq-page", () => {
-  updateHeader("Vanliga frågor", true);
-});
-
-registerPageEnterCallback("contact-page", () => {
-  updateHeader("Kontakta mig", true);
-});
-
-registerPageEnterCallback("404-page", () => {
-  updateHeader("404 - Sidan hittades inte", true);
+// Register navigation callbacks to update header from data-header attribute for all .page divs
+document.querySelectorAll(".page").forEach((pageDiv) => {
+  const pageId = pageDiv.id;
+  if (pageId) {
+    registerPageEnterCallback(pageId, () => {
+      const header = pageDiv.getAttribute("data-header") ?? "Figurkoder.se";
+      // If data-hide-back-button is set to true, hide back button
+      const hideBackBtn =
+        pageDiv.getAttribute("data-hide-back-button") === "true";
+      updateHeader(header, !hideBackBtn);
+    });
+  }
 });

@@ -1,6 +1,5 @@
-import { setupGameNavigation } from "./game/navigation.js";
-import { replay, setupResultsPage } from "./game/result.js";
 import {
+  replay,
   startGame,
   pauseGame,
   stopGame,
@@ -10,7 +9,6 @@ import {
   updateLearningMode,
   loadGameSettings,
   updateButtonStates,
-  initializeGame,
 } from "./game/play.js";
 import { generateTiles } from "./game/menu.js";
 import {
@@ -18,7 +16,6 @@ import {
   shouldUseHashRouting,
   openMenu,
   closeMenu,
-  goBack,
   navigateToPage,
 } from "./navigation.js";
 import {
@@ -69,7 +66,6 @@ async function fetchAndDisplayVersion() {
 // Make functions globally accessible for onclick handlers
 window.openMenu = openMenu;
 window.closeMenu = closeMenu;
-window.goBack = goBack;
 window.navigateToPage = navigateToPage;
 window.showAnswer = showAnswer;
 window.nextItem = nextItem;
@@ -96,12 +92,6 @@ if (shouldUseHashRouting()) {
 
 // Initialize page based on URL when loaded
 window.addEventListener("DOMContentLoaded", function () {
-  // Setup game navigation callbacks
-  setupGameNavigation({ initializeGame });
-  
-  // Setup results page callback
-  setupResultsPage();
-
   // Load settings from localStorage
   loadGameSettings();
   loadDebugSettings();

@@ -761,64 +761,47 @@ export function startGame() {
   gameState.paused = false;
   gameState.gameStartTime = Date.now();
 
-  // Filter data based on range (only applies to normal games, not replays)
+  // Filter data based on range (always from original data)
   const currentGameId = getCurrentContext();
   const game = gameData[currentGameId];
   const useDropdown = game.dropdown || false;
 
-  // Use domCache directly for indices
   let fromIndex, toIndex;
   if (useDropdown) {
     fromIndex = parseInt(domCache.fromDropdown?.value) || 0;
-    toIndex =
-      parseInt(domCache.toDropdown?.value) ||
-      gameState.currentGameDataSet.length - 1;
+    toIndex = parseInt(domCache.toDropdown?.value) || game.data.length - 1;
   } else {
     fromIndex = parseInt(domCache.fromInput?.value) || 0;
-    toIndex =
-      parseInt(domCache.toInput?.value) ||
-      gameState.currentGameDataSet.length - 1;
+    toIndex = parseInt(domCache.toInput?.value) || game.data.length - 1;
   }
-
-  // Ensure indices are within bounds
   fromIndex = Math.max(0, fromIndex);
-  toIndex = Math.min(gameState.currentGameDataSet.length - 1, toIndex);
-
-  const filteredData = gameState.currentGameDataSet.slice(
-    fromIndex,
-    toIndex + 1
-  );
-  gameState.currentGameDataSet = filteredData;
+  toIndex = Math.min(game.data.length - 1, toIndex);
 
   // Always set fullGameDataSet to the original game data for result/replay
   gameState.fullGameDataSet = [...game.data];
   gameState.rangeStart = fromIndex;
   gameState.rangeEnd = toIndex;
 
+  // Filter and shuffle from original data
+  let filteredData = game.data.slice(fromIndex, toIndex + 1);
+  for (let i = filteredData.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
+  }
+  gameState.currentGameDataSet = filteredData;
+  gameState.currentItemIndex = 0;
+
   // Initialize results tracking
   gameState.gameResults = [];
   gameState.currentItemStartTime = null;
-  gameState.pausedTime = 0; // Reset paused time for new game
+  gameState.pausedTime = 0;
 
-  // Always shuffle data, including in learning mode
-  for (let i = gameState.currentGameDataSet.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [gameState.currentGameDataSet[i], gameState.currentGameDataSet[j]] = [
-      gameState.currentGameDataSet[j],
-      gameState.currentGameDataSet[i],
-    ];
-  }
-  gameState.currentItemIndex = 0;
-  // Only call showCurrentItem to handle display logic
   showCurrentItem();
   updateButtonStates();
 
-  // Activate wake lock when starting new game
   if (window.activateScreenWakeLock) {
     window.activateScreenWakeLock();
   }
-
-  // Countdown will start automatically in showCurrentItem() if not in learning mode
 }
 
 /**
@@ -930,7 +913,17 @@ export function stopGame() {
   resetProgressBar();
 
   // Only show initial display if not running
-  if (!gameState.isGameRunning) updateInitialDisplay();
+  if (!gameState.isGameRunning) {
+    // If in learning mode and have data, show first card/solution
+    if (gameState.isLearningMode && gameState.currentGameDataSet.length > 0) {
+      const currentItem = gameState.currentGameDataSet[0];
+      domCache.currentItem.textContent = currentItem[0];
+      domCache.solutionDisplay.classList.add("visible");
+      domCache.solutionDisplay.textContent = currentItem[1];
+    } else {
+      updateInitialDisplay();
+    }
+  }
 
   updateButtonStates();
 

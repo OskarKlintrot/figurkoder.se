@@ -148,9 +148,6 @@
 .btn.primary:disabled {
   background: var(--color-text-light);
   border-color: var(--color-text-light);
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
 }
 
 .btn.secondary {
@@ -167,14 +164,6 @@
   background: var(--color-text-light);
   color: var(--color-text-lighter);
   border-color: var(--color-text-light);
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-}
-
-.btn.secondary:disabled:hover {
-  background: var(--color-text-light);
-  transform: none;
 }
 
 /* Icon Button */

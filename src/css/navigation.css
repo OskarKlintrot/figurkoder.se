@@ -149,6 +149,9 @@
 #version-display {
   font-size: 0.75rem;
   font-family: monospace;
+  /* TODO: Accessibility: Ensure contrast is sufficient
+  color: var(--color-text-light);
+  background: var(--color-surface-tertiary); */
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
 }

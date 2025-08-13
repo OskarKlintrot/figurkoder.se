@@ -17,6 +17,7 @@ const domCache = {
   playBtn: null,
   pauseBtn: null,
   stopBtn: null,
+  replayBtn: null,
   showBtn: null,
   learningModeCheckbox: null,
   vibrationCheckbox: null,
@@ -33,6 +34,7 @@ const domCache = {
     this.playBtn = document.getElementById("play-btn");
     this.pauseBtn = document.getElementById("pause-btn");
     this.stopBtn = document.getElementById("stop-btn");
+    this.replayBtn = document.getElementById("replay-btn");
     this.showBtn = document.getElementById("show-btn");
     this.learningModeCheckbox = document.getElementById("learning-mode");
     this.vibrationCheckbox = document.getElementById("vibration-setting");
@@ -307,13 +309,30 @@ export function updateButtonStates() {
   // Use domCache properties directly
   const learningModeLabel =
     domCache.learningModeCheckbox.closest(".checkbox-label");
+  const contextData = getContextData();
 
   // Batch DOM updates to reduce reflows
   const updateBatch = () => {
-    // Always show all control buttons
-    if (domCache.playBtn) domCache.playBtn.classList.add("visible");
-    if (domCache.pauseBtn) domCache.pauseBtn.classList.add("visible");
-    if (domCache.stopBtn) domCache.stopBtn.classList.add("visible");
+    // Always show play and pause buttons (remove 'hidden' if present)
+    if (domCache.playBtn) domCache.playBtn.classList.remove("hidden");
+    if (domCache.pauseBtn) domCache.pauseBtn.classList.remove("hidden");
+
+    // Special handling for replay slow mode
+    const isReplaySlow = contextData && contextData.replayType === "slow";
+
+    if (gameState.isGameRunning || gameState.paused) {
+      // During game or pause: show stop, hide replay
+      if (domCache.stopBtn) domCache.stopBtn.classList.remove("hidden");
+      if (domCache.replayBtn) domCache.replayBtn.classList.add("hidden");
+    } else if (isReplaySlow) {
+      // In replay slow mode and not running/paused: show replay, hide stop
+      if (domCache.replayBtn) domCache.replayBtn.classList.remove("hidden");
+      if (domCache.stopBtn) domCache.stopBtn.classList.add("hidden");
+    } else {
+      // Default: show stop, hide replay
+      if (domCache.stopBtn) domCache.stopBtn.classList.remove("hidden");
+      if (domCache.replayBtn) domCache.replayBtn.classList.add("hidden");
+    }
 
     if (gameState.isGameRunning) {
       // During game: disable play, enable pause/stop, disable inputs

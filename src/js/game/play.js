@@ -827,7 +827,17 @@ export function startGame() {
       ? [...gameState.currentGameDataSet]
       : game.data.slice(fromIndex, toIndex + 1);
 
+  const firstPair = filteredData[0];
   shuffleArray(filteredData);
+  // In learning mode, ensure first item is always the same after shuffle
+  if (gameState.isLearningMode && filteredData.length > 0) {
+    // Move the original first pair to the front
+    const idx = filteredData.findIndex((pair) => pair === firstPair);
+    if (idx > 0) {
+      filteredData.splice(idx, 1);
+      filteredData.unshift(firstPair);
+    }
+  }
   gameState.currentGameDataSet = filteredData;
   gameState.currentItemIndex = 0;
 

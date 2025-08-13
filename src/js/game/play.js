@@ -456,13 +456,13 @@ function initializeGame() {
 
   const currentGameId = getCurrentContext();
   const contextData = getContextData();
+  const game = gameData[currentGameId];
+
+  gameState.fullGameDataSet = [...game.data];
 
   // Check if we're in replay mode with specific data
   if (contextData && contextData.replayType) {
-    // Restore full game data and range indices for replay/range controls
-    gameState.fullGameDataSet = contextData.fullGameDataSet
-      ? [...contextData.fullGameDataSet]
-      : [];
+    // Restore range indices for replay/range controls
     gameState.rangeStart =
       typeof contextData.rangeStart === "number" ? contextData.rangeStart : 0;
     gameState.rangeEnd =
@@ -567,7 +567,6 @@ function initializeGame() {
   // This ensures clean state for fresh game initialization
   resetGameState();
 
-  const game = gameData[currentGameId];
   gameState.currentGameDataSet = [...game.data];
   gameState.currentItemIndex = 0;
   gameState.showingSolution = false;
@@ -631,16 +630,19 @@ function initializeGame() {
       // Automatically set "Till" to "Från + 9", but not exceeding the data length
       const newToValue = Math.min(
         fromValue + 9,
-        gameState.currentGameDataSet.length - 1
+        gameState.fullGameDataSet.length - 1
       );
+      console.log("'Från' value:", fromValue);
+      console.log("New 'Till' value:", newToValue);
+      console.log(gameState.fullGameDataSet.length);
       newToInput.value = newToValue;
 
       // Update current-item display to show the new "from" item when game is not running
       if (
         !gameState.isGameRunning &&
-        gameState.currentGameDataSet.length > fromValue
+        gameState.fullGameDataSet.length > fromValue
       ) {
-        const newCurrentItem = gameState.currentGameDataSet[fromValue];
+        const newCurrentItem = gameState.fullGameDataSet[fromValue];
         domCache.currentItem.textContent = newCurrentItem[0];
 
         // Also update solution display based on learning mode
@@ -810,7 +812,7 @@ export function startGame() {
   toIndex = Math.min(game.data.length - 1, toIndex);
 
   // Always set fullGameDataSet to the original game data for result/replay
-  gameState.fullGameDataSet = [...game.data];
+  // gameState.fullGameDataSet = [...game.data];
   gameState.rangeStart = fromIndex;
   gameState.rangeEnd = toIndex;
 

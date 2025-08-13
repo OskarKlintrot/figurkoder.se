@@ -1221,7 +1221,8 @@ export function nextItem(vibrate = false) {
   if (gameState.currentItemIndex >= gameState.currentGameDataSet.length) {
     if (gameState.isLearningMode) {
       // In learning mode, reshuffle the set and loop back to the beginning
-      const prevLast = gameState.currentGameDataSet[gameState.currentGameDataSet.length - 1];
+      const prevLast =
+        gameState.currentGameDataSet[gameState.currentGameDataSet.length - 1];
       do {
         shuffleArray(gameState.currentGameDataSet);
       } while (

@@ -804,10 +804,7 @@ export function startGame() {
       ? [...gameState.currentGameDataSet]
       : game.data.slice(fromIndex, toIndex + 1);
 
-  for (let i = filteredData.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
-  }
+  shuffleArray(filteredData);
   gameState.currentGameDataSet = filteredData;
   gameState.currentItemIndex = 0;
 
@@ -1223,7 +1220,14 @@ export function nextItem(vibrate = false) {
 
   if (gameState.currentItemIndex >= gameState.currentGameDataSet.length) {
     if (gameState.isLearningMode) {
-      // In learning mode, loop back to the beginning
+      // In learning mode, reshuffle the set and loop back to the beginning
+      const prevLast = gameState.currentGameDataSet[gameState.currentGameDataSet.length - 1];
+      do {
+        shuffleArray(gameState.currentGameDataSet);
+      } while (
+        gameState.currentGameDataSet.length > 1 &&
+        gameState.currentGameDataSet[0][0] === prevLast[0]
+      );
       gameState.currentItemIndex = 0;
       showCurrentItem();
       return;
@@ -1413,6 +1417,17 @@ export function replay(slowOnly = false) {
 // ============================================================================
 //  UTILITY FUNCTIONS
 // ============================================================================
+
+/**
+ * Shuffles an array in place using Fisher-Yates algorithm
+ * @param {Array} array - The array to shuffle
+ */
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
 
 /**
  * Utility to activate a page by id and optionally run a callback

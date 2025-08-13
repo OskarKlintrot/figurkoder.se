@@ -26,6 +26,7 @@ const domCache = {
   fromDropdown: null,
   toDropdown: null,
   timeInput: null,
+  roundsInput: null,
   init() {
     this.nextBtn = document.getElementById("next-btn");
     this.progressBar = this.nextBtn?.querySelector(".btn-progress-bar");
@@ -43,6 +44,7 @@ const domCache = {
     this.fromDropdown = document.getElementById("from-dropdown");
     this.toDropdown = document.getElementById("to-dropdown");
     this.timeInput = document.getElementById("time-input");
+    this.roundsInput = document.getElementById("rounds-input");
   },
 };
 
@@ -212,6 +214,9 @@ export function toggleVibrationSetting() {
 export function updateLearningMode() {
   gameState.isLearningMode = domCache.learningModeCheckbox.checked;
   // Update button states when learning mode changes
+  if (domCache.roundsInput) {
+    domCache.roundsInput.disabled = gameState.isLearningMode;
+  }
   updateButtonStates();
   // Use currentItemIndex if game is running/paused, otherwise use 'Från' value
   let index;

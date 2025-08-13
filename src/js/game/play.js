@@ -675,10 +675,6 @@ function initializeGame() {
     );
     // Update cache with new element
     domCache.timeInput = newTimeInput;
-
-    newTimeInput.addEventListener("change", function () {
-      // No special handling needed when time changes
-    });
   }
 
   // Only show initial display if not running

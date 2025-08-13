@@ -620,6 +620,8 @@ function initializeGame() {
     domCache.fromDropdown.classList.add("hidden");
     domCache.toDropdown.classList.add("hidden");
 
+    // Set default range for numeric data
+    newFromInput.value = 0;
     // Set "Till" to "Från + 9", but not exceeding the data length
     newToInput.value = Math.min(9, gameState.currentGameDataSet.length - 1);
 

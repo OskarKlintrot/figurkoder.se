@@ -1246,39 +1246,6 @@ export function nextItem(vibrate = false) {
   // Auto-advance will continue automatically in showCurrentItem()
 }
 
-// Handle keyboard shortcuts
-document.addEventListener("keydown", function (e) {
-  if (document.querySelector("#game-page.active")) {
-    if (e.key === " " || e.key === "Enter") {
-      // Space or Enter to show answer
-      e.preventDefault();
-      if (gameState.isGameRunning && !gameState.showingSolution) {
-        showAnswer();
-      }
-    } else if (e.key === "ArrowRight" || e.key === "n" || e.key === "N") {
-      // Right arrow or N to next
-      e.preventDefault();
-      if (gameState.isGameRunning) {
-        nextItem();
-      }
-    }
-  }
-});
-
-// Set up the game page observer when the module loads
-// This ensures it's only set up once and works reliably
-document.addEventListener("DOMContentLoaded", () => {
-  setupGamePageObserver();
-});
-
-// If DOM is already loaded, set up immediately
-if (document.readyState === "loading") {
-  // DOM is still loading, event listener will handle it
-} else {
-  // DOM is already loaded
-  setupGamePageObserver();
-}
-
 // ============================================================================
 //  GAME RESULT
 //  Results page functionality:
@@ -1492,6 +1459,43 @@ function setupGamePage() {
     // No valid game context, show generic header
     updateHeader("Spel", true);
   }
+}
+
+// ============================================================================
+//  EVENT LISTENERS
+// ============================================================================
+
+// Handle keyboard shortcuts
+document.addEventListener("keydown", function (e) {
+  if (document.querySelector("#game-page.active")) {
+    if (e.key === " " || e.key === "Enter") {
+      // Space or Enter to show answer
+      e.preventDefault();
+      if (gameState.isGameRunning && !gameState.showingSolution) {
+        showAnswer();
+      }
+    } else if (e.key === "ArrowRight" || e.key === "n" || e.key === "N") {
+      // Right arrow or N to next
+      e.preventDefault();
+      if (gameState.isGameRunning) {
+        nextItem();
+      }
+    }
+  }
+});
+
+// Set up the game page observer when the module loads
+// This ensures it's only set up once and works reliably
+document.addEventListener("DOMContentLoaded", () => {
+  setupGamePageObserver();
+});
+
+// If DOM is already loaded, set up immediately
+if (document.readyState === "loading") {
+  // DOM is still loading, event listener will handle it
+} else {
+  // DOM is already loaded
+  setupGamePageObserver();
 }
 
 // Register game-specific navigation callbacks

@@ -88,7 +88,7 @@
   width: 100%;
   max-width: var(--max-width-game-controls);
   border-radius: var(--radius-2xl);
-  padding: var(--spacing-3xl);
+  padding: 0 var(--spacing-3xl);
 }
 
 .control-row {

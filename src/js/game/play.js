@@ -217,8 +217,6 @@ export function toggleVibrationSetting() {
  */
 export function updateLearningMode() {
   gameState.isLearningMode = domCache.learningModeCheckbox.checked;
-  // Update button states when learning mode changes
-  domCache.roundsInput.disabled = gameState.isLearningMode;
   updateButtonStates();
   // Use currentItemIndex if game is running/paused, otherwise use 'Från' value
   let index;
@@ -397,7 +395,7 @@ export function updateButtonStates() {
       domCache.fromDropdown.disabled = false;
       domCache.toDropdown.disabled = false;
       domCache.timeInput.disabled = false;
-      domCache.roundsInput.disabled = false;
+      domCache.roundsInput.disabled = gameState.isLearningMode;
       domCache.learningModeCheckbox.disabled = false;
       if (learningModeLabel) learningModeLabel.classList.remove("disabled");
 
@@ -896,9 +894,30 @@ function prepareResultData(gameData) {
       ? gameData[currentGameId].title
       : "Okänt spel";
 
+  // Combine results: keep only the slowest attempt for each figurkod
+  const slowestResultsMap = new Map();
+  for (const result of gameState.gameResults) {
+    const key = result.figurkod;
+    if (!slowestResultsMap.has(key)) {
+      slowestResultsMap.set(key, result);
+    } else {
+      const prev = slowestResultsMap.get(key);
+      // If either showedAnswer is true, keep that one
+      if (result.showedAnswer && !prev.showedAnswer) {
+        slowestResultsMap.set(key, result);
+      } else if (!result.showedAnswer && prev.showedAnswer) {
+        // keep prev
+      } else {
+        // Both are either not showedAnswer or both are, keep the one with higher timeSpent
+        if (result.timeSpent > prev.timeSpent) {
+          slowestResultsMap.set(key, result);
+        }
+      }
+    }
+  }
   return {
     gameTitle: gameTitle,
-    gameResults: [...gameState.gameResults], // Create a copy of the results
+    gameResults: Array.from(slowestResultsMap.values()),
     rangeStart:
       currentGameData && currentGameData.replayType === "slow"
         ? currentGameData.rangeStart

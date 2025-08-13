@@ -1436,16 +1436,14 @@ export function replay(slowOnly = false) {
       console.warn("Missing game results data for slow replay");
       return;
     }
-    domCache.learningModeCheckbox.checked = true;
   } else {
     if (!resultData.fullGameDataSet.length) {
       console.warn("Missing original game data for full replay");
       return;
     }
-    domCache.learningModeCheckbox.checked = false;
   }
 
-  // Update gameState and UI for learning mode
+  domCache.learningModeCheckbox.checked = slowOnly;
   gameState.isLearningMode = slowOnly;
   updateButtonStates();
 

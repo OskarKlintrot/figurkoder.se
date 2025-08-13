@@ -911,11 +911,18 @@ export function stopGame() {
   ) {
     const currentItem =
       gameState.currentGameDataSet[gameState.currentItemIndex];
-    const totalTimeSpent =
-      (Date.now() - gameState.currentItemStartTime + gameState.pausedTime) /
-      1000;
-    const timeSpent = Math.max(0.1, totalTimeSpent); // Minimum 0.1 seconds
-
+    let timeSpent;
+    if (gameState.paused) {
+      // If game is paused, only count time until pause started
+      timeSpent = Math.max(0.1, gameState.pausedTime / 1000);
+    } else {
+      // If game is running, count total time including paused time
+      timeSpent = Math.max(
+        0.1,
+        (Date.now() - gameState.currentItemStartTime + gameState.pausedTime) /
+          1000
+      );
+    }
     gameState.gameResults.push({
       figurkod: currentItem[0],
       answer: currentItem[1],

@@ -149,7 +149,6 @@
 #version-display {
   font-size: 0.75rem;
   font-family: monospace;
-  color: var(--color-text-light);
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
 }

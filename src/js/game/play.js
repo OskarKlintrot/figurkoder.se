@@ -26,6 +26,7 @@ const domCache = {
   fromDropdown: null,
   toDropdown: null,
   timeInput: null,
+  roundsInput: null,
   init() {
     this.nextBtn = document.getElementById("next-btn");
     this.progressBar = this.nextBtn?.querySelector(".btn-progress-bar");
@@ -43,6 +44,7 @@ const domCache = {
     this.fromDropdown = document.getElementById("from-dropdown");
     this.toDropdown = document.getElementById("to-dropdown");
     this.timeInput = document.getElementById("time-input");
+    this.roundsInput = document.getElementById("rounds-input");
   },
 };
 
@@ -66,8 +68,10 @@ const gameState = {
   gameResults: [],
   currentItemStartTime: null,
   pausedTime: 0, // Track time spent in pause for current item
-  vibrationEnabled: true, // Flag to control vibration
-  isLearningMode: false, // Flag to control learning mode
+  vibrationEnabled: true,
+  isLearningMode: false,
+  rounds: 1,
+  currentRound: 1,
 };
 
 // ============================================================================
@@ -145,6 +149,8 @@ function resetGameState() {
   gameState.gameResults = [];
   gameState.currentItemStartTime = null;
   gameState.pausedTime = 0;
+  gameState.rounds = 1;
+  gameState.currentRound = 1;
   // Note: vibrationEnabled is kept as it's a user setting
 
   // Reset UI elements to default state
@@ -211,7 +217,6 @@ export function toggleVibrationSetting() {
  */
 export function updateLearningMode() {
   gameState.isLearningMode = domCache.learningModeCheckbox.checked;
-  // Update button states when learning mode changes
   updateButtonStates();
   // Use currentItemIndex if game is running/paused, otherwise use 'Från' value
   let index;
@@ -314,86 +319,89 @@ export function updateButtonStates() {
   // Batch DOM updates to reduce reflows
   const updateBatch = () => {
     // Always show play and pause buttons (remove 'hidden' if present)
-    if (domCache.playBtn) domCache.playBtn.classList.remove("hidden");
-    if (domCache.pauseBtn) domCache.pauseBtn.classList.remove("hidden");
+    domCache.playBtn.classList.remove("hidden");
+    domCache.pauseBtn.classList.remove("hidden");
 
     // Special handling for replay slow mode
     const isReplaySlow = contextData && contextData.replayType === "slow";
 
     if (gameState.isGameRunning || gameState.paused) {
       // During game or pause: show stop, hide replay
-      if (domCache.stopBtn) domCache.stopBtn.classList.remove("hidden");
-      if (domCache.replayBtn) domCache.replayBtn.classList.add("hidden");
+      domCache.stopBtn.classList.remove("hidden");
+      domCache.replayBtn.classList.add("hidden");
     } else if (isReplaySlow) {
       // In replay slow mode and not running/paused: show replay, hide stop
-      if (domCache.replayBtn) domCache.replayBtn.classList.remove("hidden");
-      if (domCache.stopBtn) domCache.stopBtn.classList.add("hidden");
+      domCache.replayBtn.classList.remove("hidden");
+      domCache.stopBtn.classList.add("hidden");
     } else {
       // Default: show stop, hide replay
-      if (domCache.stopBtn) domCache.stopBtn.classList.remove("hidden");
-      if (domCache.replayBtn) domCache.replayBtn.classList.add("hidden");
+      domCache.stopBtn.classList.remove("hidden");
+      domCache.replayBtn.classList.add("hidden");
     }
 
     if (gameState.isGameRunning) {
       // During game: disable play, enable pause/stop, disable inputs
-      if (domCache.playBtn) domCache.playBtn.disabled = true;
-      if (domCache.pauseBtn) domCache.pauseBtn.disabled = false;
-      if (domCache.stopBtn) domCache.stopBtn.disabled = false;
+      domCache.playBtn.disabled = true;
+      domCache.pauseBtn.disabled = false;
+      domCache.stopBtn.disabled = false;
 
       // Disable game configuration inputs during play
-      if (domCache.fromInput) domCache.fromInput.disabled = true;
-      if (domCache.toInput) domCache.toInput.disabled = true;
-      if (domCache.fromDropdown) domCache.fromDropdown.disabled = true;
-      if (domCache.toDropdown) domCache.toDropdown.disabled = true;
-      if (domCache.timeInput) domCache.timeInput.disabled = true;
-      if (domCache.learningModeCheckbox)
-        domCache.learningModeCheckbox.disabled = true;
-      if (learningModeLabel) learningModeLabel.classList.add("disabled");
+      domCache.fromInput.disabled = true;
+      domCache.toInput.disabled = true;
+      domCache.fromDropdown.disabled = true;
+      domCache.toDropdown.disabled = true;
+      domCache.timeInput.disabled = true;
+      domCache.roundsInput.disabled = true;
+      domCache.learningModeCheckbox.disabled = true;
+      if (learningModeLabel) {
+        learningModeLabel.classList.add("disabled");
+      }
 
       // In learning mode, disable "Visa" button since answer is always shown
       // Also disable if answer is already shown for current item
-      if (domCache.showBtn)
-        domCache.showBtn.disabled =
-          gameState.isLearningMode || gameState.showingSolution;
-      if (domCache.nextBtn) domCache.nextBtn.disabled = false;
+      domCache.showBtn.disabled =
+        gameState.isLearningMode || gameState.showingSolution;
+      domCache.nextBtn.disabled = false;
     } else if (gameState.paused) {
       // During pause: enable play/stop, disable pause, disable inputs
-      if (domCache.playBtn) domCache.playBtn.disabled = false;
-      if (domCache.pauseBtn) domCache.pauseBtn.disabled = true;
-      if (domCache.stopBtn) domCache.stopBtn.disabled = false;
+      domCache.playBtn.disabled = false;
+      domCache.pauseBtn.disabled = true;
+      domCache.stopBtn.disabled = false;
 
       // Keep inputs disabled during pause
-      if (domCache.fromInput) domCache.fromInput.disabled = true;
-      if (domCache.toInput) domCache.toInput.disabled = true;
-      if (domCache.fromDropdown) domCache.fromDropdown.disabled = true;
-      if (domCache.toDropdown) domCache.toDropdown.disabled = true;
-      if (domCache.timeInput) domCache.timeInput.disabled = true;
-      if (domCache.learningModeCheckbox)
-        domCache.learningModeCheckbox.disabled = true;
-      if (learningModeLabel) learningModeLabel.classList.add("disabled");
+      domCache.fromInput.disabled = true;
+      domCache.toInput.disabled = true;
+      domCache.fromDropdown.disabled = true;
+      domCache.toDropdown.disabled = true;
+      domCache.timeInput.disabled = true;
+      domCache.roundsInput.disabled = true;
+      domCache.learningModeCheckbox.disabled = true;
+      if (learningModeLabel) {
+        learningModeLabel.classList.add("disabled");
+      }
 
       // Action buttons during pause - enable NÄSTA to resume, disable VISA
-      if (domCache.showBtn) domCache.showBtn.disabled = true;
-      if (domCache.nextBtn) domCache.nextBtn.disabled = false;
+      domCache.showBtn.disabled = true;
+      domCache.nextBtn.disabled = false;
     } else {
       // Game stopped: enable play, disable pause/stop, enable inputs
-      if (domCache.playBtn) domCache.playBtn.disabled = false;
-      if (domCache.pauseBtn) domCache.pauseBtn.disabled = true;
-      if (domCache.stopBtn) domCache.stopBtn.disabled = true;
+      domCache.playBtn.disabled = false;
+      domCache.pauseBtn.disabled = true;
+      domCache.stopBtn.disabled = true;
 
       // Enable game configuration inputs when stopped
-      if (domCache.fromInput) domCache.fromInput.disabled = false;
-      if (domCache.toInput) domCache.toInput.disabled = false;
-      if (domCache.fromDropdown) domCache.fromDropdown.disabled = false;
-      if (domCache.toDropdown) domCache.toDropdown.disabled = false;
-      if (domCache.timeInput) domCache.timeInput.disabled = false;
-      if (domCache.learningModeCheckbox)
-        domCache.learningModeCheckbox.disabled = false;
+      domCache.fromInput.disabled = false;
+      domCache.toInput.disabled = false;
+      domCache.fromDropdown.disabled = false;
+      domCache.toDropdown.disabled = false;
+      domCache.timeInput.disabled = false;
+      domCache.roundsInput.disabled = gameState.isLearningMode;
+      domCache.learningModeCheckbox.disabled = false;
       if (learningModeLabel) learningModeLabel.classList.remove("disabled");
 
       // Action buttons disabled when stopped
-      if (domCache.showBtn) domCache.showBtn.disabled = true;
-      if (domCache.nextBtn) domCache.nextBtn.disabled = true;
+      domCache.showBtn.disabled = true;
+      domCache.nextBtn.disabled = true;
     }
   };
 
@@ -660,19 +668,17 @@ function initializeGame() {
     });
 
     // Add event listener for time input to update countdown display
-    if (domCache.timeInput) {
-      const newTimeInput = domCache.timeInput.cloneNode(true);
-      domCache.timeInput.parentNode.replaceChild(
-        newTimeInput,
-        domCache.timeInput
-      );
-      // Update cache with new element
-      domCache.timeInput = newTimeInput;
+    const newTimeInput = domCache.timeInput.cloneNode(true);
+    domCache.timeInput.parentNode.replaceChild(
+      newTimeInput,
+      domCache.timeInput
+    );
+    // Update cache with new element
+    domCache.timeInput = newTimeInput;
 
-      newTimeInput.addEventListener("change", function () {
-        // No special handling needed when time changes
-      });
-    }
+    newTimeInput.addEventListener("change", function () {
+      // No special handling needed when time changes
+    });
   }
 
   // Only show initial display if not running
@@ -742,12 +748,10 @@ export function populateDropdowns(data) {
       domCache.currentItem.textContent = newCurrentItem[0];
 
       // Also update solution display based on learning mode
-      if (domCache.solutionDisplay) {
-        if (gameState.isLearningMode) {
-          domCache.solutionDisplay.textContent = newCurrentItem[1];
-        } else {
-          domCache.solutionDisplay.textContent = "•••";
-        }
+      if (gameState.isLearningMode) {
+        domCache.solutionDisplay.textContent = newCurrentItem[1];
+      } else {
+        domCache.solutionDisplay.textContent = "•••";
       }
     }
   });
@@ -832,6 +836,16 @@ export function startGame() {
   gameState.currentItemStartTime = null;
   gameState.pausedTime = 0;
 
+  // Set rounds for practice mode (not learning mode)
+  if (!gameState.isLearningMode && domCache.roundsInput) {
+    const roundsValue = parseInt(domCache.roundsInput.value) || 1;
+    gameState.rounds = Math.max(1, roundsValue);
+    gameState.currentRound = 1;
+  } else {
+    gameState.rounds = 1;
+    gameState.currentRound = 1;
+  }
+
   showCurrentItem();
   updateButtonStates();
 
@@ -880,9 +894,30 @@ function prepareResultData(gameData) {
       ? gameData[currentGameId].title
       : "Okänt spel";
 
+  // Combine results: keep only the slowest attempt for each figurkod
+  const slowestResultsMap = new Map();
+  for (const result of gameState.gameResults) {
+    const key = result.figurkod;
+    if (!slowestResultsMap.has(key)) {
+      slowestResultsMap.set(key, result);
+    } else {
+      const prev = slowestResultsMap.get(key);
+      // If either showedAnswer is true, keep that one
+      if (result.showedAnswer && !prev.showedAnswer) {
+        slowestResultsMap.set(key, result);
+      } else if (!result.showedAnswer && prev.showedAnswer) {
+        // keep prev
+      } else {
+        // Both are either not showedAnswer or both are, keep the one with higher timeSpent
+        if (result.timeSpent > prev.timeSpent) {
+          slowestResultsMap.set(key, result);
+        }
+      }
+    }
+  }
   return {
     gameTitle: gameTitle,
-    gameResults: [...gameState.gameResults], // Create a copy of the results
+    gameResults: Array.from(slowestResultsMap.values()),
     rangeStart:
       currentGameData && currentGameData.replayType === "slow"
         ? currentGameData.rangeStart
@@ -1057,12 +1092,10 @@ export function startCountdown(resume = false) {
     ((gameState.totalCountdownTime - gameState.countdownValue) /
       gameState.totalCountdownTime) *
     100;
-  if (domCache.progressBar) {
-    domCache.progressBar.style.setProperty(
-      "--progress",
-      `${progressPercentage}%`
-    );
-  }
+  domCache.progressBar.style.setProperty(
+    "--progress",
+    `${progressPercentage}%`
+  );
 
   let lastUpdateTime = Date.now();
   const countdownStep = () => {
@@ -1115,12 +1148,10 @@ export function startCountdown(resume = false) {
         100
     );
 
-    if (domCache.progressBar) {
-      domCache.progressBar.style.setProperty(
-        "--progress",
-        `${progressPercentage}%`
-      );
-    }
+    domCache.progressBar.style.setProperty(
+      "--progress",
+      `${progressPercentage}%`
+    );
 
     // Continue animation
     gameState.countdownTimer = requestAnimationFrame(countdownStep);
@@ -1259,12 +1290,21 @@ export function nextItem(vibrate = false) {
       showCurrentItem();
       return;
     } else {
-      // In practice mode, navigate to results
-      const resultData = prepareResultData(gameData);
-      setContextData(resultData);
-      activatePage("results-page", updateResults);
-      stopGame();
-      return;
+      // Practice mode: check for more rounds
+      if (gameState.currentRound < gameState.rounds) {
+        gameState.currentRound++;
+        shuffleArray(gameState.currentGameDataSet);
+        gameState.currentItemIndex = 0;
+        showCurrentItem();
+        return;
+      } else {
+        // All rounds complete, show results
+        const resultData = prepareResultData(gameData);
+        setContextData(resultData);
+        activatePage("results-page", updateResults);
+        stopGame();
+        return;
+      }
     }
   }
 
@@ -1402,6 +1442,10 @@ export function replay(slowOnly = false) {
       return;
     }
   }
+
+  domCache.learningModeCheckbox.checked = slowOnly;
+  gameState.isLearningMode = slowOnly;
+  updateButtonStates();
 
   // Set the replay data in context for initializeGame to use
   setContextData(replayData);

@@ -31,10 +31,10 @@
 
 .current-item-display {
   background: var(--color-surface-secondary);
-  border: 2px solid var(--color-border-light);
+  border: var(--radius-sm) solid var(--color-border-light);
   border-radius: var(--radius-2xl);
   padding: var(--spacing-4xl) var(--spacing-3xl);
-  font-size: 3rem;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
   color: var(--color-text);
   text-align: center;
@@ -52,9 +52,9 @@
 .solution-display {
   width: 100%;
   padding: var(--spacing-button);
-  font-size: 1.125rem;
+  font-size: var(--font-size-2xl);
   border: 1px solid var(--color-border-light);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-align: center;
   background: var(--color-surface);
   color: var(--color-text-muted);
@@ -118,7 +118,7 @@
 
 .playback-controls {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   align-items: center;
   anchor-name: --playback-controls;
 }
@@ -127,5 +127,5 @@
   position-anchor: --playback-controls;
   position: absolute;
   position-area: center right;
-  margin: 0.5rem;
+  margin: var(--spacing-sm);
 }

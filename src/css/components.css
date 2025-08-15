@@ -38,7 +38,7 @@
   left: 0;
   background: none;
   border: none;
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   cursor: pointer;
   padding: var(--spacing-md);
   color: var(--color-text);
@@ -50,7 +50,7 @@
   right: 0;
   background: none;
   border: none;
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   cursor: pointer;
   padding: var(--spacing-md);
   color: var(--color-text);
@@ -90,7 +90,7 @@
 }
 
 .tile-title {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-weight: 500;
   padding: var(--spacing-4xl) var(--spacing-2xl) var(--spacing-xl);
   flex-grow: 1;
@@ -101,7 +101,7 @@
 }
 
 .tile-category {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -280,14 +280,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0;
+  padding: var(--spacing-lg) 0;
   border-bottom: 2px solid var(--color-border-light);
   font-weight: 600;
   color: var(--color-text-light);
   background: var(--color-surface-secondary);
-  margin: 0 -1.25rem 0 -1.25rem;
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
+  margin: 0 calc(-1 * var(--spacing-2xl)) 0 calc(-1 * var(--spacing-2xl));
+  padding-left: var(--spacing-2xl);
+  padding-right: var(--spacing-2xl);
 }
 
 .results-header-item {
@@ -319,10 +319,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0 0.5rem 0;
+  padding: var(--spacing-xl) 0 var(--spacing-xs) 0;
   border-top: 2px solid var(--color-border-light);
   font-weight: 600;
-  margin-top: 1rem;
+  margin-top: var(--spacing-xl);
 }
 
 .time-display {
@@ -355,7 +355,7 @@
   justify-content: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-button) var(--spacing-3xl);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
   max-width: var(--max-width-replay-btn);
 }
@@ -410,7 +410,7 @@
   align-items: center;
   justify-content: center;
   height: 50vh;
-  gap: 1rem;
+  gap: var(--spacing-xl);
 }
 
 .spinner {
@@ -423,7 +423,7 @@
 }
 
 .spinner-container p {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-light);
   margin: 0;
 }

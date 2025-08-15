@@ -123,9 +123,9 @@
   anchor-name: --playback-controls;
 }
 
-#replay-btn {
+/* #replay-btn {
   position-anchor: --playback-controls;
   position: absolute;
   position-area: center right;
   margin: var(--spacing-sm);
-}
+} */

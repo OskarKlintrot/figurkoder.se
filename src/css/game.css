@@ -120,4 +120,12 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  anchor-name: --playback-controls;
+}
+
+#replay-btn {
+  position-anchor: --playback-controls;
+  position: absolute;
+  left: anchor(right);
+  margin-left: 0.5rem;
 }

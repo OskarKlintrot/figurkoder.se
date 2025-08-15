@@ -325,14 +325,9 @@ export function updateButtonStates() {
     // Special handling for replay slow mode
     const isReplaySlow = contextData && contextData.replayType === "slow";
 
-    if (gameState.isGameRunning || gameState.paused) {
-      // During game or pause: show stop, hide replay
-      domCache.replayBtn.classList.add("hidden");
-    } else if (isReplaySlow) {
-      // In replay slow mode and not running/paused: show replay, hide stop
+    if (isReplaySlow) {
       domCache.replayBtn.classList.remove("hidden");
     } else {
-      // Default: show stop, hide replay
       domCache.replayBtn.classList.add("hidden");
     }
 

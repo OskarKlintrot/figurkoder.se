@@ -327,15 +327,12 @@ export function updateButtonStates() {
 
     if (gameState.isGameRunning || gameState.paused) {
       // During game or pause: show stop, hide replay
-      domCache.stopBtn.classList.remove("hidden");
       domCache.replayBtn.classList.add("hidden");
     } else if (isReplaySlow) {
       // In replay slow mode and not running/paused: show replay, hide stop
       domCache.replayBtn.classList.remove("hidden");
-      domCache.stopBtn.classList.add("hidden");
     } else {
       // Default: show stop, hide replay
-      domCache.stopBtn.classList.remove("hidden");
       domCache.replayBtn.classList.add("hidden");
     }
 

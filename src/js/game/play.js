@@ -526,6 +526,7 @@ function initializeGame() {
     const learningModeCheckbox = domCache.learningModeCheckbox;
     if (contextData.replayType === "slow") {
       hideRangeControls();
+      domCache.roundsInput.parentNode.classList.add("hidden");
       // Enable learning mode for slow replay
       if (learningModeCheckbox) {
         learningModeCheckbox.checked = true;
@@ -534,6 +535,7 @@ function initializeGame() {
     } else {
       // Show range controls for regular replay
       showRangeControls();
+      domCache.roundsInput.parentNode.classList.remove("hidden");
       // Keep current learning mode setting for full replay
       if (learningModeCheckbox) {
         gameState.isLearningMode = learningModeCheckbox.checked;

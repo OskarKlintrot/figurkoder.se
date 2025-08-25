@@ -166,6 +166,22 @@
   border-color: var(--color-text-light);
 }
 
+.btn.warning {
+  background: var(--color-warning);
+  color: var(--color-surface);
+  border: none;
+}
+
+.btn.warning:hover {
+  background: var(--color-warning-hover);
+}
+
+.btn.warning:disabled {
+  background: var(--color-text-light);
+  color: var(--color-text-lighter);
+  border-color: var(--color-text-light);
+}
+
 /* Icon Button */
 .icon-btn {
   width: 3rem;

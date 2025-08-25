@@ -13,7 +13,7 @@
   --color-text-muted: #666;
   --color-text-light: #6c757d;
   --color-text-lighter: #adb5bd;
-  --color-background: #f5f5f5;
+  --color-background: #f2f2f2;
   --color-surface: #ffffff;
   --color-surface-hover: #f8f8f8;
   --color-surface-secondary: #f8f9fa;
@@ -92,29 +92,30 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Colors for dark mode */
-    --color-primary: #0a84ff;
-    --color-primary-hover: #409cff;
-    --color-secondary: #ff453a;
-    --color-secondary-hover: #ff6961;
-    --color-text: #f2f2f7;
-    --color-text-muted: #d1d1d6;
-    --color-text-light: #c7c7cc;
-    --color-text-lighter: #aeaeb2;
-    --color-background: #000000;
-    --color-surface: #1c1c1e;
-    --color-surface-hover: #2c2c2e;
-    --color-surface-secondary: #2c2c2e;
-    --color-surface-tertiary: #3a3a3c;
-    --color-border: #38383a;
-    --color-border-light: #48484a;
-    --color-border-lighter: #545456;
-    --color-border-lightest: #636366;
-    --color-nav-hover: #3a3a3c;
-    --color-success: #30d158;
-    --color-warning: #ff9f0a;
-    --color-warning-bg: #1f1611;
-    --color-warning-text: #ffcc02;
-    --color-error: #ff453a;
+    --color-primary: #539bf5;
+    --color-primary-hover: #316dca;
+    --color-secondary: #e36209;
+    --color-secondary-hover: #ffa657;
+    --color-text: #cdd9e5;
+    --color-text-muted: #768390;
+    --color-text-light: #adbac7;
+    --color-text-lighter: #909dab;
+    --color-background: #24292e;
+    --color-surface: #2d333b;
+    --color-surface-hover: #333942;
+    --color-surface-secondary: #333942;
+    --color-surface-tertiary: #444c56;
+    --color-border: #373e47;
+    --color-border-light: #444c56;
+    --color-border-lighter: #586069;
+    --color-border-lightest: #6a737d;
+    --color-nav-hover: #2d333b;
+    --color-success: #57ab5a;
+    --color-warning: #ff453a;
+    --color-warning-hover: #ff6961;
+    --color-warning-bg: #442b19;
+    --color-warning-text: #f6c177;
+    --color-error: #e5534b;
 
     /* Shadows for dark mode - lighter for visibility */
     --shadow-sm: 0 0.125rem 0.25rem rgba(255, 255, 255, 0.05);

@@ -6,8 +6,8 @@
   /* Colors */
   --color-primary: #007aff;
   --color-primary-hover: #0056cc;
-  --color-secondary: #dc3545;
-  --color-secondary-hover: #c82333;
+  --color-secondary: #ffc107;
+  --color-secondary-hover: #fed558;
   --color-text: #333;
   --color-text-inverse: #ffffff;
   --color-text-muted: #666;
@@ -24,7 +24,8 @@
   --color-border-lightest: #eee;
   --color-nav-hover: #e8e8e8;
   --color-success: #28a745;
-  --color-warning: #ffc107;
+  --color-warning: #dc3545;
+  --color-warning-hover: #c82333;
   --color-warning-bg: #fff3cd;
   --color-warning-text: #856404;
   --color-error: #dc3545;

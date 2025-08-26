@@ -1443,6 +1443,7 @@ export function replay(slowOnly = false) {
 
   domCache.learningModeCheckbox.checked = slowOnly;
   gameState.isLearningMode = slowOnly;
+  resetProgressBar();
   updateButtonStates();
 
   // Set the replay data in context for initializeGame to use

@@ -395,6 +395,12 @@ export function updateButtonStates() {
       domCache.showBtn.disabled = true;
       domCache.nextBtn.disabled = true;
     }
+
+    if (domCache.roundsInput.disabled) {
+      domCache.roundsInput.classList.add("hidden-text");
+    } else {
+      domCache.roundsInput.classList.remove("hidden-text");
+    }
   };
 
   // Execute the batched updates
@@ -626,9 +632,6 @@ function initializeGame() {
         fromValue + 9,
         gameState.fullGameDataSet.length - 1
       );
-      console.log("'Från' value:", fromValue);
-      console.log("New 'Till' value:", newToValue);
-      console.log(gameState.fullGameDataSet.length);
       newToInput.value = newToValue;
 
       // Update current-item display to show the new "from" item when game is not running
@@ -1531,9 +1534,7 @@ function setupGamePage() {
   }
 
   document.querySelectorAll("#game-page input").forEach((input) => {
-    console.log(input);
     input.addEventListener("focus", () => {
-      console.log(input.value);
       input.select();
     });
   });

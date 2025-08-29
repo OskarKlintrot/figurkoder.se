@@ -36,14 +36,6 @@
   border-color: var(--color-primary);
 }
 
-/* Ensure autocomplete doesn't override text color */
-.game-input:-webkit-autofill,
-.game-input:-webkit-autofill:hover,
-.game-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: var(--color-text) !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
 .control-input {
   width: 100%;
   padding: var(--spacing-button);

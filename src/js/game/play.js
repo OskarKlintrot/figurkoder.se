@@ -1529,6 +1529,14 @@ function setupGamePage() {
     // No valid game context, show generic header
     updateHeader("Spel", true);
   }
+
+  document.querySelectorAll("#game-page input").forEach((input) => {
+    console.log(input);
+    input.addEventListener("focus", () => {
+      console.log(input.value);
+      input.select();
+    });
+  });
 }
 
 // ============================================================================
@@ -1556,9 +1564,7 @@ document.addEventListener("keydown", function (e) {
 
 // Set up the game page observer when the module loads
 // This ensures it's only set up once and works reliably
-document.addEventListener("DOMContentLoaded", () => {
-  setupGamePageObserver();
-});
+document.addEventListener("DOMContentLoaded", setupGamePageObserver);
 
 // If DOM is already loaded, set up immediately
 if (document.readyState === "loading") {

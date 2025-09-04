@@ -1547,6 +1547,15 @@ function setupGamePage() {
 // Handle keyboard shortcuts
 document.addEventListener("keydown", function (e) {
   if (document.querySelector("#game-page.active")) {
+    // Don't interfere with form inputs
+    if (
+      e.target.tagName === "INPUT" ||
+      e.target.tagName === "SELECT" ||
+      e.target.tagName === "TEXTAREA"
+    ) {
+      return;
+    }
+
     if (e.key === " " || e.key === "Enter") {
       // Space or Enter to show answer
       e.preventDefault();

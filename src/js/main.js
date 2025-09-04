@@ -102,4 +102,10 @@ window.addEventListener("DOMContentLoaded", function () {
   generateTiles();
   initializeFromURL();
   updateButtonStates();
+
+  // Handle form submission on game form
+  document.querySelector("#game-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    startGame();
+  });
 });

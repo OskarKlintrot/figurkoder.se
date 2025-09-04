@@ -120,6 +120,7 @@
   display: flex;
   gap: var(--spacing-sm);
   align-items: center;
+  justify-content: center;
   anchor-name: --playback-controls;
 }
 

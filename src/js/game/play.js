@@ -1118,26 +1118,9 @@ export function startCountdown(resume = false) {
       domCache.nextBtn.classList.remove("progress-bar");
 
       if (gameState.isGameRunning && !gameState.paused) {
-        // Record timeout result before advancing with exact time limit
-        if (
-          gameState.currentItemStartTime &&
-          gameState.currentItemIndex < gameState.currentGameDataSet.length
-        ) {
-          const currentItem =
-            gameState.currentGameDataSet[gameState.currentItemIndex];
-          const timeSpent = gameState.totalCountdownTime; // Use exact time limit instead of actual elapsed time
-
-          gameState.gameResults.push({
-            figurkod: currentItem[0],
-            answer: currentItem[1],
-            timeSpent: timeSpent,
-            showedAnswer: false, // User didn't get to see the answer
-          });
-          gameState.currentItemStartTime = null;
-        }
-
-        // Advance directly to next item without showing answer
-        nextItem(gameState.isLearningMode); // Vibrate on auto-advance in learning mode
+        // When timer expires, show answer and pause the game instead of advancing
+        showAnswer(); // Reveal the image
+        pauseGame(); // Pause the session, identical to behavior when user presses 'VISA'
       }
       return;
     }

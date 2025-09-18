@@ -1135,6 +1135,7 @@ export function startCountdown(resume = false) {
         }
 
         showAnswer();
+        resetProgressBar();
       }
       return;
     }

@@ -963,7 +963,7 @@ export function stopGame() {
       figurkod: currentItem[0],
       answer: currentItem[1],
       timeSpent: timeSpent,
-      showedAnswer: gameState.showingSolution, // True if answer was already shown
+      showedAnswer: gameState.showingSolution,
     });
   }
 
@@ -1129,7 +1129,7 @@ export function startCountdown(resume = false) {
             figurkod: currentItem[0],
             answer: currentItem[1],
             timeSpent: timeSpent,
-            showedAnswer: false, // User didn't get to see the answer
+            showedAnswer: true,
           });
           gameState.currentItemStartTime = null;
         }

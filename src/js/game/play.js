@@ -1116,24 +1116,6 @@ export function startCountdown(resume = false) {
       }
 
       if (gameState.isGameRunning && !gameState.paused) {
-        // Record timeout result before advancing with exact time limit
-        if (
-          gameState.currentItemStartTime &&
-          gameState.currentItemIndex < gameState.currentGameDataSet.length
-        ) {
-          const currentItem =
-            gameState.currentGameDataSet[gameState.currentItemIndex];
-          const timeSpent = gameState.totalCountdownTime; // Use exact time limit instead of actual elapsed time
-
-          gameState.gameResults.push({
-            figurkod: currentItem[0],
-            answer: currentItem[1],
-            timeSpent: timeSpent,
-            showedAnswer: true,
-          });
-          gameState.currentItemStartTime = null;
-        }
-
         showAnswer();
         resetProgressBar();
       }

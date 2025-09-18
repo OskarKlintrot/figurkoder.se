@@ -1114,8 +1114,6 @@ export function startCountdown(resume = false) {
         cancelAnimationFrame(gameState.countdownTimer);
         gameState.countdownTimer = null;
       }
-      // Remove progress bar class when countdown ends
-      domCache.nextBtn.classList.remove("progress-bar");
 
       if (gameState.isGameRunning && !gameState.paused) {
         // Record timeout result before advancing with exact time limit
@@ -1136,8 +1134,7 @@ export function startCountdown(resume = false) {
           gameState.currentItemStartTime = null;
         }
 
-        // Advance directly to next item without showing answer
-        nextItem(gameState.isLearningMode); // Vibrate on auto-advance in learning mode
+        showAnswer();
       }
       return;
     }

@@ -1017,7 +1017,11 @@ export function stopGame() {
   if (shouldShowResults) {
     const resultData = prepareResultData(gameData);
     setContextData(resultData);
-    navigateToPage("results-page");
+    // Set custom back handler before showing results
+    setCustomBackHandler(() => {
+      navigateToPage("game-page");
+    });
+    activatePage("results-page", updateResults);
   }
 }
 
@@ -1284,7 +1288,11 @@ export function nextItem(vibrate = false) {
         // All rounds complete, show results
         const resultData = prepareResultData(gameData);
         setContextData(resultData);
-        navigateToPage("results-page");
+        // Set custom back handler before showing results
+        setCustomBackHandler(() => {
+          navigateToPage("game-page");
+        });
+        activatePage("results-page", updateResults);
         stopGame();
         return;
       }
@@ -1576,8 +1584,6 @@ registerPageEnterCallback("results-page", () => {
   setCustomBackHandler(() => {
     navigateToPage("game-page");
   });
-  // Update results when entering the page
-  updateResults();
 });
 
 registerContextChangeCallback((context) => {

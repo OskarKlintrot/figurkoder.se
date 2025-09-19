@@ -122,8 +122,10 @@ export function navigateToPage(pageId, updateURL = true) {
     navigationState.onLeavePageCallbacks.get(currentPageId)();
   }
 
-  // Clear custom back handler when leaving a page
-  clearCustomBackHandler();
+  // Clear custom back handler only when leaving results page
+  if (currentPageId === "results-page") {
+    clearCustomBackHandler();
+  }
 
   // Hide all pages
   document.querySelectorAll(".page").forEach((page) => {

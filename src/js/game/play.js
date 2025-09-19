@@ -1023,7 +1023,7 @@ export function stopGame() {
         // Reset back button to default behavior
         backBtn.onclick = () => history.back();
         // Navigate to game page
-        navigateToPage("game-page");
+        activatePage("game-page");
       };
     }
     activatePage("results-page", updateResults);
@@ -1300,7 +1300,7 @@ export function nextItem(vibrate = false) {
             // Reset back button to default behavior
             backBtn.onclick = () => history.back();
             // Navigate to game page
-            navigateToPage("game-page");
+            activatePage("game-page");
           };
         }
         activatePage("results-page", updateResults);

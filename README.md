@@ -47,6 +47,29 @@ npx http-server src -p 3000
 
 Appen kommer sedan att vara tillgänglig på http://localhost:3000
 
+### Tester
+
+Projektet använder Playwright för end-to-end-tester:
+
+```bash
+# Installera beroenden
+npm install
+
+# Köra alla tester
+npm test
+
+# Köra tester med visuellt gränssnitt
+npm run test:ui
+
+# Köra tester med synlig webbläsare
+npm run test:headed
+
+# Starta testserver (för manuell testning)
+npm run serve:test
+```
+
+Testerna körs automatiskt i GitHub Actions innan deployment.
+
 ### Deployment
 
 Appen är konfigurerad för Azure Static Web Apps och använder GitHub Actions för automatisk deployment. Källkoden ligger i `src/` mappen och Azure SWA är konfigurerad att servera innehållet därifrån.

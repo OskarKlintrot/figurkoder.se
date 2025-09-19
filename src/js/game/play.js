@@ -5,7 +5,6 @@ import {
   updateHeader,
   registerPageEnterCallback,
   registerContextChangeCallback,
-  setCustomBackHandler,
   navigateToPage,
 } from "../navigation.js";
 import gameData from "./data.js";
@@ -941,7 +940,6 @@ function prepareResultData(gameData) {
  * Stops the current game and optionally shows results
  */
 export function stopGame() {
-  console.log('DEBUG: stopGame called');
   // Record current item result if game is running/paused and we have a start time
   if (
     (gameState.isGameRunning || gameState.paused) &&
@@ -975,12 +973,6 @@ export function stopGame() {
     gameState.hasStarted &&
     gameState.gameResults.length > 0 &&
     !gameState.isLearningMode;
-
-  console.log('DEBUG: stopGame - shouldShowResults conditions:');
-  console.log('  hasStarted:', gameState.hasStarted);
-  console.log('  gameResults.length:', gameState.gameResults.length);
-  console.log('  isLearningMode:', gameState.isLearningMode);
-  console.log('  shouldShowResults:', shouldShowResults);
 
   gameState.isGameRunning = false;
   gameState.hasStarted = false;
@@ -1024,13 +1016,16 @@ export function stopGame() {
   if (shouldShowResults) {
     const resultData = prepareResultData(gameData);
     setContextData(resultData);
-    // Set custom back handler before showing results
-    console.log('DEBUG: Setting custom back handler for results page');
-    setCustomBackHandler(() => {
-      console.log('DEBUG: Custom back handler called - navigating to game page');
-      // Navigate back to game page
-      navigateToPage("game-page");
-    });
+    // Change back button to navigate to game page instead of history.back()
+    const backBtn = document.getElementById("back-btn");
+    if (backBtn) {
+      backBtn.onclick = () => {
+        // Reset back button to default behavior
+        backBtn.onclick = () => history.back();
+        // Navigate to game page
+        navigateToPage("game-page");
+      };
+    }
     activatePage("results-page", updateResults);
   }
 }
@@ -1298,13 +1293,16 @@ export function nextItem(vibrate = false) {
         // All rounds complete, show results
         const resultData = prepareResultData(gameData);
         setContextData(resultData);
-        // Set custom back handler before showing results
-        console.log('DEBUG: Setting custom back handler for results page');
-        setCustomBackHandler(() => {
-          console.log('DEBUG: Custom back handler called - navigating to game page');
-          // Navigate back to game page
-          navigateToPage("game-page");
-        });
+        // Change back button to navigate to game page instead of history.back()
+        const backBtn = document.getElementById("back-btn");
+        if (backBtn) {
+          backBtn.onclick = () => {
+            // Reset back button to default behavior
+            backBtn.onclick = () => history.back();
+            // Navigate to game page
+            navigateToPage("game-page");
+          };
+        }
         activatePage("results-page", updateResults);
         stopGame();
         return;
@@ -1590,13 +1588,6 @@ if (document.readyState === "loading") {
 // Register game-specific navigation callbacks
 registerPageEnterCallback("game-page", () => {
   setupGamePage();
-});
-
-registerPageEnterCallback("results-page", () => {
-  // Set custom back handler to return to game page
-  setCustomBackHandler(() => {
-    navigateToPage("game-page");
-  });
 });
 
 registerContextChangeCallback((context) => {

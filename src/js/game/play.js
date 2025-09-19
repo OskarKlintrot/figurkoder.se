@@ -1451,6 +1451,13 @@ export function replay(slowOnly = false) {
 
   // Set the replay data in context for initializeGame to use
   setContextData(replayData);
+  
+  // Reset back button to default behavior when using replay/back button
+  const backBtn = document.getElementById("back-btn");
+  if (backBtn) {
+    backBtn.onclick = () => history.back();
+  }
+  
   activatePage("game-page", setupGamePage);
 }
 

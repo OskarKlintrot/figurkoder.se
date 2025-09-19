@@ -5,7 +5,6 @@ import {
   updateHeader,
   registerPageEnterCallback,
   registerContextChangeCallback,
-  navigateToPage,
 } from "../navigation.js";
 import gameData from "./data.js";
 
@@ -1593,7 +1592,7 @@ registerPageEnterCallback("game-page", () => {
 registerContextChangeCallback((context) => {
   // Handle context change - validate game exists
   if (context && gameData && !gameData[context]) {
-    // Invalid game context, navigate to 404
-    navigateToPage("404-page");
+    // Invalid game context, show 404 page
+    activatePage("404-page");
   }
 });

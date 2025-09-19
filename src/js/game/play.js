@@ -1015,6 +1015,16 @@ export function stopGame() {
   if (shouldShowResults) {
     const resultData = prepareResultData(gameData);
     setContextData(resultData);
+    // Change back button to navigate to game page instead of history.back()
+    const backBtn = document.getElementById("back-btn");
+    if (backBtn) {
+      backBtn.onclick = () => {
+        // Reset back button to default behavior
+        backBtn.onclick = () => history.back();
+        // Navigate to game page
+        activatePage("game-page");
+      };
+    }
     activatePage("results-page", updateResults);
   }
 }
@@ -1282,6 +1292,16 @@ export function nextItem(vibrate = false) {
         // All rounds complete, show results
         const resultData = prepareResultData(gameData);
         setContextData(resultData);
+        // Change back button to navigate to game page instead of history.back()
+        const backBtn = document.getElementById("back-btn");
+        if (backBtn) {
+          backBtn.onclick = () => {
+            // Reset back button to default behavior
+            backBtn.onclick = () => history.back();
+            // Navigate to game page
+            activatePage("game-page");
+          };
+        }
         activatePage("results-page", updateResults);
         stopGame();
         return;
@@ -1431,6 +1451,13 @@ export function replay(slowOnly = false) {
 
   // Set the replay data in context for initializeGame to use
   setContextData(replayData);
+  
+  // Reset back button to default behavior when using replay/back button
+  const backBtn = document.getElementById("back-btn");
+  if (backBtn) {
+    backBtn.onclick = () => history.back();
+  }
+  
   activatePage("game-page", setupGamePage);
 }
 
@@ -1572,7 +1599,7 @@ registerPageEnterCallback("game-page", () => {
 registerContextChangeCallback((context) => {
   // Handle context change - validate game exists
   if (context && gameData && !gameData[context]) {
-    // Invalid game context, navigate to 404
-    navigateToPage("404-page");
+    // Invalid game context, show 404 page
+    activatePage("404-page");
   }
 });

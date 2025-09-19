@@ -941,6 +941,7 @@ function prepareResultData(gameData) {
  * Stops the current game and optionally shows results
  */
 export function stopGame() {
+  console.log('DEBUG: stopGame called');
   // Record current item result if game is running/paused and we have a start time
   if (
     (gameState.isGameRunning || gameState.paused) &&
@@ -974,6 +975,12 @@ export function stopGame() {
     gameState.hasStarted &&
     gameState.gameResults.length > 0 &&
     !gameState.isLearningMode;
+
+  console.log('DEBUG: stopGame - shouldShowResults conditions:');
+  console.log('  hasStarted:', gameState.hasStarted);
+  console.log('  gameResults.length:', gameState.gameResults.length);
+  console.log('  isLearningMode:', gameState.isLearningMode);
+  console.log('  shouldShowResults:', shouldShowResults);
 
   gameState.isGameRunning = false;
   gameState.hasStarted = false;
@@ -1018,7 +1025,10 @@ export function stopGame() {
     const resultData = prepareResultData(gameData);
     setContextData(resultData);
     // Set custom back handler before showing results
+    console.log('DEBUG: Setting custom back handler for results page');
     setCustomBackHandler(() => {
+      console.log('DEBUG: Custom back handler called - navigating to game page');
+      // Navigate back to game page
       navigateToPage("game-page");
     });
     activatePage("results-page", updateResults);
@@ -1289,7 +1299,10 @@ export function nextItem(vibrate = false) {
         const resultData = prepareResultData(gameData);
         setContextData(resultData);
         // Set custom back handler before showing results
+        console.log('DEBUG: Setting custom back handler for results page');
         setCustomBackHandler(() => {
+          console.log('DEBUG: Custom back handler called - navigating to game page');
+          // Navigate back to game page
           navigateToPage("game-page");
         });
         activatePage("results-page", updateResults);

@@ -292,9 +292,13 @@ export function closeMenu() {
  * Handles back button clicks - uses custom handler if set, otherwise browser history
  */
 export function handleBackButton() {
+  console.log('DEBUG: handleBackButton called');
+  console.log('DEBUG: customBackHandler:', navigationState.customBackHandler);
   if (navigationState.customBackHandler) {
+    console.log('DEBUG: Using custom back handler');
     navigationState.customBackHandler();
   } else {
+    console.log('DEBUG: Using browser history.back()');
     history.back();
   }
 }

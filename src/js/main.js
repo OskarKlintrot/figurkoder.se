@@ -17,6 +17,7 @@ import {
   openMenu,
   closeMenu,
   navigateToPage,
+  handleBackButton,
 } from "./navigation.js";
 import {
   clearDebugConsole,
@@ -67,6 +68,7 @@ async function fetchAndDisplayVersion() {
 window.openMenu = openMenu;
 window.closeMenu = closeMenu;
 window.navigateToPage = navigateToPage;
+window.handleBackButton = handleBackButton;
 window.showAnswer = showAnswer;
 window.nextItem = nextItem;
 window.startGame = startGame;

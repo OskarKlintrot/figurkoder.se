@@ -5,6 +5,7 @@ const navigationState = {
   onLeavePageCallbacks: new Map(), // Callbacks for leaving specific pages
   onEnterPageCallbacks: new Map(), // Callbacks for entering specific pages
   onContextChangeCallback: null, // Callback when context changes
+  customBackHandler: null, // Custom back button handler for current page
 };
 
 /**
@@ -60,6 +61,28 @@ export function registerContextChangeCallback(callback) {
 }
 
 /**
+ * Sets a custom back button handler for the current page
+ * @param {function} handler - Function to call when back button is clicked
+ */
+export function setCustomBackHandler(handler) {
+  navigationState.customBackHandler = handler;
+}
+
+/**
+ * Clears the custom back button handler
+ */
+export function clearCustomBackHandler() {
+  navigationState.customBackHandler = null;
+}
+
+/**
+ * Gets the current custom back handler
+ */
+export function getCustomBackHandler() {
+  return navigationState.customBackHandler;
+}
+
+/**
  * Updates the page header with title and back button visibility
  * @param {string} title - The title to display in the header
  * @param {boolean} showBackButton - Whether to show the back button
@@ -98,6 +121,9 @@ export function navigateToPage(pageId, updateURL = true) {
   ) {
     navigationState.onLeavePageCallbacks.get(currentPageId)();
   }
+
+  // Clear custom back handler when leaving a page
+  clearCustomBackHandler();
 
   // Hide all pages
   document.querySelectorAll(".page").forEach((page) => {
@@ -152,6 +178,7 @@ export function getURLForPage(pageId) {
   const urlPatterns = {
     "main-menu": "/",
     "game-page": context ? `/game/${context}` : "/game",
+    "results-page": context ? `/game/${context}/results` : "/game/results",
     "about-page": "/about",
     "faq-page": "/faq",
     "contact-page": "/contact",
@@ -189,6 +216,9 @@ export function parseURL() {
       return { page: "game-page", context: null };
     }
     const contextType = segments[1];
+    if (segments.length === 3 && segments[2] === "results") {
+      return { page: "results-page", context: contextType };
+    }
     return { page: "game-page", context: contextType };
   }
 
@@ -254,6 +284,17 @@ export function openMenu() {
 export function closeMenu() {
   document.getElementById("nav-menu").classList.remove("open");
   document.querySelector(".nav-overlay").classList.remove("open");
+}
+
+/**
+ * Handles back button clicks - uses custom handler if set, otherwise browser history
+ */
+export function handleBackButton() {
+  if (navigationState.customBackHandler) {
+    navigationState.customBackHandler();
+  } else {
+    history.back();
+  }
 }
 
 // Register navigation callbacks

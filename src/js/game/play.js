@@ -5,6 +5,8 @@ import {
   updateHeader,
   registerPageEnterCallback,
   registerContextChangeCallback,
+  setCustomBackHandler,
+  navigateToPage,
 } from "../navigation.js";
 import gameData from "./data.js";
 
@@ -1015,7 +1017,7 @@ export function stopGame() {
   if (shouldShowResults) {
     const resultData = prepareResultData(gameData);
     setContextData(resultData);
-    activatePage("results-page", updateResults);
+    navigateToPage("results-page");
   }
 }
 
@@ -1282,7 +1284,7 @@ export function nextItem(vibrate = false) {
         // All rounds complete, show results
         const resultData = prepareResultData(gameData);
         setContextData(resultData);
-        activatePage("results-page", updateResults);
+        navigateToPage("results-page");
         stopGame();
         return;
       }
@@ -1567,6 +1569,15 @@ if (document.readyState === "loading") {
 // Register game-specific navigation callbacks
 registerPageEnterCallback("game-page", () => {
   setupGamePage();
+});
+
+registerPageEnterCallback("results-page", () => {
+  // Set custom back handler to return to game page
+  setCustomBackHandler(() => {
+    navigateToPage("game-page");
+  });
+  // Update results when entering the page
+  updateResults();
 });
 
 registerContextChangeCallback((context) => {

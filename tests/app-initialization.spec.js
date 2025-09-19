@@ -1,8 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './setup.js';
 
 test.describe('App Initialization', () => {
   test('should load the main page successfully', async ({ page }) => {
     await page.goto('/');
+    
+    // Wait for fonts to load
+    await page.waitForLoadState('networkidle');
     
     // Check that the page title is correct
     await expect(page).toHaveTitle('Figurkoder.se');

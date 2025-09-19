@@ -1,8 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './setup.js';
 
 test.describe('PWA Features', () => {
   test('should have service worker and manifest for PWA', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
     
     // Check manifest is present and valid
     const manifestResponse = await page.request.get('/site.webmanifest');

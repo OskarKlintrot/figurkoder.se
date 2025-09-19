@@ -1,8 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './setup.js';
 
 test.describe('Smoke Tests', () => {
   test('app loads and has basic structure', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
     
     // Check basic page structure
     await expect(page).toHaveTitle('Figurkoder.se');

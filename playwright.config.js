@@ -32,6 +32,12 @@ export default defineConfig({
     
     /* Record video on failure */
     video: 'retain-on-failure',
+
+    /* Wait for fonts to load properly */
+    waitUntil: 'domcontentloaded',
+    
+    /* Note: Google Fonts (Material Icons) may be blocked in test environment
+     * Tests are designed to work with both loaded fonts and text fallbacks */
   },
 
   /* Configure projects for major browsers */

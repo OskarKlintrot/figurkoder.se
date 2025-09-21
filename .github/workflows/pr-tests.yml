@@ -1,4 +1,4 @@
-name: PR Tests
+name: Playwright Tests
 
 on:
   pull_request:
@@ -41,28 +41,30 @@ jobs:
         if: always()
         with:
           script: |
+            const conclusion = process.env.TESTS_CONCLUSION || 'success';
             const fs = require('fs');
             const path = require('path');
-            
-            let testResults = '🧪 **Playwright Test Results**\n\n';
-            
+            let reportMessage = '';
             try {
-              // Try to read the results
               const reportPath = path.join(process.cwd(), 'test-results');
               if (fs.existsSync(reportPath)) {
-                testResults += '✅ Tests completed. Check the [test report artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.\n';
+                reportMessage = '🧪 **Playwright Test Results**\n\n';
               } else {
-                testResults += '❓ Test results not found.\n';
+                reportMessage = '❓ Test results not found.\n\n';
               }
             } catch (error) {
-              testResults += `❌ Error reading test results: ${error.message}\n`;
+              reportMessage = `❌ Error reading test results: ${error.message}\n\n`;
             }
-            
-            testResults += '\n📊 [View detailed report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})';
-            
+            let message;
+            if (conclusion === 'success') {
+              message = `✅ All Playwright tests have run and passed!`;
+            } else {
+              message = `❌ Some Playwright tests failed!`;
+            }
+            const fullMessage = `${reportMessage}${message}\n\nSee the report: [Playwright Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: testResults
+              body: fullMessage
             });

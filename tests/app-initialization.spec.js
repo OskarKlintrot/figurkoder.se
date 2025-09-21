@@ -1,18 +1,21 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('App Initialization', () => {
-  test('should load the main page successfully', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    
-    // Wait for fonts to load
-    await page.waitForLoadState('networkidle');
-    
+    // Wait for DOM content to load instead of networkidle for faster tests
+    await page.waitForLoadState('domcontentloaded');
+  });
+
+  test('should load the main page successfully', async ({ page }) => {
     // Check that the page title is correct
     await expect(page).toHaveTitle('Figurkoder.se');
     
-    // Check that the main elements are present
-    await expect(page.locator('header')).toBeVisible();
-    await expect(page.locator('.page.active')).toBeVisible();
+    // Check that the main elements are present - wait for them to appear
+    await expect(page.locator('.header')).toBeVisible({ timeout: 3000 });
+    
+    // Wait for the app to finish loading (main menu should become active)
+    await expect(page.locator('#main-menu.active')).toBeVisible({ timeout: 5000 });
     
     // Check that JavaScript modules are loaded (service worker should be registered)
     const serviceWorkerRegistered = await page.evaluate(() => {
@@ -22,11 +25,9 @@ test.describe('App Initialization', () => {
   });
 
   test('should have PWA manifest', async ({ page }) => {
-    await page.goto('/');
-    
-    // Check that manifest link is present
+    // Check that manifest link is present (use toHaveAttribute instead of toBeVisible for meta/link tags)
     const manifestLink = page.locator('link[rel="manifest"]');
-    await expect(manifestLink).toBeVisible();
+    await expect(manifestLink).toHaveAttribute('href', '/site.webmanifest');
     
     // Check that the manifest is accessible
     const response = await page.request.get('/site.webmanifest');

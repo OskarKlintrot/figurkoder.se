@@ -9,12 +9,15 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Retry on CI only - reduce retries for faster feedback */
+  retries: process.env.CI ? 1 : 0,
+  /* Use more workers on CI for better performance */
+  workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
+  reporter: process.env.CI ? [
+    ['github'],
+    ['junit', { outputFile: 'test-results/junit.xml' }],
+  ] : [
     ['html'],
     ['junit', { outputFile: 'test-results/junit.xml' }],
     ['github']
@@ -22,19 +25,24 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.BASE_URL || 'http://localhost:3001',
+    baseURL: 'http://localhost:3001',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: process.env.CI ? 'off' : 'on-first-retry',
     
-    /* Take screenshots on failure */
-    screenshot: 'only-on-failure',
+    /* Take screenshots on failure - reduce to save time */
+    screenshot: process.env.CI ? 'off' : 'only-on-failure',
     
-    /* Record video on failure */
-    video: 'retain-on-failure',
+    /* Record video on failure - disable in CI for speed */
+    video: process.env.CI ? 'off' : 'retain-on-failure',
 
-    /* Wait for fonts to load properly */
+    /* Use domcontentloaded instead of networkidle for faster tests */
     waitUntil: 'domcontentloaded',
+    
+    /* Aggressive timeouts for static site - even more aggressive in CI */
+    timeout: process.env.CI ? 3000 : 5000,
+    navigationTimeout: process.env.CI ? 2000 : 3000,
+    actionTimeout: process.env.CI ? 1500 : 2000,
     
     /* Note: Google Fonts (Material Icons) may be blocked in test environment
      * Tests are designed to work with both loaded fonts and text fallbacks */
@@ -53,6 +61,8 @@ export default defineConfig({
     command: 'npm run serve:test',
     url: 'http://localhost:3001',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: process.env.CI ? 15 * 1000 : 30 * 1000, // Faster startup in CI
+    stdout: 'ignore',
+    stderr: 'pipe',
   },
 });

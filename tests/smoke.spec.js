@@ -3,7 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Smoke Tests', () => {
   test('app loads and has basic structure', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for the app to finish loading
+    await page.waitForSelector('#main-menu.active', { timeout: 5000 });
     
     // Check basic page structure
     await expect(page).toHaveTitle('Figurkoder.se');

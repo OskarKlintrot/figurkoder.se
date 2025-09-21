@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('PWA Features', () => {
-  test('should have service worker and manifest for PWA', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for the app to finish loading
+    await page.waitForSelector('#main-menu.active', { timeout: 5000 });
+  });
+
+  test('should have service worker and manifest for PWA', async ({ page }) => {
     
     // Check manifest is present and valid
     const manifestResponse = await page.request.get('/site.webmanifest');
@@ -85,24 +90,24 @@ test.describe('PWA Features', () => {
     await page.reload();
     
     // Page should still load (from cache)
-    await expect(page.locator('header')).toBeVisible();
+    await expect(page.locator('.header')).toBeVisible();
     await expect(page).toHaveTitle('Figurkoder.se');
   });
 
   test('should have proper meta tags for PWA', async ({ page }) => {
     await page.goto('/');
     
-    // Check PWA-related meta tags
-    await expect(page.locator('meta[name="viewport"]')).toBeVisible();
-    await expect(page.locator('meta[name="theme-color"]')).toBeVisible();
-    await expect(page.locator('meta[name="mobile-web-app-capable"]')).toBeVisible();
-    await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toBeVisible();
+    // Check PWA-related meta tags exist (use toHaveCount instead of toBeVisible for meta tags)
+    await expect(page.locator('meta[name="viewport"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="mobile-web-app-capable"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveCount(1);
     
-    // Check that apple-touch-icon is present
-    await expect(page.locator('link[rel="apple-touch-icon"]')).toBeVisible();
+    // Check that apple-touch-icon is present (use toHaveAttribute for link tags)
+    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href');
     
     // Check that manifest link is present
-    await expect(page.locator('link[rel="manifest"]')).toBeVisible();
+    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', '/site.webmanifest');
   });
 
   test('should have proper icon files', async ({ page }) => {

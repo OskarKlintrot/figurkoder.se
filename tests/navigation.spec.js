@@ -3,7 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for the app to finish loading
+    await page.waitForSelector('#main-menu.active', { timeout: 5000 });
   });
 
   test('should navigate to about page', async ({ page }) => {
@@ -13,8 +15,8 @@ test.describe('Navigation', () => {
     // Wait for menu to be visible
     await expect(page.locator('#nav-menu.open')).toBeVisible();
     
-    // Click on "Om appen" link
-    await page.click('a[onclick="navigateToPage(\'about-page\')"]');
+    // Click on "Om sidan" link
+    await page.click('button[onclick*="about-page"]');
     
     // Check that about page is active
     await expect(page.locator('#about-page.active')).toBeVisible();
@@ -30,8 +32,8 @@ test.describe('Navigation', () => {
     // Wait for menu to be visible
     await expect(page.locator('#nav-menu.open')).toBeVisible();
     
-    // Click on "Frågor och svar" link
-    await page.click('a[onclick="navigateToPage(\'faq-page\')"]');
+    // Click on "Vanliga frågor" link
+    await page.click('button[onclick*="faq-page"]');
     
     // Check that FAQ page is active
     await expect(page.locator('#faq-page.active')).toBeVisible();
@@ -47,8 +49,8 @@ test.describe('Navigation', () => {
     // Wait for menu to be visible
     await expect(page.locator('#nav-menu.open')).toBeVisible();
     
-    // Click on "Kontakt" link
-    await page.click('a[onclick="navigateToPage(\'contact-page\')"]');
+    // Click on "Kontakta mig" link
+    await page.click('button[onclick*="contact-page"]');
     
     // Check that contact page is active
     await expect(page.locator('#contact-page.active')).toBeVisible();
@@ -72,12 +74,12 @@ test.describe('Navigation', () => {
   test('should navigate back to main menu from other pages', async ({ page }) => {
     // Navigate to about page first
     await page.click('button[onclick="openMenu()"]');
-    await page.click('a[onclick="navigateToPage(\'about-page\')"]');
+    await page.click('button[onclick*="about-page"]');
     await expect(page.locator('#about-page.active')).toBeVisible();
     
     // Click main menu button
     await page.click('button[onclick="openMenu()"]');
-    await page.click('a[onclick="navigateToPage(\'main-menu\')"]');
+    await page.click('button[onclick*="main-menu"]');
     
     // Should be back at main menu
     await expect(page.locator('#main-menu.active')).toBeVisible();

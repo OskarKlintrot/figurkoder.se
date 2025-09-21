@@ -1207,6 +1207,12 @@ export function showAnswer() {
     window.deactivateScreenWakeLock();
   }
 
+  // In training mode, pause the game when answer is manually shown (timing challenge ends)
+  if (!gameState.isLearningMode && gameState.isGameRunning) {
+    gameState.isGameRunning = false;
+    gameState.paused = true;
+  }
+
   // Update button states after showing answer
   updateButtonStates();
 }

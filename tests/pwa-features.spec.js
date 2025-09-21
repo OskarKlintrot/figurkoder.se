@@ -32,8 +32,11 @@ test.describe('PWA Features', () => {
       return navigator.serviceWorker.ready;
     }, { timeout: 10000 });
     
-    // Give the service worker a bit more time to fully activate
-    await page.waitForTimeout(1000);
+    // Wait for the service worker to be fully activated
+    await page.waitForFunction(async () => {
+      const reg = await navigator.serviceWorker.ready;
+      return reg.active?.state === 'activated';
+    }, { timeout: 10000 });
     
     const serviceWorkerInfo = await page.evaluate(async () => {
       const registration = await navigator.serviceWorker.ready;

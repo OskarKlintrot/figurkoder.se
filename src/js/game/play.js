@@ -1133,6 +1133,11 @@ export function startCountdown(resume = false) {
           // In training mode, just show the answer and pause
           showAnswer();
           resetProgressBar();
+          // Set game state to paused after countdown finishes
+          gameState.isGameRunning = false;
+          gameState.paused = true;
+          // Update button states to reflect paused state
+          updateButtonStates();
         }
       }
       return;

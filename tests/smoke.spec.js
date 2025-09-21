@@ -2,32 +2,27 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Smoke Tests', () => {
   test('app loads and has basic structure', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-    // Wait for the app to finish loading
-    await page.waitForSelector('#main-menu.active', { timeout: 5000 });
-    
-    // Check basic page structure
-    await expect(page).toHaveTitle('Figurkoder.se');
-    await expect(page.locator('body')).toBeVisible();
-    
-    // Check that we don't have any major JavaScript errors
+    // Register console error listener before navigation
     const logs = [];
     page.on('console', msg => {
       if (msg.type() === 'error') {
         logs.push(msg.text());
       }
     });
-    
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for the app to finish loading
+    await page.waitForSelector('#main-menu.active', { timeout: 5000 });
+    // Check basic page structure
+    await expect(page).toHaveTitle('Figurkoder.se');
+    await expect(page.locator('body')).toBeVisible();
     await page.waitForTimeout(2000);
-    
     // Allow some console logs but no critical errors
     const criticalErrors = logs.filter(log => 
       log.includes('Uncaught') || 
       log.includes('ReferenceError') || 
       log.includes('SyntaxError')
     );
-    
     expect(criticalErrors).toHaveLength(0);
   });
 

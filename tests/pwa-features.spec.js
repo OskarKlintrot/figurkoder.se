@@ -85,16 +85,10 @@ test.describe('PWA Features', () => {
     await expect(page.locator('.header')).toBeVisible();
     await expect(page).toHaveTitle('Figurkoder.se');
     
-    // Now simulate offline by blocking all network requests except service worker
+    // Now simulate offline by blocking all network requests
     await context.route('**/*', route => {
-      // Allow service worker related requests to pass through
-      if (route.request().url().includes('sw.js') || 
-          route.request().url().includes('/sw/')) {
-        route.continue();
-      } else {
-        // Block all other network requests to simulate offline
-        route.abort();
-      }
+      // Block all network requests to simulate offline
+      route.abort();
     });
     
     // Navigate again (should work from cache)

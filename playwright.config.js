@@ -19,8 +19,7 @@ export default defineConfig({
     ['junit', { outputFile: 'test-results/junit.xml' }],
   ] : [
     ['html'],
-    ['junit', { outputFile: 'test-results/junit.xml' }],
-    ['github']
+    ['junit', { outputFile: 'test-results/junit.xml' }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

@@ -34,7 +34,7 @@ src/
 
 För att köra appen lokalt kan du använda en enkel HTTP-server:
 
-```bash
+```powershell
 # Med Python
 python -m http.server 3000
 
@@ -46,6 +46,36 @@ npx http-server src -p 3000
 ```
 
 Appen kommer sedan att vara tillgänglig på http://localhost:3000
+
+### Tester
+
+Projektet använder Playwright för end-to-end-tester:
+
+```powershell
+# Installera beroenden
+npm install
+
+# Köra alla tester
+npm test
+
+# Köra tester med visuellt gränssnitt
+npm run test:ui
+
+# Köra tester med synlig webbläsare
+npm run test:headed
+
+# Starta testserver (för manuell testning)
+npm run serve:test
+```
+
+**Notera**: Detta projekt använder PowerShell för alla terminal-kommandon enligt projektstandard.
+
+#### Testmiljö och begränsningar
+
+**Testning av PWA-funktionalitet:**
+Testerna validerar offline-funktionalitet, service worker-registrering och PWA-installation, men vissa begränsningar kan uppstå i CI-miljöer.
+
+Testerna körs automatiskt i GitHub Actions innan deployment.
 
 ### Deployment
 

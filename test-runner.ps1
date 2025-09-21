@@ -6,7 +6,7 @@
 $ErrorActionPreference = "Stop"
 
 Write-Host "🚀 Starting test server..." -ForegroundColor Green
-$serverProcess = Start-Process -FilePath "npm" -ArgumentList "run", "serve:test" -PassThru -NoNewWindow
+$serverProcess = & npm.cmd run serve:test &
 
 Write-Host "⏳ Waiting for server to start..." -ForegroundColor Yellow
 Start-Sleep -Seconds 5
@@ -26,11 +26,8 @@ try {
     $exitCode = 1
 }
 
+
 Write-Host "🛑 Stopping test server..." -ForegroundColor Yellow
-try {
-    Stop-Process -Id $serverProcess.Id -Force -ErrorAction SilentlyContinue
-} catch {
-    # Ignore errors when stopping the server
-}
+# No need to stop process when using call operator
 
 exit $exitCode

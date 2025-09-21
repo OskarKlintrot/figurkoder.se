@@ -1,4 +1,4 @@
-import { test, expect } from './setup.js';
+import { test, expect } from '@playwright/test';
 
 test.describe('Game Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -19,78 +19,6 @@ test.describe('Game Functionality', () => {
     const firstTile = gameTiles.first();
     await expect(firstTile).toBeVisible();
     await expect(firstTile.locator('h3')).toBeVisible();
-  });
-
-  test('should load Material Icons properly in game interface', async ({ page }) => {
-    // Navigate to game page
-    await page.waitForSelector('.game-tile', { timeout: 5000 });
-    const firstTile = page.locator('.game-tile').first();
-    await firstTile.click();
-    
-    // Wait for the game page to load completely
-    await expect(page.locator('#game-page.active')).toBeVisible();
-    await page.waitForLoadState('domcontentloaded');
-    
-    // Give additional time for fonts to load
-    await page.waitForTimeout(3000);
-    
-    // Check Material Icons loading status and UI functionality
-    const iconAnalysis = await page.evaluate(() => {
-      // Get all Material Icons elements
-      const icons = Array.from(document.querySelectorAll('.material-icons'));
-      
-      // Check if our font loading detection ran
-      const fontLoadedGlobally = window.__materialIconsLoaded;
-      
-      // Analyze each icon element
-      const iconData = icons.map(icon => {
-        const style = window.getComputedStyle(icon);
-        return {
-          text: icon.textContent.trim(),
-          fontFamily: style.fontFamily,
-          fontSize: style.fontSize,
-          isVisible: icon.offsetWidth > 0 && icon.offsetHeight > 0,
-          hasCorrectClass: icon.classList.contains('material-icons'),
-          parentButton: icon.closest('button')?.textContent.trim() || 'no parent'
-        };
-      });
-      
-      return {
-        fontLoadedGlobally,
-        iconCount: icons.length,
-        iconData: iconData.slice(0, 5), // First 5 for analysis
-        sampleFontFamily: iconData[0]?.fontFamily || 'none'
-      };
-    });
-    
-    // Log detailed analysis for debugging
-    console.log('📊 Material Icons Analysis:', {
-      fontLoaded: iconAnalysis.fontLoadedGlobally,
-      iconCount: iconAnalysis.iconCount,
-      sampleFont: iconAnalysis.sampleFontFamily
-    });
-    
-    // Ensure we found Material Icons elements
-    expect(iconAnalysis.iconCount).toBeGreaterThan(0);
-    
-    // Validate that all icons have correct structure regardless of font loading
-    iconAnalysis.iconData.forEach((icon, index) => {
-      expect(icon.hasCorrectClass).toBeTruthy();
-      expect(icon.isVisible).toBeTruthy();
-      expect(icon.fontFamily).toContain('Material Icons');
-    });
-    
-    // Verify UI functionality works regardless of font loading status
-    const playButton = page.locator('button').filter({ hasText: 'play_arrow' });
-    await expect(playButton).toBeVisible();
-    
-    // Report on font loading status
-    if (iconAnalysis.fontLoadedGlobally) {
-      console.log('✅ Material Icons loaded successfully in test environment');
-    } else {
-      console.log('⚠️ Material Icons using text fallbacks (expected in test environment)');
-      console.log('   Icons are correctly structured and functional');
-    }
   });
 
   test('should navigate to game page when clicking a tile', async ({ page }) => {

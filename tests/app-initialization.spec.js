@@ -1,4 +1,4 @@
-import { test, expect } from './setup.js';
+import { test, expect } from '@playwright/test';
 
 test.describe('App Initialization', () => {
   test('should load the main page successfully', async ({ page }) => {

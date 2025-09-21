@@ -1,4 +1,4 @@
-import { test, expect } from './setup.js';
+import { test, expect } from '@playwright/test';
 
 test.describe('PWA Features', () => {
   test('should have service worker and manifest for PWA', async ({ page }) => {

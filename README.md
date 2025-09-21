@@ -15,11 +15,13 @@ En webbaserad träningsapp för figurkoder.
 ### Teknisk översikt
 
 Appen är byggd som en modern single-page application med:
+
 - **Vanilla JavaScript** - Inga externa ramverk eller bibliotek
 - **Service Worker** - För PWA-funktionalitet och offline-caching
 - **Azure Static Web Apps** - Hosting och konfiguration
 
 ### Projektstruktur
+
 ```
 src/
 ├── index.html           # Huvudfil med all HTML, CSS och JavaScript
@@ -70,6 +72,23 @@ npm run serve:test
 
 **Notera**: Detta projekt använder PowerShell för alla terminal-kommandon enligt projektstandard.
 
+### Kodformatering
+
+**VIKTIGT**: All kod måste formateras med Prettier innan commit.
+
+```powershell
+# Kontrollera formatering
+npm run format:check
+
+# Fixa formateringsproblem automatiskt
+npm run format
+```
+
+**PR-krav:**
+
+- PRs blockeras automatiskt om koden inte är korrekt formaterad
+- Kör `npm run format` innan du committar ändringar
+
 #### Testmiljö och begränsningar
 
 **Testning av PWA-funktionalitet:**
@@ -84,6 +103,7 @@ Appen är konfigurerad för Azure Static Web Apps och använder GitHub Actions f
 ## PWA-installation
 
 Appen fungerar som en Progressive Web App:
+
 1. Besök https://figurkoder.se
 2. I webbläsaren, välj "Lägg till på startskärmen" eller liknande alternativ
 3. Appen kan nu användas offline och startas från hemskärmen

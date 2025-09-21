@@ -101,6 +101,40 @@ Service worker version auto-updates on deployment:
 - Format: `YYMMDD.HHMM` (e.g., "241215.1430")
 - Triggers cache invalidation for PWA updates
 
+### Code Formatting & Quality
+**CRITICAL**: All code must be properly formatted using Prettier before committing.
+
+**Formatting Requirements:**
+- **Always run `npm run format`** before committing any changes
+- **Never commit unformatted code** - PRs will automatically fail CI if formatting is incorrect
+- Use PowerShell for all terminal commands: `npm run format`
+
+**Formatting Commands:**
+```powershell
+# Check if code is properly formatted
+npm run format:check
+
+# Auto-fix all formatting issues
+npm run format
+
+# Combined with commit
+npm run format
+git add .
+git commit -m "Your commit message"
+```
+
+**Prettier Configuration:**
+- 2-space indentation, semicolons, double quotes
+- 80 character line width, LF line endings
+- Configuration in `.prettierrc` - do not modify without team discussion
+- Files ignored via `.prettierignore` (build artifacts, images, etc.)
+
+**CI Integration:**
+- Code quality workflow runs on all PRs and main branch pushes
+- PRs will be **automatically blocked** if formatting checks fail
+- Test suite includes pre-test formatting validation
+- Failed formatting triggers helpful PR comments with fix instructions
+
 ### CSS Architecture
 Uses CSS custom properties extensively:
 - Color scheme: `--color-primary`, `--color-secondary`, etc.

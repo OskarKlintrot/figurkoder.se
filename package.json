@@ -8,7 +8,10 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "serve": "npx http-server src -p 3000 -c-1 --cors",
-    "serve:test": "npx http-server src -p 3001 -c-1 --cors"
+    "serve:test": "npx http-server src -p 3001 -c-1 --cors",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "pretest": "npm run format:check"
   },
   "keywords": [
     "figurkoder",
@@ -19,7 +22,8 @@
   "type": "module",
   "devDependencies": {
     "@playwright/test": "^1.55.0",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "prettier": "^3.3.3"
   },
   "engines": {
     "node": ">=18.0.0"

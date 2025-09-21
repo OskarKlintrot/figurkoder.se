@@ -7,8 +7,8 @@
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
-    "serve": "npx http-server src -p 3000",
-    "serve:test": "npx http-server src -p 3001"
+    "serve": "npx http-server src -p 3000 -c-1 --cors",
+    "serve:test": "npx http-server src -p 3001 -c-1 --cors"
   },
   "keywords": [
     "figurkoder",

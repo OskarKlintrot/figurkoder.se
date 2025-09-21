@@ -81,8 +81,18 @@ test.describe('PWA Features', () => {
       return navigator.serviceWorker.ready;
     }, { timeout: 10000 });
     
-    // Wait a bit longer to ensure all resources are cached
-    await page.waitForTimeout(2000);
+    // Wait for the main page to be present in the service worker cache
+    await page.waitForFunction(async () => {
+      const cacheNames = await caches.keys();
+      for (const cacheName of cacheNames) {
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match('/');
+        if (cachedResponse) {
+          return true;
+        }
+      }
+      return false;
+    }, { timeout: 10000 });
     
     // Ensure the page is fully loaded and working
     await expect(page.locator('.header')).toBeVisible();

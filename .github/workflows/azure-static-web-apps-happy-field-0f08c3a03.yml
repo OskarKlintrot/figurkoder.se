@@ -10,33 +10,96 @@ on:
       - master
 
 jobs:
-  build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+  format_check_job:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
+    name: Format Check Job
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
           lfs: false
-      - name: Setup Node.js (master only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install dependencies (master only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      - name: Install dependencies
         run: npm ci
-      - name: Check code formatting (master only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      - name: Check code formatting
         run: npm run format:check
-      - name: Install Playwright Browsers (master only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+  test_job:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    name: Test Job
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-      - name: Run Playwright tests (master only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      - name: Run Playwright tests
         run: npm run test
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  build_and_deploy_pr_job:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job (PR)
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
+      - name: Update Service Worker Version
+        run: |
+          # Generate human-readable version using current date and time in Europe/Stockholm timezone
+          VERSION=$(TZ=Europe/Stockholm date +"%y%m%d.%H%M")
+          echo "Updating service worker version to: $VERSION"
+          # Update the version in sw.js
+          sed -i "s/let version = \".*\";/let version = \"$VERSION\";/" src/sw.js
+          # Verify the change
+          grep "let version" src/sw.js
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_HAPPY_FIELD_0F08C3A03 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          action: "upload"
+          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
+          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
+          app_location: "./src" # App source code path
+          skip_app_build: true
+          api_location: "" # Api source code path - optional
+          output_location: "." # Built app content directory - optional
+          ###### End of Repository/Build Configurations ######
+
+  build_and_deploy_master_job:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job (Master)
+    needs: [format_check_job, test_job]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
       - name: Update Service Worker Version
         run: |
           # Generate human-readable version using current date and time in Europe/Stockholm timezone

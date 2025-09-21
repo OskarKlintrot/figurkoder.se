@@ -134,8 +134,15 @@ test.describe('Game Functionality', () => {
     // Click next item
     await page.click('button[onclick="nextItem()"]');
     
-    // Wait a bit for the change
-    await page.waitForTimeout(100);
+    // Wait for the current item text to change
+    await page.waitForFunction(
+      (selector, previousText) => {
+        const el = document.querySelector(selector);
+        return el && el.textContent !== previousText;
+      },
+      '#current-item',
+      initialItem
+    );
     
     // Item should have changed (or at least the button should work)
     const nextButton = page.locator('button[onclick="nextItem()"]');

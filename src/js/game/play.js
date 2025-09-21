@@ -180,8 +180,8 @@ function setupGamePageObserver() {
     return;
   }
 
-  gamePageObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
+  gamePageObserver = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
       if (
         mutation.type === "attributes" &&
         mutation.attributeName === "class"
@@ -415,7 +415,7 @@ export function hideRangeControls() {
 
   // Hide the control groups that contain the range inputs
   const controlGroups = document.querySelectorAll(".control-group");
-  controlGroups.forEach((group) => {
+  controlGroups.forEach(group => {
     const label = group.querySelector("label");
     if (
       label &&
@@ -433,7 +433,7 @@ export function hideRangeControls() {
 export function showRangeControls() {
   // Show both input and dropdown controls for range selection
   const controlGroups = document.querySelectorAll(".control-group");
-  controlGroups.forEach((group) => {
+  controlGroups.forEach(group => {
     const label = group.querySelector("label");
     if (
       label &&
@@ -467,8 +467,8 @@ function initializeGame() {
       typeof contextData.rangeEnd === "number"
         ? contextData.rangeEnd
         : contextData.fullGameDataSet
-        ? contextData.fullGameDataSet.length - 1
-        : 0;
+          ? contextData.fullGameDataSet.length - 1
+          : 0;
 
     // Filter for slow replay if needed
     if (
@@ -477,13 +477,13 @@ function initializeGame() {
     ) {
       // Only include items that were slow or showed answer
       const slowSet = new Set();
-      contextData.gameResults.forEach((result) => {
+      contextData.gameResults.forEach(result => {
         if (result.timeSpent > 2 || result.showedAnswer) {
           slowSet.add(result.figurkod);
         }
       });
-      gameState.currentGameDataSet = contextData.fullGameDataSet.filter(
-        (item) => slowSet.has(item[0])
+      gameState.currentGameDataSet = contextData.fullGameDataSet.filter(item =>
+        slowSet.has(item[0]),
       );
     } else {
       gameState.currentGameDataSet = [...contextData.fullGameDataSet];
@@ -630,7 +630,7 @@ function initializeGame() {
       // Automatically set "Till" to "Från + 9", but not exceeding the data length
       const newToValue = Math.min(
         fromValue + 9,
-        gameState.fullGameDataSet.length - 1
+        gameState.fullGameDataSet.length - 1,
       );
       newToInput.value = newToValue;
 
@@ -666,7 +666,7 @@ function initializeGame() {
     const newTimeInput = domCache.timeInput.cloneNode(true);
     domCache.timeInput.parentNode.replaceChild(
       newTimeInput,
-      domCache.timeInput
+      domCache.timeInput,
     );
     // Update cache with new element
     domCache.timeInput = newTimeInput;
@@ -699,11 +699,11 @@ export function populateDropdowns(data) {
 
   domCache.fromDropdown.parentNode.replaceChild(
     newFromDropdown,
-    domCache.fromDropdown
+    domCache.fromDropdown,
   );
   domCache.toDropdown.parentNode.replaceChild(
     newToDropdown,
-    domCache.toDropdown
+    domCache.toDropdown,
   );
 
   // Update cache with new elements
@@ -772,7 +772,7 @@ export function startGame() {
       nextItem(); // This will handle resuming and advancing
       return;
     }
-    
+
     // Resume paused game (for normal pause situations)
     gameState.isGameRunning = true;
     gameState.paused = false;
@@ -829,7 +829,7 @@ export function startGame() {
   // In learning mode, ensure first item is always the same after shuffle
   if (gameState.isLearningMode && filteredData.length > 0) {
     // Move the original first pair to the front
-    const idx = filteredData.findIndex((pair) => pair === firstPair);
+    const idx = filteredData.findIndex(pair => pair === firstPair);
     if (idx > 0) {
       filteredData.splice(idx, 1);
       filteredData.unshift(firstPair);
@@ -929,14 +929,14 @@ function prepareResultData(gameData) {
       currentGameData && currentGameData.replayType === "slow"
         ? currentGameData.rangeStart
         : typeof gameState.rangeStart === "number"
-        ? gameState.rangeStart
-        : 0,
+          ? gameState.rangeStart
+          : 0,
     rangeEnd:
       currentGameData && currentGameData.replayType === "slow"
         ? currentGameData.rangeEnd
         : typeof gameState.rangeEnd === "number"
-        ? gameState.rangeEnd
-        : 0,
+          ? gameState.rangeEnd
+          : 0,
     fullGameDataSet: [...gameState.fullGameDataSet], // Unfiltered full set
   };
 }
@@ -962,7 +962,7 @@ export function stopGame() {
       timeSpent = Math.max(
         0.1,
         (Date.now() - gameState.currentItemStartTime + gameState.pausedTime) /
-          1000
+          1000,
       );
     }
     gameState.gameResults.push({
@@ -1111,7 +1111,7 @@ export function startCountdown(resume = false) {
     100;
   domCache.progressBar.style.setProperty(
     "--progress",
-    `${progressPercentage}%`
+    `${progressPercentage}%`,
   );
 
   let lastUpdateTime = Date.now();
@@ -1153,12 +1153,12 @@ export function startCountdown(resume = false) {
     const progressPercentage = Math.round(
       ((gameState.totalCountdownTime - gameState.countdownValue) /
         gameState.totalCountdownTime) *
-        100
+        100,
     );
 
     domCache.progressBar.style.setProperty(
       "--progress",
-      `${progressPercentage}%`
+      `${progressPercentage}%`,
     );
 
     // Continue animation
@@ -1190,7 +1190,7 @@ export function showAnswer() {
   if (gameState.currentItemStartTime) {
     const timeSpent = Math.max(
       0.1,
-      (Date.now() - gameState.currentItemStartTime) / 1000
+      (Date.now() - gameState.currentItemStartTime) / 1000,
     ); // Minimum 0.1 seconds
     gameState.gameResults.push({
       figurkod: currentItem[0],
@@ -1382,17 +1382,17 @@ function updateResults() {
 
   // Calculate average time for items where answer wasn't shown
   const completedItems = resultData.gameResults.filter(
-    (result) => !result.showedAnswer
+    result => !result.showedAnswer,
   );
   const totalTime = completedItems.reduce(
     (sum, result) => sum + result.timeSpent,
-    0
+    0,
   );
   const averageTime =
     completedItems.length > 0 ? totalTime / completedItems.length : 0;
 
   // Display each result
-  resultData.gameResults.forEach((result) => {
+  resultData.gameResults.forEach(result => {
     const resultItem = document.createElement("div");
     resultItem.className = "result-item";
 
@@ -1430,7 +1430,7 @@ function updateResults() {
   const replaySlowText = document.getElementById("replay-slow-text");
   if (replaySlowBtn && replaySlowText) {
     const slowOrErrorCount = resultData.gameResults.filter(
-      (result) => result.timeSpent > 2 || result.showedAnswer
+      result => result.timeSpent > 2 || result.showedAnswer,
     ).length;
 
     replaySlowBtn.disabled = slowOrErrorCount === 0;
@@ -1474,13 +1474,13 @@ export function replay(slowOnly = false) {
 
   // Set the replay data in context for initializeGame to use
   setContextData(replayData);
-  
+
   // Reset back button to default behavior when using replay/back button
   const backBtn = document.getElementById("back-btn");
   if (backBtn) {
     backBtn.onclick = () => history.back();
   }
-  
+
   activatePage("game-page", setupGamePage);
 }
 
@@ -1505,7 +1505,7 @@ function shuffleArray(array) {
  * @param {function} [callback] - Optional callback to run after activation
  */
 function activatePage(pageId, callback) {
-  document.querySelectorAll(".page").forEach((page) => {
+  document.querySelectorAll(".page").forEach(page => {
     page.classList.remove("active");
   });
   const pageEl = document.getElementById(pageId);
@@ -1563,7 +1563,7 @@ function setupGamePage() {
     updateHeader("Spel", true);
   }
 
-  document.querySelectorAll("#game-page input").forEach((input) => {
+  document.querySelectorAll("#game-page input").forEach(input => {
     input.addEventListener("focus", () => {
       input.select();
     });
@@ -1619,7 +1619,7 @@ registerPageEnterCallback("game-page", () => {
   setupGamePage();
 });
 
-registerContextChangeCallback((context) => {
+registerContextChangeCallback(context => {
   // Handle context change - validate game exists
   if (context && gameData && !gameData[context]) {
     // Invalid game context, show 404 page

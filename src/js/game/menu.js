@@ -28,7 +28,7 @@ export function generateTiles() {
   const tilesGrid = document.getElementById("tiles-grid");
   if (!tilesGrid) return;
 
-  Object.keys(gameData).forEach((gameId) => {
+  Object.keys(gameData).forEach(gameId => {
     const game = gameData[gameId];
     const range = getGameRange(gameId);
     const tile = document.createElement("div");

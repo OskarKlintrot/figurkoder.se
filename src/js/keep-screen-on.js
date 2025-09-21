@@ -1,5 +1,4 @@
 "use strict";
-
 (function () {
   if ("wakeLock" in navigator) {
     let wakeLock = null;

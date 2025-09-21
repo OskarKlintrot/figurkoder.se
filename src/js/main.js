@@ -39,7 +39,7 @@ async function fetchAndDisplayVersion() {
     await navigator.serviceWorker.ready;
 
     // Add a small delay to ensure the service worker is fully ready to handle requests
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     const response = await fetch("/sw/version");
     if (response.ok) {

@@ -100,7 +100,7 @@ export function navigateToPage(pageId, updateURL = true) {
   }
 
   // Hide all pages
-  document.querySelectorAll(".page").forEach((page) => {
+  document.querySelectorAll(".page").forEach(page => {
     page.classList.remove("active");
   });
 
@@ -176,7 +176,7 @@ export function parseURL() {
   }
 
   // Clean up the path and remove empty segments
-  const segments = path.split("/").filter((s) => s && s.length > 0);
+  const segments = path.split("/").filter(s => s && s.length > 0);
 
   // If no segments or root path, default to main menu
   if (segments.length === 0 || path === "/" || path === "") {
@@ -258,7 +258,7 @@ export function closeMenu() {
 
 // Register navigation callbacks
 // Register navigation callbacks to update header from data-header attribute for all .page divs
-document.querySelectorAll(".page").forEach((pageDiv) => {
+document.querySelectorAll(".page").forEach(pageDiv => {
   const pageId = pageDiv.id;
   if (pageId) {
     registerPageEnterCallback(pageId, () => {

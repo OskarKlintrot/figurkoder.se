@@ -40,7 +40,7 @@ function addToDebugConsole(message, type = "log") {
 
 function formatConsoleArgs(args) {
   return Array.from(args)
-    .map((arg) => {
+    .map(arg => {
       if (typeof arg === "object" && arg !== null) {
         try {
           return JSON.stringify(arg, null, 2);
@@ -102,7 +102,7 @@ export function loadDebugSettings() {
   // Initialize debug console with welcome message
   addToDebugConsole(
     "Debug console initialized. Console logs will appear here.",
-    "info"
+    "info",
   );
 }
 
@@ -153,7 +153,7 @@ export function toggleDebugViewSetting() {
 window.addEventListener("error", function (event) {
   addToDebugConsole(
     `Uncaught Error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`,
-    "error"
+    "error",
   );
 });
 

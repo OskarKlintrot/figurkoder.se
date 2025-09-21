@@ -148,9 +148,6 @@ npm run test:ui
 
 # Run tests in headed mode (visible browser)
 npm run test:headed
-
-# Run tests with PowerShell script (includes server startup)
-npm run test:ps
 ```
 
 **Test Configuration:**

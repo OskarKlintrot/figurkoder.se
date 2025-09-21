@@ -66,9 +66,6 @@ npm run test:headed
 
 # Starta testserver (för manuell testning)
 npm run serve:test
-
-# Eller via npm script
-npm run test:ps
 ```
 
 **Notera**: Detta projekt använder PowerShell för alla terminal-kommandon enligt projektstandard.

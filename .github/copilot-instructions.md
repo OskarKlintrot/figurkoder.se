@@ -161,8 +161,6 @@ npm run test:ps
 - JUnit XML output for CI integration (`test-results/junit.xml`)
 
 **Key Test Patterns:**
-- Use `waitForAppInitialization()` utility for consistent app loading
-- Use `navigateToPage()` for reliable page navigation testing
 - Tests handle both loaded and fallback states for external resources (Google Fonts)
 - PWA tests verify offline functionality and service worker behavior
 
@@ -171,8 +169,7 @@ When making changes to the application:
 1. **Run tests locally** before committing: `npm test`
 2. **Update tests** when adding new features or changing existing functionality
 3. **Add new test cases** for new game types, navigation flows, or PWA features
-4. **Use test utilities** in `test-utils.js` for consistent test patterns
-5. **Check test coverage** of critical user journeys and edge cases
+4. **Check test coverage** of critical user journeys and edge cases
 
 ### Testing Considerations
 - Test PWA functionality: offline mode, installation prompt, service worker updates

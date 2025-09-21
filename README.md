@@ -67,9 +67,6 @@ npm run test:headed
 # Starta testserver (för manuell testning)
 npm run serve:test
 
-# Kör tester med automatisk serverhantering (PowerShell)
-./test-runner.ps1
-
 # Eller via npm script
 npm run test:ps
 ```

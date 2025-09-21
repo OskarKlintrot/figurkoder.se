@@ -1126,8 +1126,14 @@ export function startCountdown(resume = false) {
       }
 
       if (gameState.isGameRunning && !gameState.paused) {
-        showAnswer();
-        resetProgressBar();
+        if (gameState.isLearningMode) {
+          // In learning mode, auto-advance to next item with vibration
+          nextItem(true);
+        } else {
+          // In training mode, just show the answer and pause
+          showAnswer();
+          resetProgressBar();
+        }
       }
       return;
     }

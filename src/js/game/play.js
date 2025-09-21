@@ -767,7 +767,13 @@ export function populateDropdowns(data) {
  */
 export function startGame() {
   if (gameState.paused) {
-    // Resume paused game
+    // In training mode, if answer is already shown, advance to next item instead of resuming current
+    if (!gameState.isLearningMode && gameState.showingSolution) {
+      nextItem(); // This will handle resuming and advancing
+      return;
+    }
+    
+    // Resume paused game (for normal pause situations)
     gameState.isGameRunning = true;
     gameState.paused = false;
 

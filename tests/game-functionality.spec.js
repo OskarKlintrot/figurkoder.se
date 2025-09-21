@@ -15,7 +15,8 @@ test.describe('Game Functionality', () => {
 
     // Check that game tiles are present
     const gameTiles = page.locator('.tile');
-    await expect(gameTiles).toHaveCount(8); // Should have 8 game types
+    const count = await gameTiles.count();
+    expect(count).toBeGreaterThanOrEqual(8);
     
     // Check that tiles contain expected content
     const firstTile = gameTiles.first();

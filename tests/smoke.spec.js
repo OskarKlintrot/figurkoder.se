@@ -17,11 +17,8 @@ test.describe('Smoke Tests', () => {
     await expect(page).toHaveTitle('Figurkoder.se');
     await expect(page.locator('body')).toBeVisible();
     // Allow some console logs but no critical errors
-    const criticalErrors = logs.filter(log => 
-      log.includes('Uncaught') || 
-      log.includes('ReferenceError') || 
-      log.includes('SyntaxError')
-    );
+    const criticalErrorRegex = /\b(Uncaught|ReferenceError|SyntaxError)\b/;
+    const criticalErrors = logs.filter(log => criticalErrorRegex.test(log));
     expect(criticalErrors).toHaveLength(0);
   });
 

@@ -78,15 +78,6 @@ npm run test:ps
 
 #### Testmiljö och begränsningar
 
-**Material Icons i tester:**
-Playwright-testmiljön kan blockera externa resurser som Google Fonts av säkerhetsskäl. Detta innebär att Material Icons kan visas som textfallbacks ("visibility", "play_arrow" etc.) istället för faktiska ikoner under testning. Detta påverkar inte appens funktionalitet - testerna validerar att:
-
-- UI-elementen har rätt CSS-klasser och struktur
-- Knappar och kontroller fungerar korrekt
-- Appens logik fungerar oberoende av ikonvisning
-
-I produktionsmiljön laddas Material Icons normalt och visas som förväntade ikoner.
-
 **Testning av PWA-funktionalitet:**
 Testerna validerar offline-funktionalitet, service worker-registrering och PWA-installation, men vissa begränsningar kan uppstå i CI-miljöer.
 

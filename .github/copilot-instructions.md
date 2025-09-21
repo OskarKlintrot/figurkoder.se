@@ -125,12 +125,62 @@ All CSS files are loaded directly in `index.html` for parallel loading performan
 - **Material Icons**: Google Fonts for UI icons
 - **Azure Static Web Apps**: Hosting with SPA routing fallback
 
-## Testing Considerations
-- Test PWA functionality: offline mode, installation prompt
-- Test game state persistence across page navigation
-- Verify timer accuracy and pause/resume behavior
+## Testing
+
+### Playwright Test Suite
+The project includes comprehensive Playwright end-to-end tests located in the `tests/` directory:
+
+**Test Files:**
+- `smoke.spec.js`: Basic smoke tests for core functionality
+- `app-initialization.spec.js`: Application startup and module loading tests
+- `navigation.spec.js`: Page navigation and routing tests
+- `game-functionality.spec.js`: Game mechanics and user interactions
+- `pwa-features.spec.js`: PWA functionality (offline, installation, service worker)
+- `test-utils.js`: Shared utilities for common test operations
+
+**Running Tests:**
+```powershell
+# Run all tests
+npm test
+
+# Run tests with UI mode (interactive)
+npm run test:ui
+
+# Run tests in headed mode (visible browser)
+npm run test:headed
+
+# Run tests with PowerShell script (includes server startup)
+npm run test:ps
+```
+
+**Test Configuration:**
+- Tests run against `http://localhost:3001` (separate test server)
+- Configured for both CI and local development environments
+- Aggressive timeouts optimized for static site testing
+- HTML reports generated for test results (`playwright-report/`)
+- JUnit XML output for CI integration (`test-results/junit.xml`)
+
+**Key Test Patterns:**
+- Use `waitForAppInitialization()` utility for consistent app loading
+- Use `navigateToPage()` for reliable page navigation testing
+- Tests handle both loaded and fallback states for external resources (Google Fonts)
+- PWA tests verify offline functionality and service worker behavior
+
+### Test Maintenance
+When making changes to the application:
+1. **Run tests locally** before committing: `npm test`
+2. **Update tests** when adding new features or changing existing functionality
+3. **Add new test cases** for new game types, navigation flows, or PWA features
+4. **Use test utilities** in `test-utils.js` for consistent test patterns
+5. **Check test coverage** of critical user journeys and edge cases
+
+### Testing Considerations
+- Test PWA functionality: offline mode, installation prompt, service worker updates
+- Test game state persistence across page navigation and browser refresh
+- Verify timer accuracy and pause/resume behavior in game modes
 - Check responsive design across mobile/desktop viewports
-- Validate Swedish language content rendering
+- Validate Swedish language content rendering and character encoding
+- Test performance with large datasets and extended game sessions
 
 ## Common Tasks
 - **Add new game type**: Extend `game/data.js` arrays and update game selection logic

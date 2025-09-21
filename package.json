@@ -11,11 +11,8 @@
     "serve:test": "npx http-server src -p 3001"
   },
   "keywords": [
-    "pwa",
     "figurkoder",
-    "memory",
-    "training",
-    "swedish"
+    "memory training"
   ],
   "author": "Oskar Klintrot",
   "license": "MIT",

@@ -16,7 +16,6 @@ test.describe('Smoke Tests', () => {
     // Check basic page structure
     await expect(page).toHaveTitle('Figurkoder.se');
     await expect(page.locator('body')).toBeVisible();
-    await page.waitForTimeout(2000);
     // Allow some console logs but no critical errors
     const criticalErrors = logs.filter(log => 
       log.includes('Uncaught') || 

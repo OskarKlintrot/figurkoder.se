@@ -1,0 +1,18 @@
+# Brief description of changes
+
+# Longer description if needed
+# - What was changed
+# - Why it was changed
+# - Any important details
+
+# REMINDER: Did you run `npm run format` before committing?
+# All code must be properly formatted to pass CI checks.
+
+# Please follow conventional commit format when possible:
+# feat: add new feature
+# fix: bug fix
+# docs: documentation changes
+# style: formatting, missing semi colons, etc.
+# refactor: code change that neither fixes a bug nor adds a feature
+# test: adding missing tests
+# chore: maintain

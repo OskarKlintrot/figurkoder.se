@@ -52,14 +52,14 @@ self.addEventListener("install", function (event) {
     caches.open(coreID).then(async function (cache) {
       // Cache core assets
       for (let asset of coreAssets) {
-        cache.add(new Request(asset)).catch((error) => {
+        cache.add(new Request(asset)).catch(error => {
           console.log("Error caching asset:", asset);
           console.error(error);
         });
       }
 
       return cache;
-    })
+    }),
   );
 });
 
@@ -83,7 +83,7 @@ self.addEventListener("activate", function (event) {
       })
       .then(function () {
         return self.clients.claim();
-      })
+      }),
   );
 });
 
@@ -99,7 +99,7 @@ self.addEventListener("fetch", function (event) {
         headers: {
           "Content-Type": "application/json",
         },
-      })
+      }),
     );
     return;
   }
@@ -124,7 +124,7 @@ self.addEventListener("fetch", function (event) {
           event.waitUntil(
             caches.open(pageID).then(function (cache) {
               return cache.put(request, copy);
-            })
+            }),
           );
 
           // Return the response
@@ -134,7 +134,7 @@ self.addEventListener("fetch", function (event) {
           const response = await caches.match(request);
           // If there's no item in cache, respond with the cached root page as fallback
           return response || caches.match("/");
-        })
+        }),
     );
   }
 
@@ -155,14 +155,14 @@ self.addEventListener("fetch", function (event) {
             event.waitUntil(
               caches.open(assetID).then(function (cache) {
                 return cache.put(request, copy);
-              })
+              }),
             );
 
             // Return the response
             return response;
           })
         );
-      })
+      }),
     );
     return;
   }
@@ -179,14 +179,14 @@ self.addEventListener("fetch", function (event) {
             event.waitUntil(
               caches.open(imgID).then(function (cache) {
                 return cache.put(request, copy);
-              })
+              }),
             );
 
             // Return the response
             return response;
           })
         );
-      })
+      }),
     );
     return;
   }

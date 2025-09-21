@@ -1,0 +1,26 @@
+# Build artifacts and logs
+node_modules/
+*.log
+*.tgz
+
+# Test reports
+playwright-report/
+test-results/
+
+# Generated files
+.git/
+.github/
+
+# Binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Config files that should maintain specific formatting
+site.webmanifest

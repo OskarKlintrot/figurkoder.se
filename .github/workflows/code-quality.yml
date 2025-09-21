@@ -3,6 +3,8 @@ name: Code Quality Checks
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches: [master]
 
 jobs:
   formatting:

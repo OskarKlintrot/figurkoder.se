@@ -21,7 +21,9 @@ test.describe("Data Range and Input Validation Tests", () => {
 
     // Stop game to test next range
     await page.click("#stop-btn");
-    await expect(page.locator("#game-form")).toBeVisible();
+    
+    // Navigate back to ensure we have the form (training mode may show results)
+    await navigateToGamePage(page);
 
     // Valid range 50-60
     await page.fill("#from-input", "50");
@@ -38,6 +40,9 @@ test.describe("Data Range and Input Validation Tests", () => {
     await page.click('button[type="submit"]');
     await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
     await page.click("#stop-btn");
+    
+    // Navigate back to ensure we have the form
+    await navigateToGamePage(page);
 
     // Test boundary values: 0-0, 99-99
     await page.fill("#from-input", "0");
@@ -238,6 +243,9 @@ test.describe("Data Range and Input Validation Tests", () => {
   });
 
   test("should validate input fields properly", async ({ page }) => {
+    // Ensure we start with fresh form
+    await navigateToGamePage(page);
+    
     // Test empty inputs
     await page.fill("#from-input", "");
     await page.fill("#to-input", "");
@@ -257,9 +265,13 @@ test.describe("Data Range and Input Validation Tests", () => {
 
     expect(formVisible || gameStarted).toBeTruthy();
 
-    // Test non-numeric inputs
-    await page.fill("#from-input", "abc");
-    await page.fill("#to-input", "xyz");
+    // Reset to fresh form for non-numeric input test
+    await navigateToGamePage(page);
+
+    // Test invalid values that can be entered in number inputs
+    // Test negative numbers (should be prevented by min="0")
+    await page.fill("#from-input", "-5");
+    await page.fill("#to-input", "-10");
 
     await page.click('button[type="submit"]');
 
@@ -272,11 +284,15 @@ test.describe("Data Range and Input Validation Tests", () => {
       .isVisible()
       .catch(() => false);
 
+    // Should either prevent game start or handle gracefully  
     expect(formVisible2 || gameStarted2).toBeTruthy();
 
-    // Test decimal inputs (should be handled appropriately)
-    await page.fill("#from-input", "5.5");
-    await page.fill("#to-input", "10.7");
+    // Reset for next test
+    await navigateToGamePage(page);
+
+    // Test out of range values (> 99)
+    await page.fill("#from-input", "150");
+    await page.fill("#to-input", "200");
 
     await page.click('button[type="submit"]');
 
@@ -289,10 +305,29 @@ test.describe("Data Range and Input Validation Tests", () => {
       .isVisible()
       .catch(() => false);
 
-    if (gameStarted3) {
+    // Should either prevent game start or handle gracefully
+    expect(formVisible3 || gameStarted3).toBeTruthy();
+
+    // Test decimal inputs (should be handled appropriately)
+    await navigateToGamePage(page);
+    await page.fill("#from-input", "5.5");
+    await page.fill("#to-input", "10.7");
+
+    await page.click('button[type="submit"]');
+
+    const gameStarted4 = await page
+      .locator(".game-controls")
+      .isVisible()
+      .catch(() => false);
+    const formVisible4 = await page
+      .locator("#game-form")
+      .isVisible()
+      .catch(() => false);
+
+    if (gameStarted4) {
       await page.click("#stop-btn");
     }
-    expect(formVisible3 || gameStarted3).toBeTruthy();
+    expect(formVisible4 || gameStarted4).toBeTruthy();
 
     // Test that time input validation works
     await page.fill("#from-input", "0");

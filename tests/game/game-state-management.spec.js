@@ -17,47 +17,7 @@ test.describe("Game State Management Tests", () => {
   test("should switch between learning and training modes correctly", async ({
     page,
   }) => {
-    // Start in training mode first
-    await startGame(page, {
-      learningMode: false,
-      fromRange: 0,
-      toRange: 9,
-      timeLimit: 10,
-    });
-
-    // Verify training mode state (answer hidden initially - shows dots)
-    await expect(page.locator("#current-item")).toBeVisible();
-    await expect(page.locator("#solution-display")).toContainText("•••");
-
-    // Can show answer manually in training mode
-    await page.click("#show-btn");
-    await expect(page.locator("#solution-display")).not.toContainText("•••");
-
-    // Stop the game to be able to change modes
-    await page.click("#stop-btn");
-
-    // Wait for either game form or results page to be visible
-    const gameFormVisible = await page
-      .locator("#game-form")
-      .isVisible()
-      .catch(() => false);
-    const resultPageVisible = await page
-      .locator("#result-page")
-      .isVisible()
-      .catch(() => false);
-
-    if (resultPageVisible) {
-      // If results page is shown, go back to game page
-      await page.click("#back-btn, .back-btn, button:has-text('Tillbaka')");
-      await expect(page.locator("#game-form")).toBeVisible();
-    } else {
-      await expect(page.locator("#game-form")).toBeVisible();
-    }
-
-    // Now switch to learning mode
-    await page.check("#learning-mode");
-
-    // Start new game in learning mode
+    // Test 1: Start in learning mode (like working test)
     await startGame(page, {
       learningMode: true,
       fromRange: 0,
@@ -65,12 +25,33 @@ test.describe("Game State Management Tests", () => {
       timeLimit: 10,
     });
 
-    // Verify learning mode state (answer shown automatically)
+    // Verify learning mode behavior
     await expect(page.locator("#current-item")).toBeVisible();
     await expect(page.locator("#solution-display")).not.toContainText("•••");
-
-    // VISA button should be disabled in learning mode
     await expect(page.locator("#show-btn")).toBeDisabled();
+
+    // Stop learning mode game (should return to form)
+    await page.click('button[onclick="stopGame()"]');
+    await expect(page.locator("#game-form")).toBeVisible();
+
+    // Test 2: Switch to training mode
+    await page.uncheck("#learning-mode");
+
+    await startGame(page, {
+      learningMode: false,
+      fromRange: 0,
+      toRange: 9,
+      timeLimit: 10,
+    });
+
+    // Verify training mode behavior
+    await expect(page.locator("#current-item")).toBeVisible();
+    await expect(page.locator("#solution-display")).toContainText("•••");
+    await expect(page.locator("#show-btn")).toBeEnabled();
+
+    // Can show answer manually
+    await page.click("#show-btn");
+    await expect(page.locator("#solution-display")).not.toContainText("•••");
   });
 
   test("should maintain consistent button states across game phases", async ({

@@ -333,3 +333,24 @@ export async function navigateToResults(page) {
   // Wait for results page to be visible
   await page.waitForSelector("#result-page, .result-page", { timeout: 5000 });
 }
+
+/**
+ * Navigate back to game form from any page (results, etc.)
+ * @param {import('@playwright/test').Page} page
+ */
+export async function navigateBackToGameForm(page) {
+  // Look for back button or equivalent
+  const backButton = page.locator(
+    'button:has-text("Tillbaka"), button:has-text("arrow_back"), .back-btn',
+  );
+  const hasBackButton = await backButton.isVisible().catch(() => false);
+
+  if (hasBackButton) {
+    await backButton.click();
+    // Wait for game form to be visible
+    await page.waitForSelector("#game-form", { timeout: 5000 });
+  } else {
+    // Fallback: navigate to game page directly
+    await navigateToGamePage(page);
+  }
+}

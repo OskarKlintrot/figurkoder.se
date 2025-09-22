@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { navigateToGamePage, startGame, getCurrentItem } from "./test-utils.js";
+import {
+  navigateToGamePage,
+  startGame,
+  getCurrentItem,
+  navigateBackToGameForm,
+} from "./test-utils.js";
 
 test.describe("Data Range and Input Validation Tests", () => {
   test.beforeEach(async ({ page }) => {
@@ -427,5 +432,250 @@ test.describe("Data Range and Input Validation Tests", () => {
     await page.click('button[type="submit"]');
     await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
     await expect(page.locator("#current-item")).toBeVisible();
+  });
+
+  test("should handle dropdown range selection correctly", async ({ page }) => {
+    // Navigate to a game that uses dropdowns (letters game)
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForSelector("#main-menu.active", { timeout: 3000 });
+
+    // Find and click the letters game tile (bokstaver)
+    await page.waitForSelector(".tile", { timeout: 5000 });
+    const lettersTile = page.locator(".tile").filter({ hasText: "Bokstäver" });
+    await lettersTile.click();
+
+    // Wait for game page to be active
+    await page.waitForSelector("#game-page.active", { timeout: 5000 });
+
+    // Verify dropdowns are visible and inputs are hidden
+    await expect(page.locator("#from-dropdown")).toBeVisible();
+    await expect(page.locator("#to-dropdown")).toBeVisible();
+    await expect(page.locator("#from-input")).toHaveClass(/hidden/);
+    await expect(page.locator("#to-input")).toHaveClass(/hidden/);
+
+    // Verify dropdowns are populated with letter options
+    const fromOptions = await page.locator("#from-dropdown option").count();
+    const toOptions = await page.locator("#to-dropdown option").count();
+    expect(fromOptions).toBeGreaterThan(20); // Should have 29 letters (A-Ö)
+    expect(toOptions).toBeGreaterThan(20);
+    expect(fromOptions).toBe(toOptions); // Both should have same number of options
+
+    // Test dropdown selection - select A to E range
+    await page.selectOption("#from-dropdown", { index: 0 }); // A
+    await page.selectOption("#to-dropdown", { index: 4 }); // E
+
+    // Verify current item updates when dropdown changes
+    const currentItemAfterFromChange = await page
+      .locator("#current-item")
+      .textContent();
+    expect(currentItemAfterFromChange).toBe("A");
+
+    // Start game with dropdown selection
+    await page.fill("#time-input", "5");
+    await page.click('button[type="submit"]');
+
+    // Verify game starts with dropdown selection
+    await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("#current-item")).toBeVisible();
+
+    // Verify the game starts with the first selected letter (A)
+    const gameCurrentItem = await page.locator("#current-item").textContent();
+    expect(gameCurrentItem).toMatch(/^[A-E]$/); // Should be one of A, B, C, D, E from our range
+
+    // During game, dropdowns should be disabled
+    await expect(page.locator("#from-dropdown")).toBeDisabled();
+    await expect(page.locator("#to-dropdown")).toBeDisabled();
+  });
+
+  test("should validate dropdown range constraints", async ({ page }) => {
+    // Navigate to letters game
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForSelector("#main-menu.active", { timeout: 3000 });
+
+    const lettersTile = page.locator(".tile").filter({ hasText: "Bokstäver" });
+    await lettersTile.click();
+    await page.waitForSelector("#game-page.active", { timeout: 5000 });
+
+    // Test "Från" greater than "Till" - should auto-adjust "Till"
+    await page.selectOption("#from-dropdown", { index: 10 }); // K
+    await page.selectOption("#to-dropdown", { index: 5 }); // F (less than K)
+
+    // "Till" should auto-adjust to be after "Från"
+    const toValue = await page.locator("#to-dropdown").inputValue();
+    const fromValue = await page.locator("#from-dropdown").inputValue();
+    expect(parseInt(toValue)).toBeGreaterThan(parseInt(fromValue));
+
+    // Test "Till" less than "Från" - should auto-adjust "Från"
+    await page.selectOption("#to-dropdown", { index: 3 }); // D
+    await page.selectOption("#from-dropdown", { index: 8 }); // I (greater than D)
+
+    // "Från" should auto-adjust to be before "Till"
+    const newToValue = await page.locator("#to-dropdown").inputValue();
+    const newFromValue = await page.locator("#from-dropdown").inputValue();
+    expect(parseInt(newFromValue)).toBeLessThan(parseInt(newToValue));
+  });
+
+  test("should update current item display when dropdown changes", async ({
+    page,
+  }) => {
+    // Navigate to weekdays game for testing
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForSelector("#main-menu.active", { timeout: 3000 });
+
+    const weekdaysTile = page
+      .locator(".tile")
+      .filter({ hasText: "Veckodagar" });
+    await weekdaysTile.click();
+    await page.waitForSelector("#game-page.active", { timeout: 5000 });
+
+    // Enable learning mode to see mnemonics
+    await page.check("#learning-mode");
+
+    // Change "Från" dropdown and verify current item updates
+    await page.selectOption("#from-dropdown", { index: 2 }); // Wednesday
+    const currentItem = await page.locator("#current-item").textContent();
+    expect(currentItem).toBe("oNSdag");
+
+    // Verify solution display updates in learning mode
+    const solutionDisplay = await page
+      .locator("#solution-display")
+      .textContent();
+    expect(solutionDisplay).toBe("iNSekt");
+
+    // Change to different day
+    await page.selectOption("#from-dropdown", { index: 5 }); // Saturday
+    const newCurrentItem = await page.locator("#current-item").textContent();
+    expect(newCurrentItem).toBe("LöRdag");
+
+    const newSolutionDisplay = await page
+      .locator("#solution-display")
+      .textContent();
+    expect(newSolutionDisplay).toBe("LeRkruka");
+
+    // Test without learning mode - should show dots
+    await page.uncheck("#learning-mode");
+    await page.selectOption("#from-dropdown", { index: 0 }); // Monday
+    const hiddenSolution = await page
+      .locator("#solution-display")
+      .textContent();
+    expect(hiddenSolution).toBe("•••");
+  });
+
+  test("should properly handle dropdown options population", async ({
+    page,
+  }) => {
+    // Navigate to months game
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForSelector("#main-menu.active", { timeout: 3000 });
+
+    const monthsTile = page.locator(".tile").filter({ hasText: "Månaderna" });
+    await monthsTile.click();
+    await page.waitForSelector("#game-page.active", { timeout: 5000 });
+
+    // Verify dropdown options match expected months
+    const fromOptions = await page
+      .locator("#from-dropdown option")
+      .allTextContents();
+    const toOptions = await page
+      .locator("#to-dropdown option")
+      .allTextContents();
+
+    expect(fromOptions).toEqual(toOptions); // Both dropdowns should have same options
+    expect(fromOptions).toContain("Januari");
+    expect(fromOptions).toContain("December");
+    expect(fromOptions.length).toBe(12); // 12 months
+
+    // Verify option values are indices
+    const firstOptionValue = await page
+      .locator("#from-dropdown option:first-child")
+      .getAttribute("value");
+    const lastOptionValue = await page
+      .locator("#from-dropdown option:last-child")
+      .getAttribute("value");
+    expect(firstOptionValue).toBe("0");
+    expect(lastOptionValue).toBe("11");
+
+    // Test selecting specific months
+    await page.selectOption("#from-dropdown", "5"); // June (index 5)
+    await page.selectOption("#to-dropdown", "8"); // September (index 8)
+
+    const selectedFromText = await page
+      .locator("#from-dropdown option:checked")
+      .textContent();
+    const selectedToText = await page
+      .locator("#to-dropdown option:checked")
+      .textContent();
+
+    // Verify correct months are selected
+    expect(selectedFromText).toBe("Juni");
+    expect(selectedToText).toBe("September");
+  });
+
+  test("should maintain dropdown functionality after game stop", async ({
+    page,
+  }) => {
+    // Navigate to letters game
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForSelector("#main-menu.active", { timeout: 3000 });
+
+    const lettersTile = page.locator(".tile").filter({ hasText: "Bokstäver" });
+    await lettersTile.click();
+    await page.waitForSelector("#game-page.active", { timeout: 5000 });
+
+    // Start a short game
+    await page.fill("#time-input", "1");
+    await page.click('button[type="submit"]');
+    await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
+
+    // Stop the game immediately
+    await page.click("#stop-btn");
+
+    // Wait for some result or navigation, then navigate back to game
+    await page.waitForTimeout(1000);
+
+    // Try to get back to the game form
+    const backButton = page.locator(
+      'button:has-text("Tillbaka"), button:has-text("arrow_back")',
+    );
+    const hasBackButton = await backButton.isVisible().catch(() => false);
+
+    if (hasBackButton) {
+      await backButton.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Check if we need to navigate to game page again
+    const gameFormVisible = await page
+      .locator("#game-form")
+      .isVisible()
+      .catch(() => false);
+    if (!gameFormVisible) {
+      await navigateToGamePage(page);
+    }
+
+    // Now test dropdown functionality after the game cycle
+    await expect(page.locator("#from-dropdown")).toBeVisible();
+    await expect(page.locator("#to-dropdown")).toBeVisible();
+    await expect(page.locator("#from-dropdown")).toBeEnabled();
+    await expect(page.locator("#to-dropdown")).toBeEnabled();
+
+    // Test that dropdowns are still functional
+    await page.selectOption("#from-dropdown", { index: 3 }); // D
+    await page.selectOption("#to-dropdown", { index: 8 }); // I
+
+    const fromValue = await page.locator("#from-dropdown").inputValue();
+    const toValue = await page.locator("#to-dropdown").inputValue();
+
+    expect(fromValue).toBe("3");
+    expect(toValue).toBe("8");
+
+    // Verify current item updates with dropdown selection
+    const currentItem = await page.locator("#current-item").textContent();
+    expect(currentItem).toBe("D");
   });
 });

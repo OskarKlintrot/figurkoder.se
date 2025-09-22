@@ -230,11 +230,14 @@ export async function isLearningMode(page) {
 }
 
 /**
- * Check if solution is visible (not showing dots)
+ * Check if solution is visible (not showing dots and element is visible)
  * @param {import('@playwright/test').Page} page
  * @returns {Promise<boolean>} Whether solution is visible
  */
 export async function isSolutionVisible(page) {
+  const isDisplayVisible = await isSolutionDisplayVisible(page);
+  if (!isDisplayVisible) return false;
+
   const solution = await getCurrentSolution(page);
   return solution !== "•••" && solution !== "---" && solution.trim().length > 0;
 }
@@ -242,18 +245,84 @@ export async function isSolutionVisible(page) {
 /**
  * Navigate to a specific page using the navigation menu
  * @param {import('@playwright/test').Page} page
- * @param {string} pageId - The page ID to navigate to
+ * @param {string} menuText - The menu text to click (e.g., "Om", "Spela")
+ * @param {string} pageId - The page ID to wait for (e.g., "about-page", "game-page")
  */
-export async function navigateToPageViaMenu(page, pageId) {
+export async function navigateToPageViaMenu(page, menuText, pageId) {
   // Click the menu button to open navigation
-  await page.click('button[onclick="openMenu()"]');
+  const menuButton = page.locator(
+    'button:has-text("Meny"), .menu-btn, #menu-btn',
+  );
+  const hasMenuButton = await menuButton.isVisible().catch(() => false);
 
-  // Wait for menu to be visible
-  await page.waitForSelector("#nav-menu.open", { timeout: 5000 });
+  if (hasMenuButton) {
+    await menuButton.click();
 
-  // Click on the appropriate menu item
-  await page.click(`button[onclick*="${pageId}"]`);
+    // Wait for menu to be visible
+    await page.waitForSelector("#nav-menu.open, .nav-menu.open", {
+      timeout: 5000,
+    });
+
+    // Click on the appropriate menu item
+    await page.click(
+      `button:has-text("${menuText}"), a:has-text("${menuText}")`,
+    );
+  } else {
+    // If no menu button, try direct navigation link
+    await page.click(
+      `a:has-text("${menuText}"), button:has-text("${menuText}")`,
+    );
+  }
 
   // Wait for the target page to be active
   await page.waitForSelector(`#${pageId}.active`, { timeout: 5000 });
+}
+
+/**
+ * Check if solution display is actually visible (not hidden)
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<boolean>} Whether solution display element is visible
+ */
+export async function isSolutionDisplayVisible(page) {
+  const solutionDisplay = page.locator("#solution-display");
+  return await solutionDisplay.isVisible().catch(() => false);
+}
+
+/**
+ * Wait for countdown timer to reach specific value
+ * @param {import('@playwright/test').Page} page
+ * @param {number} seconds - Seconds to wait for
+ * @param {number} timeout - Timeout in milliseconds
+ */
+export async function waitForCountdown(page, seconds, timeout = 5000) {
+  await page.waitForFunction(
+    targetSeconds => {
+      const timer = document.querySelector("#timer, .timer");
+      if (!timer) return false;
+      const timerText = timer.textContent;
+      const currentSeconds = parseInt(timerText);
+      return currentSeconds <= targetSeconds;
+    },
+    seconds,
+    { timeout },
+  );
+}
+
+/**
+ * Navigate to results page after completing a game
+ * @param {import('@playwright/test').Page} page
+ */
+export async function navigateToResults(page) {
+  // Look for results button or automatic navigation
+  const resultButton = page.locator(
+    'button:has-text("Resultat"), button:has-text("Results"), #results-btn',
+  );
+  const hasResultButton = await resultButton.isVisible().catch(() => false);
+
+  if (hasResultButton) {
+    await resultButton.click();
+  }
+
+  // Wait for results page to be visible
+  await page.waitForSelector("#result-page, .result-page", { timeout: 5000 });
 }

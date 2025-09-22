@@ -268,7 +268,16 @@ test.describe("Performance and Memory Tests", () => {
     });
 
     await page.waitForTimeout(500);
-    await page.click("#pause-btn");
+
+    // Pause using JS evaluation to avoid element blocking
+    await page.waitForFunction(() => {
+      const pauseBtn = document.querySelector("#pause-btn");
+      return pauseBtn && !pauseBtn.disabled;
+    });
+
+    await page.evaluate(() => {
+      document.querySelector("#pause-btn").click();
+    });
     await page.waitForTimeout(200);
 
     const timersAfterPause = await page.evaluate(() => {

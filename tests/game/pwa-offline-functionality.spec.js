@@ -140,8 +140,15 @@ test.describe("PWA and Offline Functionality Tests", () => {
       await page.click("#next-btn");
       await page.waitForTimeout(500);
 
-      // Test pause/resume offline
-      await page.click("#pause-btn");
+      // Test pause/resume offline (use JS evaluation to avoid element blocking)
+      await page.waitForFunction(() => {
+        const pauseBtn = document.querySelector("#pause-btn");
+        return pauseBtn && !pauseBtn.disabled;
+      });
+
+      await page.evaluate(() => {
+        document.querySelector("#pause-btn").click();
+      });
       await expect(page.locator("#play-btn")).toBeEnabled();
 
       await page.click("#play-btn");

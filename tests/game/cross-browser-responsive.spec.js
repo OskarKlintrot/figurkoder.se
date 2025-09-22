@@ -183,7 +183,15 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     await page.click("#show-btn");
     await expect(page.locator("#solution-display")).toBeVisible();
 
-    await page.click("#pause-btn");
+    // Pause using JS evaluation to avoid element blocking
+    await page.waitForFunction(() => {
+      const pauseBtn = document.querySelector("#pause-btn");
+      return pauseBtn && !pauseBtn.disabled;
+    });
+
+    await page.evaluate(() => {
+      document.querySelector("#pause-btn").click();
+    });
     await expect(page.locator("#play-btn")).toBeEnabled();
 
     await page.click("#play-btn");

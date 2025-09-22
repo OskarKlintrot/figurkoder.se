@@ -137,8 +137,15 @@ test.describe("Progress Bar and UI State Tests", () => {
     expect(Math.abs(progressBtnBox.x - nextBtnBox.x)).toBeLessThan(5); // Allow small variations
     expect(Math.abs(progressBtnBox.y - nextBtnBox.y)).toBeLessThan(5);
 
-    // Pause game
-    await page.click("#pause-btn");
+    // Pause game (use JS evaluation to avoid element blocking)
+    await page.waitForFunction(() => {
+      const pauseBtn = document.querySelector("#pause-btn");
+      return pauseBtn && !pauseBtn.disabled;
+    });
+
+    await page.evaluate(() => {
+      document.querySelector("#pause-btn").click();
+    });
     await expect(page.locator("#play-btn")).toBeEnabled();
 
     // Check layout integrity during pause

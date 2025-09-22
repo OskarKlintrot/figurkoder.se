@@ -17,10 +17,14 @@ export default defineConfig({
   reporter: process.env.CI
     ? [
         ["github"],
-        ["html"],
+        ["html", { open: "never" }],
         ["junit", { outputFile: "test-results/junit.xml" }],
       ]
-    : [["html"], ["junit", { outputFile: "test-results/junit.xml" }]],
+    : [
+        ["html", { open: "never" }],
+        ["junit", { outputFile: "test-results/junit.xml" }],
+      ],
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -42,8 +46,6 @@ export default defineConfig({
     timeout: process.env.CI ? 5000 : 5000,
     navigationTimeout: process.env.CI ? 3000 : 3000,
     actionTimeout: process.env.CI ? 2000 : 2000,
-
-    headless: true,
   },
 
   /* Configure projects for major browsers */

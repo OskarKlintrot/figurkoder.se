@@ -18,6 +18,17 @@ import {
   navigateToPageViaMenu,
 } from "./test-utils.js";
 
+// Test constants for timing tolerances and thresholds
+const TIMING_TOLERANCE_MS = 200; // ±200ms tolerance for CI robustness
+const PROGRESS_BAR_JUMP_THRESHOLD = 20; // Maximum allowed progress bar jump percentage
+const TIMER_3S_MIN_MS = 2700; // Minimum expected time for 3-second timer (more lenient)
+const TIMER_3S_MAX_MS = 3300; // Maximum expected time for 3-second timer (more lenient)
+const PROGRESS_THRESHOLD_PERCENT = 20; // Minimum progress percentage for testing
+const MAX_RETRY_ATTEMPTS = 20; // Maximum retry attempts for polling operations
+const DEFAULT_WAIT_TIMEOUT_MS = 5000; // Default timeout for waitForFunction operations
+const SHORT_WAIT_TIMEOUT_MS = 2000; // Short timeout for quick operations
+const MAX_POLLING_TIME_MS = 5000; // Maximum time to poll for item changes
+
 test.describe("Timer and Countdown System Tests", () => {
   // Run timer tests serially to avoid timing conflicts
   test.describe.configure({ mode: "serial" });
@@ -49,15 +60,15 @@ test.describe("Timer and Countdown System Tests", () => {
     let currentItem = initialItem;
     let elapsedTime = 0;
 
-    while (currentItem === initialItem && elapsedTime < 5000) {
+    while (currentItem === initialItem && elapsedTime < MAX_POLLING_TIME_MS) {
       await page.waitForTimeout(50);
       currentItem = await getCurrentItem(page);
       elapsedTime = Date.now() - startTime;
     }
 
     // Verify timing accuracy with reasonable tolerance (±200ms for CI robustness)
-    expect(elapsedTime).toBeGreaterThan(2800); // At least 2.8 seconds
-    expect(elapsedTime).toBeLessThan(3200); // At most 3.2 seconds
+    expect(elapsedTime).toBeGreaterThan(TIMER_3S_MIN_MS); // At least 2.8 seconds
+    expect(elapsedTime).toBeLessThan(TIMER_3S_MAX_MS); // At most 3.2 seconds
 
     // Verify we moved to next item
     expect(currentItem).not.toBe(initialItem);
@@ -96,8 +107,10 @@ test.describe("Timer and Countdown System Tests", () => {
       }
 
       // Verify timing accuracy with reasonable tolerance (±200ms for CI robustness)
-      expect(elapsedTime).toBeGreaterThan(timeLimit * 1000 - 200);
-      expect(elapsedTime).toBeLessThan(timeLimit * 1000 + 200);
+      expect(elapsedTime).toBeGreaterThan(
+        timeLimit * 1000 - TIMING_TOLERANCE_MS,
+      );
+      expect(elapsedTime).toBeLessThan(timeLimit * 1000 + TIMING_TOLERANCE_MS);
 
       // Stop game before next iteration
       await page.click("#stop-btn");
@@ -154,7 +167,7 @@ test.describe("Timer and Countdown System Tests", () => {
       const progressDiff = Math.abs(
         samples[i].progress - samples[i - 1].progress,
       );
-      expect(progressDiff).toBeLessThan(20); // No jumps larger than 20% (lenient for CI animations)
+      expect(progressDiff).toBeLessThan(PROGRESS_BAR_JUMP_THRESHOLD); // No jumps larger than 20% (lenient for CI animations)
     }
   });
 
@@ -182,7 +195,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress >= 20; // At least 20% progress (2+ seconds)
       },
-      { timeout: 5000 },
+      { timeout: DEFAULT_WAIT_TIMEOUT_MS },
     );
 
     // Pause the game
@@ -218,7 +231,7 @@ test.describe("Timer and Countdown System Tests", () => {
         return progress > pauseProgress + 10; // At least 10% more progress
       },
       progressAtPause,
-      { timeout: 5000 },
+      { timeout: DEFAULT_WAIT_TIMEOUT_MS },
     );
 
     const finalProgress = await getProgressBarPercentage(page);
@@ -251,7 +264,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress >= 15; // At least 15% progress (~1.5 seconds)
       },
-      { timeout: 5000 },
+      { timeout: DEFAULT_WAIT_TIMEOUT_MS },
     );
 
     // Manually advance
@@ -260,7 +273,7 @@ test.describe("Timer and Countdown System Tests", () => {
     // Verify we moved to next item immediately using polling
     let newItem = initialItem;
     let attempts = 0;
-    while (newItem === initialItem && attempts < 20) {
+    while (newItem === initialItem && attempts < MAX_RETRY_ATTEMPTS) {
       await page.waitForTimeout(50);
       newItem = await getCurrentItem(page);
       attempts++;
@@ -318,8 +331,10 @@ test.describe("Timer and Countdown System Tests", () => {
       }
 
       // Verify timing accuracy with reasonable tolerance (±200ms for CI robustness)
-      expect(elapsedTime).toBeGreaterThan(timeLimit * 1000 - 200);
-      expect(elapsedTime).toBeLessThan(timeLimit * 1000 + 200);
+      expect(elapsedTime).toBeGreaterThan(
+        timeLimit * 1000 - TIMING_TOLERANCE_MS,
+      );
+      expect(elapsedTime).toBeLessThan(timeLimit * 1000 + TIMING_TOLERANCE_MS);
 
       // Stop game before next iteration
       await page.click("#stop-btn");
@@ -345,7 +360,7 @@ test.describe("Timer and Countdown System Tests", () => {
     let currentItem = initialItem;
     let elapsedTime = 0;
 
-    while (currentItem === initialItem && elapsedTime < 2000) {
+    while (currentItem === initialItem && elapsedTime < SHORT_WAIT_TIMEOUT_MS) {
       await page.waitForTimeout(50);
       currentItem = await getCurrentItem(page);
       elapsedTime = Date.now() - startTime;
@@ -379,7 +394,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress > 0 && progress < 10; // Should be very low percentage
       },
-      { timeout: 2000 },
+      { timeout: SHORT_WAIT_TIMEOUT_MS },
     );
 
     // Manually advance to avoid 30-second wait
@@ -441,7 +456,7 @@ test.describe("Timer and Countdown System Tests", () => {
     let elapsedTime = 0;
     const startTime = Date.now();
 
-    while (currentItem === initialItem && elapsedTime < 5000) {
+    while (currentItem === initialItem && elapsedTime < MAX_POLLING_TIME_MS) {
       await page.waitForTimeout(50);
       currentItem = await getCurrentItem(page);
       elapsedTime = Date.now() - startTime;

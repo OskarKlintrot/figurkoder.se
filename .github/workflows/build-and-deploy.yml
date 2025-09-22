@@ -1,0 +1,64 @@
+name: Build and Deploy
+
+on:
+  workflow_call:
+    inputs:
+      app_location:
+        description: 'App source code path'
+        required: false
+        type: string
+        default: './src'
+      api_location:
+        description: 'Api source code path'
+        required: false
+        type: string
+        default: ''
+      output_location:
+        description: 'Built app content directory'
+        required: false
+        type: string
+        default: '.'
+      skip_app_build:
+        description: 'Skip app build'
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      AZURE_STATIC_WEB_APPS_API_TOKEN:
+        description: 'Azure Static Web Apps API token'
+        required: true
+      GITHUB_TOKEN:
+        description: 'GitHub token for integrations'
+        required: true
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
+      
+      - name: Update Service Worker Version
+        run: |
+          # Generate human-readable version using current date and time in Europe/Stockholm timezone
+          VERSION=$(TZ=Europe/Stockholm date +"%y%m%d.%H%M")
+          echo "Updating service worker version to: $VERSION"
+          # Update the version in sw.js
+          sed -i "s/let version = \".*\";/let version = \"$VERSION\";/" src/sw.js
+          # Verify the change
+          grep "let version" src/sw.js
+      
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: ${{ inputs.app_location }}
+          skip_app_build: ${{ inputs.skip_app_build }}
+          api_location: ${{ inputs.api_location }}
+          output_location: ${{ inputs.output_location }}

@@ -10,67 +10,161 @@ on:
       - master
 
 jobs:
-  test_job:
+  formatting_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    name: Test Job
+    name: Check Code Formatting
+    
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: false
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+          
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: npm run test
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
+        
+      - name: Check Prettier formatting
+        run: |
+          echo "🔍 Checking code formatting with Prettier..."
+          if ! npm run format:check; then
+            echo ""
+            echo "❌ Code formatting issues found!"
+            echo ""
+            echo "To fix formatting issues, run:"
+            echo "  npm run format"
+            echo ""
+            echo "Or in PowerShell:"
+            echo "  npm run format"
+            echo ""
+            exit 1
+          fi
+          echo "✅ All files are properly formatted!"
+        
+      - name: Comment on PR if formatting fails
+        if: failure() && (github.event_name == 'pull_request' && github.event.action != 'closed')
+        uses: actions/github-script@v7
         with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+          script: |
+            const message = `## ❌ Code Formatting Check Failed
+            
+            Your PR contains files that are not properly formatted according to Prettier rules.
+            
+            **To fix this:**
+            1. Run \`npm run format\` in your local repository
+            2. Commit and push the formatting changes
+            
+            **PowerShell command:**
+            \`\`\`powershell
+            npm run format
+            git add .
+            git commit -m "Fix code formatting"
+            git push
+            \`\`\`
+            
+            All code must be properly formatted before merging. This ensures consistent code style across the project.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
 
-  build_and_deploy_job:
+  test_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
-    needs: test_job
+    name: Test Job
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          submodules: true
-          lfs: false
-      - name: Update Service Worker Version
-        run: |
-          # Generate human-readable version using current date and time in Europe/Stockholm timezone
-          VERSION=$(TZ=Europe/Stockholm date +"%y%m%d.%H%M")
-          echo "Updating service worker version to: $VERSION"
-          # Update the version in sw.js
-          sed -i "s/let version = \".*\";/let version = \"$VERSION\";/" src/sw.js
-          # Verify the change
-          grep "let version" src/sw.js
-      - name: Build And Deploy
-        id: builddeploy
-        uses: Azure/static-web-apps-deploy@v1
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+        
+      - name: Run Playwright tests
+        run: npm run test
+        
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_HAPPY_FIELD_0F08C3A03 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
-          action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./src" # App source code path
-          skip_app_build: true
-          api_location: "" # Api source code path - optional
-          output_location: "." # Built app content directory - optional
-          ###### End of Repository/Build Configurations ######
+          name: playwright-report-pr
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 3
+          
+      - name: Comment PR with test results
+        uses: actions/github-script@v7
+        if: always() && (github.event_name == 'pull_request' && github.event.action != 'closed')
+        with:
+          script: |
+            const conclusion = process.env.TESTS_CONCLUSION || '${{ job.status }}';
+            const fs = require('fs');
+            const path = require('path');
+            let reportMessage = '';
+            try {
+              const reportPath = path.join(process.cwd(), 'test-results');
+              if (fs.existsSync(reportPath)) {
+                reportMessage = '🧪 **Playwright Test Results**\n\n';
+              } else {
+                reportMessage = '❓ Test results not found.\n\n';
+              }
+            } catch (error) {
+              reportMessage = `❌ Error reading test results: ${error.message}\n\n`;
+            }
+            let message;
+            if (conclusion === 'success') {
+              message = `✅ All Playwright tests have run and passed!`;
+            } else {
+              message = `❌ Some Playwright tests failed!`;
+            }
+            const fullMessage = `${reportMessage}${message}\n\nSee the report: [Playwright Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: fullMessage
+            });
+
+  build_and_deploy_job_pr:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    uses: ./.github/workflows/build-and-deploy.yml
+    with:
+      app_location: "./src"
+      api_location: ""
+      output_location: "."
+      skip_app_build: true
+    secrets:
+      AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_HAPPY_FIELD_0F08C3A03 }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_and_deploy_job:
+    if: github.event_name == 'push'
+    needs: [test_job, formatting_job]
+    uses: ./.github/workflows/build-and-deploy.yml
+    with:
+      app_location: "./src"
+      api_location: ""
+      output_location: "."
+      skip_app_build: true
+    secrets:
+      AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_HAPPY_FIELD_0F08C3A03 }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

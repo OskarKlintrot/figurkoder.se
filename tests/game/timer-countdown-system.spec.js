@@ -21,8 +21,8 @@ import {
 // Test constants for timing tolerances and thresholds
 const TIMING_TOLERANCE_MS = 200; // ±200ms tolerance for CI robustness
 const PROGRESS_BAR_JUMP_THRESHOLD = 25; // Maximum allowed progress bar jump percentage (lenient for CI)
-const TIMER_3S_MIN_MS = 2700; // Minimum expected time for 3-second timer (more lenient)
-const TIMER_3S_MAX_MS = 3300; // Maximum expected time for 3-second timer (more lenient)
+const TIMER_3S_MIN_MS = 3000 - TIMING_TOLERANCE_MS; // Minimum expected time for 3-second timer
+const TIMER_3S_MAX_MS = 3000 + TIMING_TOLERANCE_MS; // Maximum expected time for 3-second timer
 const PROGRESS_THRESHOLD_PERCENT = 20; // Minimum progress percentage for testing
 const MAX_RETRY_ATTEMPTS = 20; // Maximum retry attempts for polling operations
 const DEFAULT_WAIT_TIMEOUT_MS = 5000; // Default timeout for waitForFunction operations

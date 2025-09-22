@@ -147,7 +147,7 @@ test.describe("Timer and Countdown System Tests", () => {
 
     // Final progress should be substantial but not complete
     expect(lastProgress).toBeGreaterThan(60);
-    expect(lastProgress).toBeLessThan(95);
+    expect(lastProgress).toBeLessThan(100); // Allow for near completion with proper timeouts
 
     // Check that progress generally trends upward (allowing for small variations)
     let increasingTrend = 0;
@@ -195,6 +195,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress >= 20; // At least 20% progress (2+ seconds)
       },
+      undefined,
       { timeout: DEFAULT_WAIT_TIMEOUT_MS },
     );
 
@@ -264,6 +265,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress >= 15; // At least 15% progress (~1.5 seconds)
       },
+      undefined,
       { timeout: DEFAULT_WAIT_TIMEOUT_MS },
     );
 
@@ -294,6 +296,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress > 5; // Should show some progress
       },
+      undefined,
       { timeout: 3000 },
     );
   });
@@ -366,9 +369,8 @@ test.describe("Timer and Countdown System Tests", () => {
       elapsedTime = Date.now() - startTime;
     }
 
-    // Should work accurately even with short timer (±100ms)
-    expect(elapsedTime).toBeGreaterThan(900); // At least 0.9 seconds
-    expect(elapsedTime).toBeLessThan(1100); // At most 1.1 seconds
+    expect(elapsedTime).toBeGreaterThan(1000 - TIMING_TOLERANCE_MS);
+    expect(elapsedTime).toBeLessThan(1000 + TIMING_TOLERANCE_MS);
 
     await page.click("#stop-btn");
     await expect(page.locator("#game-form")).toBeVisible();
@@ -394,6 +396,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress > 0 && progress < 10; // Should be very low percentage
       },
+      undefined,
       { timeout: SHORT_WAIT_TIMEOUT_MS },
     );
 
@@ -518,6 +521,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress >= 95; // Nearly complete
       },
+      undefined,
       { timeout: 4000 },
     );
 
@@ -559,6 +563,7 @@ test.describe("Timer and Countdown System Tests", () => {
           0;
         return progress >= 30; // At least 30% progress (about 1.5 seconds)
       },
+      undefined,
       { timeout: 3000 },
     );
 

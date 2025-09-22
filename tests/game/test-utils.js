@@ -198,6 +198,7 @@ export async function waitForProgressBarActive(page, timeout = 2000) {
       const nextBtn = document.querySelector("#next-btn");
       return nextBtn && nextBtn.classList.contains("progress-bar");
     },
+    undefined,
     { timeout },
   );
 }
@@ -213,6 +214,7 @@ export async function waitForProgressBarInactive(page, timeout = 2000) {
       const nextBtn = document.querySelector("#next-btn");
       return nextBtn && !nextBtn.classList.contains("progress-bar");
     },
+    undefined,
     { timeout },
   );
 }

@@ -200,10 +200,11 @@ See [detailed Playwright testing instructions](.github/copilot-playwright-instru
 
 ### Test Maintenance
 When making changes to the application:
-1. **Run tests locally** before committing: `npm test`
-2. **Update tests** when adding new features or changing existing functionality
-3. **Add new test cases** for new game types, navigation flows, or PWA features
-4. **Check test coverage** of critical user journeys and edge cases
+1. **Format code before committing**: `npm run format` (REQUIRED - PRs will fail without proper formatting)
+2. **Run tests locally** before committing: `npm test`
+3. **Update tests** when adding new features or changing existing functionality
+4. **Add new test cases** for new game types, navigation flows, or PWA features
+5. **Check test coverage** of critical user journeys and edge cases
 
 ### Testing Considerations
 - Test PWA functionality: offline mode, installation prompt, service worker updates
@@ -214,6 +215,8 @@ When making changes to the application:
 - Test performance with large datasets and extended game sessions
 
 ## Common Tasks
+**IMPORTANT**: Always run `npm run format` before committing any changes!
+
 - **Add new game type**: Extend `game/data.js` arrays and update game selection logic
 - **Modify game mechanics**: Focus on timer functions in `game/play.js` (~lines 800-1000)
 - **Update PWA**: Modify `sw.js` cache strategy or `site.webmanifest`

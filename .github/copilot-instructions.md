@@ -144,7 +144,7 @@ type(scope): subject
 ```
 
 **Commit Message Requirements:**
-- **type**: MUST be one of: `feat`, `fix`, `docs`, `style`, `refactor`, `test`
+- **type**: MUST be one of: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `perf`, `build`, `ci`
 - **scope**: Optional area of codebase (e.g., `game`, `navigation`, `pwa`, `css`)
 - **subject**: Imperative present tense, capitalized, no period, max 50 chars
 
@@ -161,11 +161,17 @@ docs(readme): Update local development setup
 style: Format code with prettier
 refactor(game): Extract timer utilities to separate module
 test(navigation): Add routing test coverage
+perf(game): Optimize timer calculation for better performance
+build(deps): Update package dependencies
+ci: Update GitHub Actions workflow
 
 # PR titles (identical format)
 feat(pwa): Add offline game state persistence
 fix(css): Resolve mobile layout overflow issues
 docs(copilot): Add git karma convention requirements
+perf(game): Optimize timer performance
+build: Update build configuration
+ci: Fix GitHub Actions workflow
 ```
 
 **Invalid Examples:**

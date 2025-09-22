@@ -184,6 +184,9 @@ npm run test:ui
 npm run test:headed
 ```
 
+**For Copilot Sessions:**
+See [detailed Playwright testing instructions](.github/copilot-playwright-instructions.md) for troubleshooting browser installation issues and comprehensive testing workflow guidance.
+
 **Test Configuration:**
 - Tests run against `http://localhost:3001` (separate test server)
 - Configured for both CI and local development environments

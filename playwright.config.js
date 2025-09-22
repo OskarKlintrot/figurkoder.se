@@ -52,7 +52,11 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        // Use system Google Chrome instead of downloading Chromium
+        channel: "chrome",
+      },
     },
   ],
 

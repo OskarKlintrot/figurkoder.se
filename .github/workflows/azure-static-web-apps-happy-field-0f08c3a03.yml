@@ -141,7 +141,7 @@ jobs:
               body: fullMessage
             });
 
-  build_and_deploy_job_pr:
+  deploy_pr_job:
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
     uses: ./.github/workflows/build-and-deploy.yml
     with:
@@ -153,7 +153,7 @@ jobs:
       AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_HAPPY_FIELD_0F08C3A03 }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build_and_deploy_job:
+  deploy_production_job:
     if: github.event_name == 'push'
     needs: [test_job, formatting_job]
     uses: ./.github/workflows/build-and-deploy.yml

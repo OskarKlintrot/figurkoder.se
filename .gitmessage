@@ -1,18 +1,17 @@
 # type(scope): subject (max 50 chars)
 
 # REQUIRED: Follow karma git commit convention:
-# - type: feat, fix, docs, style, refactor, test, chore
+# - type: feat, fix, docs, style, refactor, test
 # - scope: optional area of codebase (e.g., game, navigation, pwa)
-# - subject: imperative present tense, no capitalization, no period
+# - subject: imperative present tense, capitalized, no period
 
 # Examples:
-# feat(game): add timer pause functionality
-# fix(navigation): correct page routing for hash urls
-# docs(readme): update installation instructions
-# style: format code with prettier
-# refactor(game): extract common state utilities
-# test(navigation): add routing test coverage
-# chore(deps): update playwright version
+# feat(game): Add timer pause functionality
+# fix(navigation): Correct page routing for hash urls
+# docs(readme): Update installation instructions
+# style: Format code with prettier
+# refactor(game): Extract common state utilities
+# test(navigation): Add routing test coverage
 
 # Body: explain what and why vs. how (wrap at 72 chars)
 # - What was changed and why

@@ -144,29 +144,28 @@ type(scope): subject
 ```
 
 **Commit Message Requirements:**
-- **type**: MUST be one of: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- **type**: MUST be one of: `feat`, `fix`, `docs`, `style`, `refactor`, `test`
 - **scope**: Optional area of codebase (e.g., `game`, `navigation`, `pwa`, `css`)
-- **subject**: Imperative present tense, lowercase, no period, max 50 chars
+- **subject**: Imperative present tense, capitalized, no period, max 50 chars
 
 **PR Title Requirements:**
 - **MUST follow the exact same karma convention as commit messages**
-- **Examples**: `feat(game): add timer pause functionality`, `fix(navigation): correct page routing`, `docs(readme): update installation guide`
+- **Examples**: `feat(game): Add timer pause functionality`, `fix(navigation): Correct page routing`, `docs(readme): Update installation guide`
 
 **Valid Examples:**
 ```bash
 # Commit messages
-feat(game): add pause/resume timer functionality
-fix(navigation): correct hash routing for mobile safari
-docs(readme): update local development setup
-style: format code with prettier
-refactor(game): extract timer utilities to separate module
-test(navigation): add routing test coverage
-chore(deps): update playwright to latest version
+feat(game): Add pause/resume timer functionality
+fix(navigation): Correct hash routing for mobile safari
+docs(readme): Update local development setup
+style: Format code with prettier
+refactor(game): Extract timer utilities to separate module
+test(navigation): Add routing test coverage
 
 # PR titles (identical format)
-feat(pwa): add offline game state persistence
-fix(css): resolve mobile layout overflow issues
-docs(copilot): add git karma convention requirements
+feat(pwa): Add offline game state persistence
+fix(css): Resolve mobile layout overflow issues
+docs(copilot): Add git karma convention requirements
 ```
 
 **Invalid Examples:**
@@ -174,17 +173,17 @@ docs(copilot): add git karma convention requirements
 # Wrong - missing type
 add timer functionality
 
-# Wrong - capitalized subject
-feat(game): Add timer functionality
+# Wrong - lowercase subject
+feat(game): add timer functionality
 
 # Wrong - period at end
-feat(game): add timer functionality.
+feat(game): Add timer functionality.
 
 # Wrong - invalid type
-feature(game): add timer functionality
+feature(game): Add timer functionality
 
 # Wrong - past tense
-feat(game): added timer functionality
+feat(game): Added timer functionality
 ```
 
 ### CSS Architecture

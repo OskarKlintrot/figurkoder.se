@@ -336,12 +336,12 @@ test.describe("Data Range and Input Validation Tests", () => {
 
     await page.click('button[type="submit"]');
 
-    const gameStarted4 = await page
+    const gameStarted5 = await page
       .locator(".game-controls")
       .isVisible()
       .catch(() => false);
 
-    if (gameStarted4) {
+    if (gameStarted5) {
       await page.click("#stop-btn");
     }
 
@@ -350,12 +350,12 @@ test.describe("Data Range and Input Validation Tests", () => {
 
     await page.click('button[type="submit"]');
 
-    const gameStarted5 = await page
+    const gameStarted6 = await page
       .locator(".game-controls")
       .isVisible()
       .catch(() => false);
 
-    if (gameStarted5) {
+    if (gameStarted6) {
       await page.click("#stop-btn");
     }
 

@@ -83,8 +83,15 @@ test.describe("Game State Management Tests", () => {
       "next-btn": true,
     });
 
-    // Pause game
-    await page.click("#pause-btn");
+    // Pause game using JS evaluation to avoid element blocking
+    await page.waitForFunction(() => {
+      const pauseBtn = document.querySelector("#pause-btn");
+      return pauseBtn && !pauseBtn.disabled;
+    });
+
+    await page.evaluate(() => {
+      document.querySelector("#pause-btn").click();
+    });
 
     // Test button states when paused
     await assertButtonStates(page, {

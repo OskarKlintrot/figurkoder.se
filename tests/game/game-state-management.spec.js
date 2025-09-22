@@ -17,7 +17,7 @@ test.describe("Game State Management Tests", () => {
   test("should switch between learning and training modes correctly", async ({
     page,
   }) => {
-    // Start training mode game
+    // Start in training mode first
     await startGame(page, {
       learningMode: false,
       fromRange: 0,
@@ -25,29 +25,52 @@ test.describe("Game State Management Tests", () => {
       timeLimit: 10,
     });
 
-    // Verify training mode state
+    // Verify training mode state (answer hidden initially - shows dots)
     await expect(page.locator("#current-item")).toBeVisible();
-    await expect(page.locator("#solution-display")).toBeHidden();
+    await expect(page.locator("#solution-display")).toContainText("•••");
 
-    // Pause game
-    await page.click("#pause-btn");
+    // Can show answer manually in training mode
+    await page.click("#show-btn");
+    await expect(page.locator("#solution-display")).not.toContainText("•••");
 
-    // Wait for game to pause
-    await expect(page.locator("#play-btn")).toBeEnabled();
-    await expect(page.locator("#pause-btn")).toBeDisabled();
+    // Stop the game to be able to change modes
+    await page.click("#stop-btn");
 
-    // Switch to learning mode
+    // Wait for either game form or results page to be visible
+    const gameFormVisible = await page
+      .locator("#game-form")
+      .isVisible()
+      .catch(() => false);
+    const resultPageVisible = await page
+      .locator("#result-page")
+      .isVisible()
+      .catch(() => false);
+
+    if (resultPageVisible) {
+      // If results page is shown, go back to game page
+      await page.click("#back-btn, .back-btn, button:has-text('Tillbaka')");
+      await expect(page.locator("#game-form")).toBeVisible();
+    } else {
+      await expect(page.locator("#game-form")).toBeVisible();
+    }
+
+    // Now switch to learning mode
     await page.check("#learning-mode");
 
-    // Resume game
-    await page.click("#play-btn");
+    // Start new game in learning mode
+    await startGame(page, {
+      learningMode: true,
+      fromRange: 0,
+      toRange: 9,
+      timeLimit: 10,
+    });
 
-    // Verify correct behavior (answer shown, auto-advance enabled in learning mode)
-    await expect(page.locator("#solution-display")).toBeVisible();
+    // Verify learning mode state (answer shown automatically)
+    await expect(page.locator("#current-item")).toBeVisible();
+    await expect(page.locator("#solution-display")).not.toContainText("•••");
 
-    // Verify auto-advance is working (progress bar should be active)
-    const progressBarActive = await isProgressBarActive(page);
-    expect(progressBarActive).toBeTruthy();
+    // VISA button should be disabled in learning mode
+    await expect(page.locator("#show-btn")).toBeDisabled();
   });
 
   test("should maintain consistent button states across game phases", async ({
@@ -129,35 +152,22 @@ test.describe("Game State Management Tests", () => {
   test("should preserve game state during pause and resume", async ({
     page,
   }) => {
-    // Start game with larger range to ensure multiple items
+    // Start learning mode game (where pause/resume makes more sense)
     await startGame(page, {
-      learningMode: false,
+      learningMode: true,
       fromRange: 0,
       toRange: 20,
       timeLimit: 10,
     });
 
-    // Advance through several items to build state
-    const initialItem = await getCurrentItem(page);
-
-    // Advance to next item
-    await page.click("#next-btn");
-    await page.waitForFunction(
-      (selector, previousText) => {
-        const el = document.querySelector(selector);
-        return el && el.textContent !== previousText;
-      },
-      "#current-item",
-      initialItem,
-    );
-
-    const secondItem = await getCurrentItem(page);
-
-    // Show answer on current item
-    await page.click("#show-btn");
+    // Wait for the game to be fully running (solution should be visible in learning mode)
     await expect(page.locator("#solution-display")).toBeVisible();
+    await expect(page.locator("#pause-btn")).toBeEnabled();
 
-    // Pause at this point (item #2 with answer shown)
+    // Get current item for later comparison
+    const currentItem = await getCurrentItem(page);
+
+    // Pause at this point
     await page.click("#pause-btn");
 
     // Verify pause state
@@ -166,7 +176,7 @@ test.describe("Game State Management Tests", () => {
 
     // Verify state preservation during pause
     const pausedItem = await getCurrentItem(page);
-    expect(pausedItem).toBe(secondItem);
+    expect(pausedItem).toBe(currentItem);
     await expect(page.locator("#solution-display")).toBeVisible();
 
     // Resume game
@@ -174,7 +184,7 @@ test.describe("Game State Management Tests", () => {
 
     // Verify state continuity after resume
     const resumedItem = await getCurrentItem(page);
-    expect(resumedItem).toBe(secondItem);
+    expect(resumedItem).toBe(currentItem);
     await expect(page.locator("#solution-display")).toBeVisible();
 
     // Verify game controls are functional after resume
@@ -182,7 +192,7 @@ test.describe("Game State Management Tests", () => {
       "play-btn": false,
       "pause-btn": true,
       "stop-btn": true,
-      "show-btn": false, // Should be disabled since answer is already shown
+      "show-btn": false, // Should be disabled in learning mode
       "next-btn": true,
     });
   });

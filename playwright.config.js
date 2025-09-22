@@ -52,7 +52,11 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        // Use system Chrome if Playwright's Chromium fails to install
+        channel: "chrome",
+      },
     },
   ],
 

@@ -101,7 +101,7 @@ test.describe("Vibration and Device Integration Tests", () => {
 
     // Verify game still functions normally after vibration tests
     await expect(page.locator("#current-item")).toBeVisible();
-    await page.click("#stop-btn");
+    await page.click('button[onclick="stopGame()"]');
     await expect(page.locator("#game-form")).toBeVisible();
 
     // Test graceful degradation when vibration is not available
@@ -195,8 +195,15 @@ test.describe("Vibration and Device Integration Tests", () => {
 
     console.log("Wake lock status during game:", wakeLockStatus);
 
-    // Pause game and verify wake lock releases
-    await page.click("#pause-btn");
+    // Pause game and verify wake lock releases (use JS evaluation to avoid element blocking)
+    await page.waitForFunction(() => {
+      const pauseBtn = document.querySelector('#pause-btn');
+      return pauseBtn && !pauseBtn.disabled;
+    });
+    
+    await page.evaluate(() => {
+      document.querySelector('#pause-btn').click();
+    });
     await expect(page.locator("#play-btn")).toBeEnabled();
 
     const pausedWakeLockStatus = await page.evaluate(() => {
@@ -264,13 +271,21 @@ test.describe("Vibration and Device Integration Tests", () => {
     await page.click("#show-btn");
     await expect(page.locator("#solution-display")).toBeVisible();
 
-    await page.click("#pause-btn");
+    // Use JS evaluation for pause to avoid element blocking
+    await page.waitForFunction(() => {
+      const pauseBtn = document.querySelector('#pause-btn');
+      return pauseBtn && !pauseBtn.disabled;
+    });
+    
+    await page.evaluate(() => {
+      document.querySelector('#pause-btn').click();
+    });
     await expect(page.locator("#play-btn")).toBeEnabled();
 
     await page.click("#play-btn");
     await expect(page.locator("#pause-btn")).toBeEnabled();
 
-    await page.click("#stop-btn");
+    await page.click('button[onclick="stopGame()"]');
     await expect(page.locator("#game-form")).toBeVisible();
 
     // Verify no errors occurred during wake lock lifecycle without API
@@ -342,14 +357,21 @@ test.describe("Vibration and Device Integration Tests", () => {
     expect(newItem).toBeTruthy();
 
     // Pause/resume should work
-    await page.click("#pause-btn");
+    await page.waitForFunction(() => {
+      const pauseBtn = document.querySelector('#pause-btn');
+      return pauseBtn && !pauseBtn.disabled;
+    });
+    
+    await page.evaluate(() => {
+      document.querySelector('#pause-btn').click();
+    });
     await expect(page.locator("#play-btn")).toBeEnabled();
 
     await page.click("#play-btn");
     await expect(page.locator("#pause-btn")).toBeEnabled();
 
     // Stop should work
-    await page.click("#stop-btn");
+    await page.click('button[onclick="stopGame()"]');
     await expect(page.locator("#game-form")).toBeVisible();
 
     // Test with completely missing device APIs

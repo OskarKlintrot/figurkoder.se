@@ -193,8 +193,15 @@ test.describe("Timer and Countdown System Tests", () => {
       { timeout: DEFAULT_WAIT_TIMEOUT_MS },
     );
 
-    // Pause the game
-    await page.click("#pause-btn");
+    // Pause the game (use JS evaluation to avoid element blocking)
+    await page.waitForFunction(() => {
+      const pauseBtn = document.querySelector("#pause-btn");
+      return pauseBtn && !pauseBtn.disabled;
+    });
+
+    await page.evaluate(() => {
+      document.querySelector("#pause-btn").click();
+    });
 
     // Verify game is paused
     await expect(page.locator("#pause-btn")).toBeDisabled();

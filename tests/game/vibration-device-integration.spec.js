@@ -197,12 +197,12 @@ test.describe("Vibration and Device Integration Tests", () => {
 
     // Pause game and verify wake lock releases (use JS evaluation to avoid element blocking)
     await page.waitForFunction(() => {
-      const pauseBtn = document.querySelector('#pause-btn');
+      const pauseBtn = document.querySelector("#pause-btn");
       return pauseBtn && !pauseBtn.disabled;
     });
-    
+
     await page.evaluate(() => {
-      document.querySelector('#pause-btn').click();
+      document.querySelector("#pause-btn").click();
     });
     await expect(page.locator("#play-btn")).toBeEnabled();
 
@@ -273,12 +273,12 @@ test.describe("Vibration and Device Integration Tests", () => {
 
     // Use JS evaluation for pause to avoid element blocking
     await page.waitForFunction(() => {
-      const pauseBtn = document.querySelector('#pause-btn');
+      const pauseBtn = document.querySelector("#pause-btn");
       return pauseBtn && !pauseBtn.disabled;
     });
-    
+
     await page.evaluate(() => {
-      document.querySelector('#pause-btn').click();
+      document.querySelector("#pause-btn").click();
     });
     await expect(page.locator("#play-btn")).toBeEnabled();
 
@@ -358,12 +358,12 @@ test.describe("Vibration and Device Integration Tests", () => {
 
     // Pause/resume should work
     await page.waitForFunction(() => {
-      const pauseBtn = document.querySelector('#pause-btn');
+      const pauseBtn = document.querySelector("#pause-btn");
       return pauseBtn && !pauseBtn.disabled;
     });
-    
+
     await page.evaluate(() => {
-      document.querySelector('#pause-btn').click();
+      document.querySelector("#pause-btn").click();
     });
     await expect(page.locator("#play-btn")).toBeEnabled();
 

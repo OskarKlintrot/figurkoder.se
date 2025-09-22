@@ -451,8 +451,8 @@ test.describe("Data Range and Input Validation Tests", () => {
     // Verify dropdowns are visible and inputs are hidden
     await expect(page.locator("#from-dropdown")).toBeVisible();
     await expect(page.locator("#to-dropdown")).toBeVisible();
-    await expect(page.locator("#from-input")).toHaveClass(/hidden/);
-    await expect(page.locator("#to-input")).toHaveClass(/hidden/);
+    await expect(page.locator("#from-input")).not.toBeVisible();
+    await expect(page.locator("#to-input")).not.toBeVisible();
 
     // Verify dropdowns are populated with letter options
     const fromOptions = await page.locator("#from-dropdown option").count();
@@ -677,5 +677,79 @@ test.describe("Data Range and Input Validation Tests", () => {
     // Verify current item updates with dropdown selection
     const currentItem = await page.locator("#current-item").textContent();
     expect(currentItem).toBe("D");
+  });
+
+  test("should show inputs and hide dropdowns in input mode games", async ({
+    page,
+  }) => {
+    // Navigate to a game that uses input mode (default behavior - not dropdown mode)
+    // The navigateToGamePage() function navigates to the first game which should be input mode
+    await navigateToGamePage(page);
+
+    // Verify inputs are visible and dropdowns are hidden in input mode
+    await expect(page.locator("#from-input")).toBeVisible();
+    await expect(page.locator("#to-input")).toBeVisible();
+    await expect(page.locator("#from-dropdown")).not.toBeVisible();
+    await expect(page.locator("#to-dropdown")).not.toBeVisible();
+
+    // Test that inputs are functional
+    await page.fill("#from-input", "5");
+    await page.fill("#to-input", "15");
+
+    // Verify input values are set correctly
+    await expect(page.locator("#from-input")).toHaveValue("5");
+    await expect(page.locator("#to-input")).toHaveValue("15");
+
+    // Start game to verify input mode works
+    await page.fill("#time-input", "3");
+    await page.click('button[type="submit"]');
+
+    // Verify game starts with input selection
+    await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("#current-item")).toBeVisible();
+
+    // During game, inputs should be disabled
+    await expect(page.locator("#from-input")).toBeDisabled();
+    await expect(page.locator("#to-input")).toBeDisabled();
+    // Dropdowns should still be hidden and disabled
+    await expect(page.locator("#from-dropdown")).not.toBeVisible();
+    await expect(page.locator("#to-dropdown")).not.toBeVisible();
+  });
+
+  test("should toggle between input and dropdown modes correctly", async ({
+    page,
+  }) => {
+    // First test input mode game
+    await navigateToGamePage(page);
+
+    // Verify input mode: inputs visible, dropdowns hidden
+    await expect(page.locator("#from-input")).toBeVisible();
+    await expect(page.locator("#to-input")).toBeVisible();
+    await expect(page.locator("#from-dropdown")).not.toBeVisible();
+    await expect(page.locator("#to-dropdown")).not.toBeVisible();
+
+    // Now navigate to dropdown mode game
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForSelector("#main-menu.active", { timeout: 3000 });
+
+    const lettersTile = page.locator(".tile").filter({ hasText: "Bokstäver" });
+    await lettersTile.click();
+    await page.waitForSelector("#game-page.active", { timeout: 5000 });
+
+    // Verify dropdown mode: dropdowns visible, inputs hidden
+    await expect(page.locator("#from-dropdown")).toBeVisible();
+    await expect(page.locator("#to-dropdown")).toBeVisible();
+    await expect(page.locator("#from-input")).not.toBeVisible();
+    await expect(page.locator("#to-input")).not.toBeVisible();
+
+    // Navigate back to input mode game to verify toggle works
+    await navigateToGamePage(page);
+
+    // Verify we're back to input mode
+    await expect(page.locator("#from-input")).toBeVisible();
+    await expect(page.locator("#to-input")).toBeVisible();
+    await expect(page.locator("#from-dropdown")).not.toBeVisible();
+    await expect(page.locator("#to-dropdown")).not.toBeVisible();
   });
 });

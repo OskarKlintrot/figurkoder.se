@@ -10,8 +10,7 @@
     "serve": "npx http-server src -p 3000 -c-1 --cors",
     "serve:test": "npx http-server src -p 3001 -c-1 --cors",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "pretest": "npm run format:check"
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "figurkoder",

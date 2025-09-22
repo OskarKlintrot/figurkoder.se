@@ -143,6 +143,10 @@ test.describe("Results and Performance Tracking Tests", () => {
     // If no specific results display, verify the game state was tracked
     // by ensuring we can start a new game (state was properly reset)
     if (!resultsFound) {
+      // Ensure we're on the game page with form visible
+      await navigateToGamePage(page);
+      await expect(page.locator("#game-form")).toBeVisible();
+      
       await startGame(page, {
         learningMode: false,
         fromRange: 0,

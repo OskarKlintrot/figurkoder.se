@@ -427,16 +427,24 @@ test.describe("Timer and Countdown System Tests", () => {
       await page.waitForTimeout(300);
     }
     
-    // Use JavaScript to click the navigation item to avoid viewport issues
+    // Use JavaScript to click the navigation item - fix selector syntax
     await page.evaluate(() => {
-      const heimButton = document.querySelector('button:contains("Hem")') || 
-                         document.querySelector('button[onclick*="main-menu"]') ||
-                         document.querySelector('a[href="#main-menu"]');
+      // Find "Hem" button by text content
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const heimButton = buttons.find(btn => btn.textContent && btn.textContent.includes('Hem'));
+      
       if (heimButton) {
         heimButton.click();
       } else {
-        // Fallback: direct navigation
-        window.location.hash = 'main-menu';
+        // Fallback: find main menu navigation
+        const mainMenuButton = document.querySelector('button[onclick*="main-menu"]') ||
+                               document.querySelector('a[href="#main-menu"]');
+        if (mainMenuButton) {
+          mainMenuButton.click();
+        } else {
+          // Final fallback: direct navigation
+          window.location.hash = 'main-menu';
+        }
       }
     });
     

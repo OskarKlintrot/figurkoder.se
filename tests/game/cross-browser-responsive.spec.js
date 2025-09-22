@@ -226,8 +226,13 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
     
-    // Wait for any element that indicates the page is ready instead of specifically main menu
-    await page.waitForSelector("body", { timeout: 5000 });
+    // Wait for app to initialize properly - try multiple selectors
+    try {
+      await page.waitForSelector("#main-menu.active", { timeout: 3000 });
+    } catch (e) {
+      // Fallback to basic page ready indicators
+      await page.waitForSelector(".header", { timeout: 3000 });
+    }
 
     // Should still load without service worker - navigate to game page to test functionality
     await navigateToGamePage(page);

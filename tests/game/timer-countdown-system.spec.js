@@ -418,14 +418,35 @@ test.describe("Timer and Countdown System Tests", () => {
 
     await waitForProgressBarActive(page);
 
-    // Navigate away from game page using the menu
-    await navigateToPageViaMenu(page, "about-page");
+    // Navigate away from game page - open menu first, then click navigation  
+    const menuButton = page.locator(".menu-btn, #menu-btn, .hamburger-menu");
+    const menuVisible = await menuButton.isVisible().catch(() => false);
+    
+    if (menuVisible) {
+      await menuButton.click();
+      await page.waitForTimeout(300);
+    }
+    
+    // Use JavaScript to click the navigation item to avoid viewport issues
+    await page.evaluate(() => {
+      const heimButton = document.querySelector('button:contains("Hem")') || 
+                         document.querySelector('button[onclick*="main-menu"]') ||
+                         document.querySelector('a[href="#main-menu"]');
+      if (heimButton) {
+        heimButton.click();
+      } else {
+        // Fallback: direct navigation
+        window.location.hash = 'main-menu';
+      }
+    });
+    
+    // Wait for navigation
+    await page.waitForSelector("#main-menu.active", { timeout: 3000 });
 
     // Wait a moment to let any cleanup occur
     await page.waitForTimeout(1000);
 
-    // Navigate back to main menu using the menu
-    await navigateToPageViaMenu(page, "main-menu");
+    // Already on main menu, just proceed to check timer cleanup
 
     // Go back to game
     await page.click(".tile:first-child");

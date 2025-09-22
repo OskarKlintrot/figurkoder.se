@@ -8,7 +8,7 @@ test.describe("PWA and Offline Functionality Tests", () => {
     await page.waitForSelector("#main-menu.active", { timeout: 5000 });
   });
 
-  test("TC-9.1: Service Worker Version Updates", async ({ page }) => {
+  test("should handle service worker version updates", async ({ page }) => {
     // Verify service worker is registered
     await page.waitForFunction(
       () => {
@@ -94,7 +94,7 @@ test.describe("PWA and Offline Functionality Tests", () => {
     }
   });
 
-  test("TC-9.2: Offline Game Functionality", async ({ page }) => {
+  test("should work offline with core game functionality", async ({ page }) => {
     // First, ensure app is fully loaded while online
     await page.waitForSelector("#main-menu.active", { timeout: 5000 });
 
@@ -234,7 +234,7 @@ test.describe("PWA and Offline Functionality Tests", () => {
     expect(criticalErrors).toHaveLength(0);
   });
 
-  test("TC-9.3: PWA Installation and Manifest", async ({ page }) => {
+  test("should support PWA installation and manifest", async ({ page }) => {
     // Verify PWA manifest is accessible
     const manifestResponse = await page.request.get("/site.webmanifest");
     expect(manifestResponse.status()).toBe(200);

@@ -6,7 +6,7 @@ test.describe("Data Range and Input Validation Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-7.1: Range Validation (0-99)", async ({ page }) => {
+  test("should validate range inputs correctly", async ({ page }) => {
     // Test valid ranges: 0-10, 50-60, 90-99
 
     // Valid range 0-10
@@ -128,7 +128,7 @@ test.describe("Data Range and Input Validation Tests", () => {
     await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
   });
 
-  test("TC-7.2: Data Filtering Accuracy", async ({ page }) => {
+  test("should filter data accurately based on range", async ({ page }) => {
     // Select range 10-15 and verify only items 10-15 appear
     await startGame(page, {
       learningMode: true, // Learning mode to see answers
@@ -237,7 +237,7 @@ test.describe("Data Range and Input Validation Tests", () => {
     await expect(page.locator("#to-input")).toHaveValue("99");
   });
 
-  test("TC-7.3: Input Field Validation", async ({ page }) => {
+  test("should validate input fields properly", async ({ page }) => {
     // Test empty inputs
     await page.fill("#from-input", "");
     await page.fill("#to-input", "");

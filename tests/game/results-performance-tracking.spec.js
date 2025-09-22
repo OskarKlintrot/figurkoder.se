@@ -11,7 +11,7 @@ test.describe("Results and Performance Tracking Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-8.1: Result Recording Accuracy", async ({ page }) => {
+  test("should record game results accurately", async ({ page }) => {
     // Start training game to test different answer patterns
     await startGame(page, {
       learningMode: false,
@@ -137,7 +137,7 @@ test.describe("Results and Performance Tracking Tests", () => {
     expect(true).toBeTruthy(); // Patterns were executed successfully
   });
 
-  test("TC-8.2: Results Page Display", async ({ page }) => {
+  test("should display results page correctly", async ({ page }) => {
     // Complete game with mixed performance to generate results
     await startGame(page, {
       learningMode: false,

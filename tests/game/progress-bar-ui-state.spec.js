@@ -14,7 +14,7 @@ test.describe("Progress Bar and UI State Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-5.1: Progress Bar Reset on Replay", async ({ page }) => {
+  test("should reset progress bar correctly on replay", async ({ page }) => {
     // Start and complete a game session
     await startGame(page, {
       learningMode: false,
@@ -99,7 +99,9 @@ test.describe("Progress Bar and UI State Tests", () => {
     }
   });
 
-  test("TC-5.2: Progress Bar Layout Stability", async ({ page }) => {
+  test("should maintain layout stability with progress bar", async ({
+    page,
+  }) => {
     // Start game and let progress bar fill
     await startGame(page, {
       learningMode: true, // Learning mode has auto-timer
@@ -171,7 +173,9 @@ test.describe("Progress Bar and UI State Tests", () => {
     expect(mobileFormBox.width).toBeGreaterThan(100);
   });
 
-  test("TC-5.3: Button Content Alignment", async ({ page }) => {
+  test("should align button content properly with progress bar", async ({
+    page,
+  }) => {
     // Start game with progress bar
     await startGame(page, {
       learningMode: true, // Auto-timer for progress bar

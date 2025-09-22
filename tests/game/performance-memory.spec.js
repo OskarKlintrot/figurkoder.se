@@ -6,7 +6,9 @@ test.describe("Performance and Memory Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-11.1: Long Gaming Sessions", async ({ page }) => {
+  test("should handle long gaming sessions without memory leaks", async ({
+    page,
+  }) => {
     // Monitor performance metrics during extended gameplay
     const initialMetrics = await page.evaluate(() => {
       return {
@@ -154,7 +156,7 @@ test.describe("Performance and Memory Tests", () => {
     await page.click("#stop-btn");
   });
 
-  test("TC-11.2: Timer Cleanup Verification", async ({ page }) => {
+  test("should clean up timers correctly", async ({ page }) => {
     // Test that timers are properly cleaned up when leaving pages
 
     // Start multiple game sessions and track active timers
@@ -345,7 +347,7 @@ test.describe("Performance and Memory Tests", () => {
     expect(isResponsive).toBeTruthy();
   });
 
-  test("TC-11.3: Resource Usage Monitoring", async ({ page }) => {
+  test("should monitor resource usage efficiently", async ({ page }) => {
     // Monitor various resource usage patterns
 
     // Track network requests

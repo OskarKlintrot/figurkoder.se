@@ -13,7 +13,9 @@ test.describe("Navigation and Back Button Tests", () => {
     await page.waitForSelector("#main-menu.active", { timeout: 5000 });
   });
 
-  test("TC-4.1: Results Page Back Button", async ({ page }) => {
+  test("should navigate back to game session from results page", async ({
+    page,
+  }) => {
     // Navigate to game page and start a training game
     await page.waitForSelector(".tile", { timeout: 5000 });
     await page.click(".tile:first-child");
@@ -76,7 +78,7 @@ test.describe("Navigation and Back Button Tests", () => {
     await expect(page.locator('button[type="submit"]')).toBeEnabled();
   });
 
-  test("TC-4.2: Game Page Navigation Context", async ({ page }) => {
+  test("should maintain game page navigation context", async ({ page }) => {
     // Navigate to game page from specific tile
     await page.waitForSelector(".tile", { timeout: 5000 });
 
@@ -103,7 +105,9 @@ test.describe("Navigation and Back Button Tests", () => {
     await expect(page.locator("#to-input")).toBeVisible();
   });
 
-  test("TC-4.3: Header Back Button Reset", async ({ page }) => {
+  test("should reset header back button behavior correctly", async ({
+    page,
+  }) => {
     // Navigate through: main → game → results
 
     // Start at main menu
@@ -178,7 +182,7 @@ test.describe("Navigation and Back Button Tests", () => {
     }
   });
 
-  test("TC-4.4: URL State Management", async ({ page }) => {
+  test("should manage URL state during navigation", async ({ page }) => {
     // Test URL updates for navigation
 
     // Main page URL
@@ -213,7 +217,7 @@ test.describe("Navigation and Back Button Tests", () => {
     await expect(page.locator("#game-page.active")).toBeVisible();
   });
 
-  test("TC-4.5: Context Data Preservation", async ({ page }) => {
+  test("should preserve context data during navigation", async ({ page }) => {
     // Configure game settings
     await page.waitForSelector(".tile", { timeout: 5000 });
     await page.click(".tile:first-child");

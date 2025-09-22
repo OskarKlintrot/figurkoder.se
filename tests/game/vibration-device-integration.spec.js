@@ -6,7 +6,7 @@ test.describe("Vibration and Device Integration Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-6.1: Vibration in Learning Mode Only", async ({ page }) => {
+  test("should handle vibration in learning mode only", async ({ page }) => {
     // Test that vibration API is available or gracefully handled
     const vibrationSupported = await page.evaluate(() => {
       return "vibrate" in navigator;
@@ -132,7 +132,7 @@ test.describe("Vibration and Device Integration Tests", () => {
     expect(newItem).toBeTruthy();
   });
 
-  test("TC-6.2: Screen Wake Lock Management", async ({ page }) => {
+  test("should manage screen wake lock correctly", async ({ page }) => {
     // Test screen wake lock API availability and graceful degradation
     const wakeLockSupported = await page.evaluate(() => {
       return "wakeLock" in navigator;
@@ -303,7 +303,9 @@ test.describe("Vibration and Device Integration Tests", () => {
     expect(criticalErrors).toHaveLength(0);
   });
 
-  test("TC-6.3: Device Integration Error Handling", async ({ page }) => {
+  test("should handle device integration errors gracefully", async ({
+    page,
+  }) => {
     // Test that device API failures don't break the game
 
     // Mock failing device APIs

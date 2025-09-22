@@ -14,7 +14,9 @@ test.describe("Game State Management Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-2.1: Learning vs Training Mode Switching", async ({ page }) => {
+  test("should switch between learning and training modes correctly", async ({
+    page,
+  }) => {
     // Start training mode game
     await startGame(page, {
       learningMode: false,
@@ -48,7 +50,9 @@ test.describe("Game State Management Tests", () => {
     expect(progressBarActive).toBeTruthy();
   });
 
-  test("TC-2.2: Button State Consistency", async ({ page }) => {
+  test("should maintain consistent button states across game phases", async ({
+    page,
+  }) => {
     // Test button states when stopped
     await assertButtonStates(page, {
       "play-btn": true,
@@ -122,7 +126,9 @@ test.describe("Game State Management Tests", () => {
     await expect(page.locator("#time-input")).toBeDisabled();
   });
 
-  test("TC-2.3: Pause State Preservation", async ({ page }) => {
+  test("should preserve game state during pause and resume", async ({
+    page,
+  }) => {
     // Start game with larger range to ensure multiple items
     await startGame(page, {
       learningMode: false,
@@ -181,7 +187,7 @@ test.describe("Game State Management Tests", () => {
     });
   });
 
-  test("TC-2.4: Range Switching After Stop", async ({ page }) => {
+  test("should allow range switching after stopping game", async ({ page }) => {
     // Start game with range 0-10
     await startGame(page, {
       learningMode: true,
@@ -223,7 +229,7 @@ test.describe("Game State Management Tests", () => {
     await expect(page.locator("#to-input")).toHaveValue("60");
   });
 
-  test("TC-2.5: Game Reset on Stop", async ({ page }) => {
+  test("should properly reset game state when stopping", async ({ page }) => {
     // Start game and accumulate some state
     await startGame(page, {
       learningMode: false,
@@ -277,7 +283,9 @@ test.describe("Game State Management Tests", () => {
     await expect(page.locator("#show-btn")).toBeEnabled();
   });
 
-  test("TC-2.6: Multi-round Game Progression", async ({ page }) => {
+  test("should handle multi-round game progression correctly", async ({
+    page,
+  }) => {
     // Start training mode with 2 rounds, small range for faster completion
     await startGame(page, {
       learningMode: false,

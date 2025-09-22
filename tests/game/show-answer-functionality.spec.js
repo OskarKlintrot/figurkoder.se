@@ -12,7 +12,9 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-3.1: Answer Reveal in Training Mode", async ({ page }) => {
+  test("should reveal answer when clicking VISA button in training mode", async ({
+    page,
+  }) => {
     // Start training mode game
     await startGame(page, {
       learningMode: false,
@@ -44,7 +46,7 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     await expect(page.locator("#show-btn")).toBeDisabled();
   });
 
-  test("TC-3.2: Answer Visibility State Tracking", async ({ page }) => {
+  test("should track answer visibility state correctly", async ({ page }) => {
     // Start training mode
     await startGame(page, {
       learningMode: false,
@@ -82,7 +84,9 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     await expect(page.locator("#show-btn")).toBeEnabled();
   });
 
-  test("TC-3.3: VISA Button State Management", async ({ page }) => {
+  test("should manage VISA button state changes correctly", async ({
+    page,
+  }) => {
     // Start training mode
     await startGame(page, {
       learningMode: false,
@@ -123,7 +127,9 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     expect(solutionVisible).toBeFalsy();
   });
 
-  test("TC-3.4: Answer Persistence on Mode Change", async ({ page }) => {
+  test("should persist answer visibility when switching modes", async ({
+    page,
+  }) => {
     // Start training mode
     await startGame(page, {
       learningMode: false,
@@ -172,7 +178,7 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     await expect(page.locator("#show-btn")).toBeEnabled();
   });
 
-  test("TC-3.5: VISA During Timer Countdown", async ({ page }) => {
+  test("should handle VISA button during timer countdown", async ({ page }) => {
     // Start training mode with 10-second timer
     await startGame(page, {
       learningMode: false,
@@ -205,7 +211,9 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     });
   });
 
-  test("TC-3.6: Next Item After VISA", async ({ page }) => {
+  test("should reset answer state when advancing to next item", async ({
+    page,
+  }) => {
     // Start training mode
     await startGame(page, {
       learningMode: false,
@@ -246,7 +254,9 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     expect(currentItem).toBeTruthy();
   });
 
-  test("TC-3.7: VISA in Learning Mode Behavior", async ({ page }) => {
+  test("should handle VISA button correctly in learning mode", async ({
+    page,
+  }) => {
     // Start learning mode game
     await startGame(page, {
       learningMode: true,

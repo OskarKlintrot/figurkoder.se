@@ -6,7 +6,7 @@ test.describe("Accessibility and Keyboard Navigation Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-10.1: Keyboard Shortcuts", async ({ page }) => {
+  test("should support keyboard shortcuts", async ({ page }) => {
     // Start training game to test keyboard shortcuts
     await startGame(page, {
       learningMode: false,
@@ -115,7 +115,7 @@ test.describe("Accessibility and Keyboard Navigation Tests", () => {
     await expect(page.locator("#game-form")).toBeVisible();
   });
 
-  test("TC-10.2: Focus Management", async ({ page }) => {
+  test("should manage focus correctly", async ({ page }) => {
     // Test keyboard navigation through form controls
     await expect(page.locator("#game-form")).toBeVisible();
 
@@ -247,7 +247,7 @@ test.describe("Accessibility and Keyboard Navigation Tests", () => {
     console.log(`Form regained focus after game: ${formHasFocus}`);
   });
 
-  test("TC-10.3: Screen Reader Compatibility", async ({ page }) => {
+  test("should be compatible with screen readers", async ({ page }) => {
     // Test aria labels and screen reader friendly attributes
 
     // Check form labels and accessibility attributes
@@ -379,7 +379,9 @@ test.describe("Accessibility and Keyboard Navigation Tests", () => {
     await expect(page.locator("#game-form")).toBeVisible();
   });
 
-  test("TC-10.4: High Contrast and Visual Accessibility", async ({ page }) => {
+  test("should support high contrast and visual accessibility", async ({
+    page,
+  }) => {
     // Test app in high contrast mode
     await page.emulateMedia({ colorScheme: "dark" });
     await page.reload();

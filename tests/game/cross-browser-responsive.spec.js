@@ -6,7 +6,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     await navigateToGamePage(page);
   });
 
-  test("TC-12.1: Mobile Viewport Testing", async ({ page }) => {
+  test("should work correctly on mobile viewports", async ({ page }) => {
     // Test various mobile screen sizes
     const mobileSizes = [
       { width: 375, height: 667, name: "iPhone SE" },
@@ -141,7 +141,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     await page.click("#stop-btn");
   });
 
-  test("TC-12.2: Browser API Compatibility", async ({ page }) => {
+  test("should be compatible with different browser APIs", async ({ page }) => {
     // Test graceful degradation when APIs are not available
 
     // Test without vibration API
@@ -272,7 +272,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     expect(appStillWorks).toBeTruthy();
   });
 
-  test("TC-12.3: Viewport and Zoom Testing", async ({ page }) => {
+  test("should handle viewport and zoom changes", async ({ page }) => {
     // Test different zoom levels
     const zoomLevels = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
@@ -357,7 +357,9 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     expect(ultraWideBounds.width).toBeLessThan(1200); // Should have reasonable max-width
   });
 
-  test("TC-12.4: Performance Across Viewports", async ({ page }) => {
+  test("should maintain performance across different viewports", async ({
+    page,
+  }) => {
     const viewports = [
       { width: 320, height: 568, name: "Mobile Small" },
       { width: 768, height: 1024, name: "Tablet" },

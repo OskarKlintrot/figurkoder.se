@@ -21,7 +21,7 @@ test.describe("Data Range and Input Validation Tests", () => {
 
     // Stop game to test next range
     await page.click("#stop-btn");
-    
+
     // Navigate back to ensure we have the form (training mode may show results)
     await navigateToGamePage(page);
 
@@ -32,7 +32,7 @@ test.describe("Data Range and Input Validation Tests", () => {
     await page.click('button[type="submit"]');
     await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
     await page.click("#stop-btn");
-    
+
     // Navigate back to ensure we have the form (training mode may show results)
     await navigateToGamePage(page);
 
@@ -43,7 +43,7 @@ test.describe("Data Range and Input Validation Tests", () => {
     await page.click('button[type="submit"]');
     await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
     await page.click("#stop-btn");
-    
+
     // Navigate back to ensure we have the form
     await navigateToGamePage(page);
 
@@ -54,7 +54,7 @@ test.describe("Data Range and Input Validation Tests", () => {
     await page.click('button[type="submit"]');
     await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
     await page.click("#stop-btn");
-    
+
     // Navigate back to ensure we have the form (training mode may show results)
     await navigateToGamePage(page);
 
@@ -64,7 +64,7 @@ test.describe("Data Range and Input Validation Tests", () => {
     await page.click('button[type="submit"]');
     await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
     await page.click("#stop-btn");
-    
+
     // Navigate back to ensure we have the form (training mode may show results)
     await navigateToGamePage(page);
 
@@ -95,7 +95,7 @@ test.describe("Data Range and Input Validation Tests", () => {
         .locator("#stop-btn:not([disabled])")
         .isVisible()
         .catch(() => false);
-      
+
       if (stopButtonEnabled) {
         await page.click("#stop-btn");
         // Navigate back to ensure we have the form
@@ -125,7 +125,7 @@ test.describe("Data Range and Input Validation Tests", () => {
         .locator("#stop-btn:not([disabled])")
         .isVisible()
         .catch(() => false);
-      
+
       if (stopButtonEnabled) {
         await page.click("#stop-btn");
         // Navigate back to ensure we have the form
@@ -155,7 +155,7 @@ test.describe("Data Range and Input Validation Tests", () => {
         .locator("#stop-btn:not([disabled])")
         .isVisible()
         .catch(() => false);
-      
+
       if (stopButtonEnabled) {
         await page.click("#stop-btn");
         // Navigate back to ensure we have the form
@@ -284,7 +284,7 @@ test.describe("Data Range and Input Validation Tests", () => {
   test("should validate input fields properly", async ({ page }) => {
     // Ensure we start with fresh form
     await navigateToGamePage(page);
-    
+
     // Test empty inputs
     await page.fill("#from-input", "");
     await page.fill("#to-input", "");
@@ -323,7 +323,7 @@ test.describe("Data Range and Input Validation Tests", () => {
       .isVisible()
       .catch(() => false);
 
-    // Should either prevent game start or handle gracefully  
+    // Should either prevent game start or handle gracefully
     expect(formVisible2 || gameStarted2).toBeTruthy();
 
     // Reset for next test
@@ -369,7 +369,7 @@ test.describe("Data Range and Input Validation Tests", () => {
         .locator("#stop-btn:not([disabled])")
         .isVisible()
         .catch(() => false);
-      
+
       if (stopButtonEnabled) {
         await page.click("#stop-btn");
       }
@@ -394,7 +394,7 @@ test.describe("Data Range and Input Validation Tests", () => {
         .locator("#stop-btn:not([disabled])")
         .isVisible()
         .catch(() => false);
-      
+
       if (stopButtonEnabled) {
         await page.click("#stop-btn");
       }
@@ -416,7 +416,7 @@ test.describe("Data Range and Input Validation Tests", () => {
         .locator("#stop-btn:not([disabled])")
         .isVisible()
         .catch(() => false);
-      
+
       if (stopButtonEnabled) {
         await page.click("#stop-btn");
       }

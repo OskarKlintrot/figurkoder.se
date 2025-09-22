@@ -20,7 +20,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
 
       await page.setViewportSize({ width: size.width, height: size.height });
       await page.waitForTimeout(200); // Allow layout adjustment
-      
+
       // Ensure we're on the game page after viewport change
       await navigateToGamePage(page);
 
@@ -110,7 +110,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
       expect(newItem).toBeTruthy();
 
       await page.click("#stop-btn");
-      
+
       // Training mode might show results page or form depending on game state
       // Wait for either to be visible
       const formVisible = await page
@@ -128,7 +128,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     // Test landscape orientation
     await page.setViewportSize({ width: 667, height: 375 }); // Landscape iPhone SE
     await page.waitForTimeout(200);
-    
+
     // Ensure we're on the game page after viewport change
     await navigateToGamePage(page);
 
@@ -225,7 +225,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     // Reload to test without service worker
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
-    
+
     // Wait for app to initialize properly - try multiple selectors
     try {
       await page.waitForSelector("#main-menu.active", { timeout: 3000 });
@@ -265,7 +265,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
     expect(itemWithoutStorage).toBeTruthy();
 
     await page.click("#stop-btn");
-    
+
     // Training mode might show results page or form depending on game state
     // Wait for either to be visible
     const formVisible = await page
@@ -308,7 +308,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
 
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
-    
+
     // Wait for app initialization - be more patient since we've modified the environment
     try {
       await page.waitForSelector("#main-menu.active", { timeout: 10000 });
@@ -318,7 +318,9 @@ test.describe("Cross-Browser and Responsive Tests", () => {
       // Check if the page loaded at all
       const bodyContent = await page.textContent("body");
       if (!bodyContent || bodyContent.trim().length === 0) {
-        throw new Error("App failed to initialize with modified JavaScript environment");
+        throw new Error(
+          "App failed to initialize with modified JavaScript environment",
+        );
       }
     }
 
@@ -383,7 +385,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
       expect(newItem).toBeTruthy();
 
       await page.click("#stop-btn");
-      
+
       // Training mode might show results page or form depending on game state
       // Wait for either to be visible
       const formVisible = await page
@@ -455,7 +457,7 @@ test.describe("Cross-Browser and Responsive Tests", () => {
 
       await page.reload();
       await page.waitForLoadState("domcontentloaded");
-      
+
       // Wait for any element that indicates the page is ready instead of specifically main menu
       await page.waitForSelector("body", { timeout: 5000 });
 

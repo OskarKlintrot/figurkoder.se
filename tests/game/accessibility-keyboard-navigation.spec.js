@@ -397,7 +397,7 @@ test.describe("Accessibility and Keyboard Navigation Tests", () => {
     console.log("New item accessibility:", newItemAccessibility);
 
     await page.click("#stop-btn");
-    
+
     // Training mode might show results page or form depending on game state
     // Wait for either to be visible
     const formVisible = await page
@@ -419,10 +419,10 @@ test.describe("Accessibility and Keyboard Navigation Tests", () => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
-    
+
     // Wait for any element that indicates the page is ready instead of specifically main menu
     await page.waitForSelector("body", { timeout: 5000 });
-    
+
     // Navigate to game page in dark mode
     await navigateToGamePage(page);
 

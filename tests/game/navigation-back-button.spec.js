@@ -37,19 +37,25 @@ test.describe("Navigation and Back Button Tests", () => {
     await page.click("#stop-btn");
 
     // In training mode, check if results are displayed or we return to form
-    const resultPageVisible = await page.locator("#result-page").isVisible().catch(() => false);
-    const formVisible = await page.locator("#game-form").isVisible().catch(() => false);
+    const resultPageVisible = await page
+      .locator("#result-page")
+      .isVisible()
+      .catch(() => false);
+    const formVisible = await page
+      .locator("#game-form")
+      .isVisible()
+      .catch(() => false);
 
     if (resultPageVisible) {
       // Test navigation back from results page
       const backSelectors = [
-        '.back-btn',
+        ".back-btn",
         'button:has-text("Tillbaka")',
         'button:has-text("Back")',
-        '#back-btn',
-        '.header .back-button'
+        "#back-btn",
+        ".header .back-button",
       ];
-      
+
       let navigatedBack = false;
       for (const selector of backSelectors) {
         const backButton = page.locator(selector);
@@ -89,27 +95,33 @@ test.describe("Navigation and Back Button Tests", () => {
 
     // Check that we're on the game page
     await expect(page.locator("#game-page.active")).toBeVisible();
-    
+
     // Navigate away using back or home navigation (simplest approach)
     try {
       // Try clicking back/home button if available
-      await page.click('.header .back-button, button:has-text("Hem"), button:has-text("Home")');
+      await page.click(
+        '.header .back-button, button:has-text("Hem"), button:has-text("Home")',
+      );
     } catch (e) {
       // Fallback: use JavaScript navigation which is more reliable
       await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll('button'));
-        const heimButton = buttons.find(btn => btn.textContent && btn.textContent.includes('Hem'));
+        const buttons = Array.from(document.querySelectorAll("button"));
+        const heimButton = buttons.find(
+          btn => btn.textContent && btn.textContent.includes("Hem"),
+        );
         if (heimButton) {
           heimButton.click();
         } else {
-          window.location.hash = 'main-menu';
+          window.location.hash = "main-menu";
         }
       });
     }
 
     // Should be back to main menu - be flexible about active state
     try {
-      await expect(page.locator("#main-menu.active")).toBeVisible({ timeout: 3000 });
+      await expect(page.locator("#main-menu.active")).toBeVisible({
+        timeout: 3000,
+      });
     } catch (e) {
       // Accept if main menu is visible even if not active
       await expect(page.locator("#main-menu")).toBeVisible({ timeout: 3000 });
@@ -130,14 +142,18 @@ test.describe("Navigation and Back Button Tests", () => {
     page,
   }) => {
     // Navigate through: main → game
-    
+
     // Start at main menu
     await expect(page.locator("#main-menu.active")).toBeVisible();
 
     // Check back button state on main menu
-    const backButtonSelectors = [".back-btn", "#back-btn", ".header .back-button"];
+    const backButtonSelectors = [
+      ".back-btn",
+      "#back-btn",
+      ".header .back-button",
+    ];
     let backButtonOnMain = false;
-    
+
     for (const selector of backButtonSelectors) {
       const button = page.locator(selector);
       const isVisible = await button.isVisible().catch(() => false);
@@ -160,10 +176,14 @@ test.describe("Navigation and Back Button Tests", () => {
         // Test that it works
         await button.click();
         try {
-          await expect(page.locator("#main-menu.active")).toBeVisible({ timeout: 3000 });
+          await expect(page.locator("#main-menu.active")).toBeVisible({
+            timeout: 3000,
+          });
         } catch (e) {
           // Accept if main menu is visible even if not active
-          await expect(page.locator("#main-menu")).toBeVisible({ timeout: 3000 });
+          await expect(page.locator("#main-menu")).toBeVisible({
+            timeout: 3000,
+          });
         }
         backButtonOnGame = true;
         break;
@@ -194,20 +214,24 @@ test.describe("Navigation and Back Button Tests", () => {
     } catch (e) {
       // Fallback: use JavaScript navigation which is more reliable
       await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll('button'));
-        const heimButton = buttons.find(btn => btn.textContent && btn.textContent.includes('Hem'));
+        const buttons = Array.from(document.querySelectorAll("button"));
+        const heimButton = buttons.find(
+          btn => btn.textContent && btn.textContent.includes("Hem"),
+        );
         if (heimButton) {
           heimButton.click();
         } else {
-          window.location.hash = 'main-menu';
+          window.location.hash = "main-menu";
         }
       });
     }
-    
+
     // Wait for navigation and be flexible about active state
     await page.waitForTimeout(500);
     try {
-      await expect(page.locator("#main-menu.active")).toBeVisible({ timeout: 3000 });
+      await expect(page.locator("#main-menu.active")).toBeVisible({
+        timeout: 3000,
+      });
     } catch (e) {
       // Accept if main menu is visible even if not active
       await expect(page.locator("#main-menu")).toBeVisible({ timeout: 3000 });
@@ -248,20 +272,24 @@ test.describe("Navigation and Back Button Tests", () => {
     } catch (e) {
       // Fallback: use JavaScript navigation which is more reliable
       await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll('button'));
-        const heimButton = buttons.find(btn => btn.textContent && btn.textContent.includes('Hem'));
+        const buttons = Array.from(document.querySelectorAll("button"));
+        const heimButton = buttons.find(
+          btn => btn.textContent && btn.textContent.includes("Hem"),
+        );
         if (heimButton) {
           heimButton.click();
         } else {
-          window.location.hash = 'main-menu';
+          window.location.hash = "main-menu";
         }
       });
     }
-    
+
     // Wait for navigation and be flexible about active state
     await page.waitForTimeout(500);
     try {
-      await expect(page.locator("#main-menu.active")).toBeVisible({ timeout: 3000 });
+      await expect(page.locator("#main-menu.active")).toBeVisible({
+        timeout: 3000,
+      });
     } catch (e) {
       // Accept if main menu is visible even if not active
       await expect(page.locator("#main-menu")).toBeVisible({ timeout: 3000 });

@@ -40,7 +40,9 @@ test.describe("Performance and Memory Tests", () => {
     // Simulate extended gameplay (30+ items)
     for (let i = 0; i < 30; i++) {
       // Wait for next button to be enabled and click it
-      await page.waitForSelector("#next-btn:not([disabled])", { timeout: 3000 });
+      await page.waitForSelector("#next-btn:not([disabled])", {
+        timeout: 3000,
+      });
       await page.click("#next-btn");
       await page.waitForTimeout(50); // Small delay between actions
 
@@ -413,7 +415,7 @@ test.describe("Performance and Memory Tests", () => {
 
       await page.click("#stop-btn");
       await page.waitForTimeout(50);
-      
+
       // Navigate back to game page for next cycle
       await navigateToGamePage(page);
     }

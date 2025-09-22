@@ -418,36 +418,39 @@ test.describe("Timer and Countdown System Tests", () => {
 
     await waitForProgressBarActive(page);
 
-    // Navigate away from game page - open menu first, then click navigation  
+    // Navigate away from game page - open menu first, then click navigation
     const menuButton = page.locator(".menu-btn, #menu-btn, .hamburger-menu");
     const menuVisible = await menuButton.isVisible().catch(() => false);
-    
+
     if (menuVisible) {
       await menuButton.click();
       await page.waitForTimeout(300);
     }
-    
+
     // Use JavaScript to click the navigation item - fix selector syntax
     await page.evaluate(() => {
       // Find "Hem" button by text content
-      const buttons = Array.from(document.querySelectorAll('button'));
-      const heimButton = buttons.find(btn => btn.textContent && btn.textContent.includes('Hem'));
-      
+      const buttons = Array.from(document.querySelectorAll("button"));
+      const heimButton = buttons.find(
+        btn => btn.textContent && btn.textContent.includes("Hem"),
+      );
+
       if (heimButton) {
         heimButton.click();
       } else {
         // Fallback: find main menu navigation
-        const mainMenuButton = document.querySelector('button[onclick*="main-menu"]') ||
-                               document.querySelector('a[href="#main-menu"]');
+        const mainMenuButton =
+          document.querySelector('button[onclick*="main-menu"]') ||
+          document.querySelector('a[href="#main-menu"]');
         if (mainMenuButton) {
           mainMenuButton.click();
         } else {
           // Final fallback: direct navigation
-          window.location.hash = 'main-menu';
+          window.location.hash = "main-menu";
         }
       }
     });
-    
+
     // Wait for navigation
     await page.waitForSelector("#main-menu.active", { timeout: 3000 });
 

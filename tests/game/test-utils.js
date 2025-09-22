@@ -12,7 +12,7 @@ import { expect } from "@playwright/test";
 export async function navigateToGamePage(page) {
   await page.goto("/");
   await page.waitForLoadState("domcontentloaded");
-  
+
   // Wait for main menu with flexible approach
   try {
     await page.waitForSelector("#main-menu.active", { timeout: 3000 });

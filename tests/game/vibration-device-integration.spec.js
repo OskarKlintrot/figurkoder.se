@@ -102,7 +102,7 @@ test.describe("Vibration and Device Integration Tests", () => {
     // Verify game still functions normally after vibration tests
     await expect(page.locator("#current-item")).toBeVisible();
     await page.click('button[onclick="stopGame()"]');
-    
+
     // Training mode might show results page or form depending on game state
     // Wait for either to be visible
     const formVisible = await page

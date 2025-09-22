@@ -44,7 +44,7 @@ test.describe("Data Range and Input Validation Tests", () => {
     await expect(page.locator(".game-controls")).toBeVisible({ timeout: 5000 });
     await page.click("#stop-btn");
 
-    // Navigate back to ensure we have the form
+    // Navigate back to ensure we have the form (training mode may show results)
     await navigateToGamePage(page);
 
     // Test boundary values: 0-0, 99-99
@@ -282,9 +282,6 @@ test.describe("Data Range and Input Validation Tests", () => {
   });
 
   test("should validate input fields properly", async ({ page }) => {
-    // Ensure we start with fresh form
-    await navigateToGamePage(page);
-
     // Test empty inputs
     await page.fill("#from-input", "");
     await page.fill("#to-input", "");

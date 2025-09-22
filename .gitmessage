@@ -1,18 +1,22 @@
-# Brief description of changes
+# type(scope): subject (max 50 chars)
 
-# Longer description if needed
-# - What was changed
-# - Why it was changed
-# - Any important details
+# REQUIRED: Follow karma git commit convention:
+# - type: feat, fix, docs, style, refactor, test, perf, build
+# - scope: optional area of codebase (e.g., game, navigation, pwa)
+# - subject: imperative present tense, capitalized, no period
 
-# REMINDER: Did you run `npm run format` before committing?
+# Examples:
+# feat(game): Add timer pause functionality
+# fix(navigation): Correct page routing for hash urls
+# docs(readme): Update installation instructions
+# style: Format code with prettier
+# refactor(game): Extract common state utilities
+# perf(game): Optimize timer calculation for better performance
+# build(deps): Update package dependencies
+
+# Body: explain what and why vs. how (wrap at 72 chars)
+# - What was changed and why
+# - Reference issues and breaking changes
+
+# REMINDER: Run `npm run format` before committing!
 # All code must be properly formatted to pass CI checks.
-
-# Please follow conventional commit format when possible:
-# feat: add new feature
-# fix: bug fix
-# docs: documentation changes
-# style: formatting, missing semi colons, etc.
-# refactor: code change that neither fixes a bug nor adds a feature
-# test: adding missing tests
-# chore: maintain

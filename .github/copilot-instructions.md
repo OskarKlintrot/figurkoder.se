@@ -135,6 +135,61 @@ git commit -m "Your commit message"
 - Test suite includes pre-test formatting validation
 - Failed formatting triggers helpful PR comments with fix instructions
 
+### Git Commit & PR Title Convention
+**CRITICAL**: All commit messages and PR titles must follow the strict karma git convention from https://karma-runner.github.io/6.4/dev/git-commit-msg.html
+
+**Required Format:**
+```
+type(scope): subject
+```
+
+**Commit Message Requirements:**
+- **type**: MUST be one of: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `perf`, `build`
+- **scope**: Optional area of codebase (e.g., `game`, `navigation`, `pwa`, `css`)
+- **subject**: Imperative present tense, capitalized, no period, max 50 chars
+
+**PR Title Requirements:**
+- **MUST follow the exact same karma convention as commit messages**
+- **Examples**: `feat(game): Add timer pause functionality`, `fix(navigation): Correct page routing`, `docs(readme): Update installation guide`
+
+**Valid Examples:**
+```bash
+# Commit messages
+feat(game): Add pause/resume timer functionality
+fix(navigation): Correct hash routing for mobile safari
+docs(readme): Update local development setup
+style: Format code with prettier
+refactor(game): Extract timer utilities to separate module
+test(navigation): Add routing test coverage
+perf(game): Optimize timer calculation for better performance
+build(deps): Update package dependencies
+
+# PR titles (identical format)
+feat(pwa): Add offline game state persistence
+fix(css): Resolve mobile layout overflow issues
+docs(copilot): Add git karma convention requirements
+perf(game): Optimize timer performance
+build: Update build configuration
+```
+
+**Invalid Examples:**
+```bash
+# Wrong - missing type
+add timer functionality
+
+# Wrong - lowercase subject
+feat(game): add timer functionality
+
+# Wrong - period at end
+feat(game): Add timer functionality.
+
+# Wrong - invalid type
+feature(game): Add timer functionality
+
+# Wrong - past tense
+feat(game): Added timer functionality
+```
+
 ### CSS Architecture
 Uses CSS custom properties extensively:
 - Color scheme: `--color-primary`, `--color-secondary`, etc.

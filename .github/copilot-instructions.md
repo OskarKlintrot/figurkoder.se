@@ -135,6 +135,58 @@ git commit -m "Your commit message"
 - Test suite includes pre-test formatting validation
 - Failed formatting triggers helpful PR comments with fix instructions
 
+### Git Commit & PR Title Convention
+**CRITICAL**: All commit messages and PR titles must follow the strict karma git convention from https://karma-runner.github.io/6.4/dev/git-commit-msg.html
+
+**Required Format:**
+```
+type(scope): subject
+```
+
+**Commit Message Requirements:**
+- **type**: MUST be one of: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- **scope**: Optional area of codebase (e.g., `game`, `navigation`, `pwa`, `css`)
+- **subject**: Imperative present tense, lowercase, no period, max 50 chars
+
+**PR Title Requirements:**
+- **MUST follow the exact same karma convention as commit messages**
+- **Examples**: `feat(game): add timer pause functionality`, `fix(navigation): correct page routing`, `docs(readme): update installation guide`
+
+**Valid Examples:**
+```bash
+# Commit messages
+feat(game): add pause/resume timer functionality
+fix(navigation): correct hash routing for mobile safari
+docs(readme): update local development setup
+style: format code with prettier
+refactor(game): extract timer utilities to separate module
+test(navigation): add routing test coverage
+chore(deps): update playwright to latest version
+
+# PR titles (identical format)
+feat(pwa): add offline game state persistence
+fix(css): resolve mobile layout overflow issues
+docs(copilot): add git karma convention requirements
+```
+
+**Invalid Examples:**
+```bash
+# Wrong - missing type
+add timer functionality
+
+# Wrong - capitalized subject
+feat(game): Add timer functionality
+
+# Wrong - period at end
+feat(game): add timer functionality.
+
+# Wrong - invalid type
+feature(game): add timer functionality
+
+# Wrong - past tense
+feat(game): added timer functionality
+```
+
 ### CSS Architecture
 Uses CSS custom properties extensively:
 - Color scheme: `--color-primary`, `--color-secondary`, etc.

@@ -52,7 +52,14 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        // Use system Chrome in Copilot sessions (where Chromium download fails)
+        // Use Chromium locally for better consistency with CI/production
+        ...(process.env.COPILOT_SESSION === "true" || process.env.GITHUB_ACTIONS
+          ? { channel: "chrome" }
+          : {}),
+      },
     },
   ],
 

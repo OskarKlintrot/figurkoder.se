@@ -43,8 +43,7 @@ export default defineConfig({
     navigationTimeout: process.env.CI ? 3000 : 3000,
     actionTimeout: process.env.CI ? 2000 : 2000,
 
-    /* Note: Google Fonts (Material Icons) may be blocked in test environment
-     * Tests are designed to work with both loaded fonts and text fallbacks */
+    headless: true,
   },
 
   /* Configure projects for major browsers */

@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test";
+
 /**
  * Test utilities for Figurkoder.se Playwright tests
  * Common functions for game testing scenarios
@@ -159,12 +161,16 @@ export async function waitForItemChange(page, previousItem, timeout = 5000) {
 export async function assertButtonStates(page, expectedStates) {
   for (const [buttonId, shouldBeEnabled] of Object.entries(expectedStates)) {
     const selector = `#${buttonId}`;
-    const actuallyEnabled = await isButtonEnabled(page, selector);
+    const button = page.locator(selector);
 
-    if (shouldBeEnabled !== actuallyEnabled) {
-      throw new Error(
-        `Button ${buttonId} should be ${shouldBeEnabled ? "enabled" : "disabled"} but is ${actuallyEnabled ? "enabled" : "disabled"}`,
-      );
+    if (shouldBeEnabled) {
+      await expect(button).toBeEnabled({
+        timeout: 2000,
+      });
+    } else {
+      await expect(button).toBeDisabled({
+        timeout: 2000,
+      });
     }
   }
 }

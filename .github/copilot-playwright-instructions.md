@@ -4,7 +4,9 @@
 ```bash
 cd /home/runner/work/figurkoder.se/figurkoder.se
 npm install
-npm test  # Should work immediately with system Chrome
+# For Copilot sessions (use system Chrome):
+export COPILOT_SESSION=true
+npm test  # Should work immediately
 ```
 
 ## Why These Instructions Are Needed
@@ -23,19 +25,33 @@ npm install
 ```
 
 ### 2. Browser Configuration
-The project is configured to use **system Chrome** instead of downloading Playwright browsers. This avoids download failures that commonly occur in Copilot environments.
+The project is configured to automatically select the appropriate browser:
+- **Local development**: Uses downloaded Chromium for consistency
+- **Copilot sessions**: Uses system Chrome to avoid download failures
+- **CI environments**: Uses system Chrome for better performance
 
 **Key configuration in `playwright.config.js`:**
 ```javascript
 projects: [
   {
     name: "chromium",
-    use: { 
+    use: {
       ...devices["Desktop Chrome"],
-      channel: "chrome", // Uses system Google Chrome
+      // Use system Chrome in Copilot sessions (where Chromium download fails)
+      // Use Chromium locally for better consistency with CI/production
+      ...(process.env.COPILOT_SESSION === "true" || process.env.GITHUB_ACTIONS
+        ? { channel: "chrome" }
+        : {}),
     },
   },
 ],
+```
+
+**For Copilot Sessions Only:**
+```bash
+# Set environment variable to use system Chrome
+export COPILOT_SESSION=true
+npm test
 ```
 
 ### 3. Running Tests
@@ -78,41 +94,10 @@ npm run test:headed
 npm run serve:test
 ```
 
-### 4. Test Structure Overview
-
-The project has **35 tests** across **6 test files**:
-
-- `tests/smoke.spec.js` - Basic smoke tests (3 tests)
-- `tests/app-initialization.spec.js` - App startup tests (3 tests) 
-- `tests/navigation.spec.js` - Page navigation tests (5 tests)
-- `tests/game/game-functionality.spec.js` - Core game logic tests (11 tests)
-- `tests/game/timer-countdown-system.spec.js` - Timer system tests (8 tests)
-- `tests/pwa-features.spec.js` - PWA functionality tests (5 tests)
-
-### 5. Understanding Test Results
-
-#### Expected Success Rate
-- **28-34 tests should pass** consistently
-- **1-7 tests may be flaky** due to timing or UI interaction issues
-- **0 critical failures** should occur if setup is correct
-
-#### Common Test Issues
-1. **Timer-related tests** may occasionally fail due to timing sensitivity
-2. **PWA tests** may be flaky in CI environments
-3. **UI interaction tests** may timeout if elements are overlapped
-
-#### Sample Successful Output
-```
-Running 35 tests using 4 workers
-···························××··········
-  2 failed
-  33 passed (45.2s)
-```
-
-### 6. Troubleshooting
+### 4. Troubleshooting
 
 #### If Browser Download Fails
-The most common issue is Playwright trying to download browsers. Our configuration avoids this by using system Chrome.
+In Copilot sessions, browser downloads often fail. The configuration automatically uses system Chrome when the `COPILOT_SESSION` environment variable is set.
 
 **Symptoms:**
 ```
@@ -120,7 +105,11 @@ Error: Failed to download Chromium 140.0.7339.16
 ```
 
 **Solution:**
-Ensure `playwright.config.js` has the `channel: "chrome"` configuration (should already be set).
+```bash
+# Set environment variable to use system Chrome instead
+export COPILOT_SESSION=true
+npm test
+```
 
 #### If Tests Fail to Start
 ```bash
@@ -147,7 +136,7 @@ pkill -f "http-server.*3001"
 npm run serve:test
 ```
 
-### 7. Debugging Individual Tests
+### 5. Debugging Individual Tests
 
 #### Run Single Test File
 ```bash
@@ -177,7 +166,7 @@ npx playwright show-report
 
 ## Project-Specific Test Notes
 
-- **Uses system Chrome** instead of downloaded browsers
+- **Adaptive browser selection**: Uses Chromium locally, Chrome in Copilot/CI environments
 - **Test server runs on port 3001** (automatically started)
 - **Swedish language content** in tests and assertions
 - **PWA functionality** includes offline testing
@@ -187,9 +176,9 @@ npx playwright show-report
 ## Success Indicators
 
 ✅ **Setup Working Correctly:**
-- No browser download attempts
+- Browser automatically selected (Chromium locally, Chrome in Copilot)
 - Test server starts on port 3001
-- 28+ tests pass consistently
+- Tests pass consistently
 - Smoke tests pass 100%
 
 ✅ **Ready for Development:**

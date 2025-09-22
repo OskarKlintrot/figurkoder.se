@@ -54,8 +54,11 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        // Use system Google Chrome instead of downloading Chromium
-        channel: "chrome",
+        // Use system Chrome in Copilot sessions (where Chromium download fails)
+        // Use Chromium locally for better consistency with CI/production
+        ...(process.env.COPILOT_SESSION === "true" || process.env.GITHUB_ACTIONS
+          ? { channel: "chrome" }
+          : {}),
       },
     },
   ],

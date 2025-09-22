@@ -1,7 +1,7 @@
 # type(scope): subject (max 50 chars)
 
 # REQUIRED: Follow karma git commit convention:
-# - type: feat, fix, docs, style, refactor, test, perf, build, ci
+# - type: feat, fix, docs, style, refactor, test, perf, build
 # - scope: optional area of codebase (e.g., game, navigation, pwa)
 # - subject: imperative present tense, capitalized, no period
 
@@ -13,7 +13,6 @@
 # refactor(game): Extract common state utilities
 # perf(game): Optimize timer calculation for better performance
 # build(deps): Update package dependencies
-# ci: Update GitHub Actions workflow
 
 # Body: explain what and why vs. how (wrap at 72 chars)
 # - What was changed and why

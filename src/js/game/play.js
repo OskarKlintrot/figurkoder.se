@@ -29,8 +29,7 @@ const domCache = {
   roundsInput: null,
   init() {
     this.nextBtn = document.getElementById("next-btn");
-    this.progressBar =
-      this.nextBtn?.parentElement?.querySelector(".btn-progress-bar");
+    this.progressBar = this.nextBtn?.querySelector(".btn-progress-bar");
     this.currentItem = document.getElementById("current-item");
     this.solutionDisplay = document.getElementById("solution-display");
     this.playBtn = document.getElementById("play-btn");

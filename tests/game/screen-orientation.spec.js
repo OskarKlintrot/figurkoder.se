@@ -19,7 +19,7 @@ test.describe("Screen Orientation Tests", () => {
 
   test("should load screen orientation module", async ({ page }) => {
     // Check that the screen orientation script is loaded
-    const scriptTags = await page.locator('script[src*="screen-orientation"]');
+    const scriptTags = page.locator('script[src*="screen-orientation"]');
     await expect(scriptTags).toHaveCount(1);
   });
 
@@ -44,22 +44,28 @@ test.describe("Screen Orientation Tests", () => {
     await page.addInitScript(() => {
       // Set up the mock before any scripts run
       window.screen = window.screen || {};
-      window.screen.orientation = {
-        lock: function (orientation) {
+
+      const originalOrientation = window.screen.orientation;
+
+      // Only mock the lock method, preserve all existing properties
+      Object.defineProperty(originalOrientation, "lock", {
+        value: function (orientation) {
           window.orientationLockCalled = true;
           window.orientationLockValue = orientation;
           return Promise.resolve();
         },
-      };
+        writable: true,
+        configurable: true,
+      });
     });
 
     await page.goto("/");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("load");
 
-    // Wait for all deferred scripts to load and execute
-    await page.waitForLoadState("networkidle");
+    // Wait for deferred scripts to execute
+    await page.waitForTimeout(1000);
 
-    // Check if orientation lock was attempted by the actual app script
+    // Verify that orientation lock was attempted
     const result = await page.evaluate(() => {
       return {
         lockCalled: !!window.orientationLockCalled,
@@ -67,23 +73,37 @@ test.describe("Screen Orientation Tests", () => {
       };
     });
 
-    // Should have attempted to lock orientation to portrait
     expect(result.lockCalled).toBe(true);
     expect(result.lockValue).toBe("portrait");
+
+    // App should also load and function normally
+    const hasContent = await page.locator("body").textContent();
+    expect(hasContent).toContain("Figurkoder");
   });
 
   test("should handle orientation lock errors gracefully", async ({ page }) => {
     // Mock Screen Orientation API that throws errors
     await page.addInitScript(() => {
-      window.screen.orientation = {
-        lock: function () {
+      // Set up the mock before any scripts run
+      window.screen = window.screen || {};
+
+      const originalOrientation = window.screen.orientation;
+
+      // If orientation exists, only replace the lock method
+      Object.defineProperty(originalOrientation, "lock", {
+        value: function () {
           return Promise.reject(new Error("Orientation lock not allowed"));
         },
-      };
+        writable: true,
+        configurable: true,
+      });
     });
 
-    await page.reload();
+    await page.goto("/");
     await page.waitForLoadState("domcontentloaded");
+
+    // Wait for deferred scripts to execute
+    await page.waitForTimeout(1000);
 
     // Should still load without errors despite orientation lock failure
     const hasContent = await page.locator("body").textContent();

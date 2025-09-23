@@ -181,9 +181,12 @@ test.describe("Timer and Countdown System Tests", () => {
     // Wait for progress to reach ~25% (about 2.5 seconds)
     await page.waitForFunction(
       () => {
-        const nextBtn = document.querySelector("#next-btn .btn-progress-bar");
+        const nextBtn = document.querySelector("#next-btn");
         if (!nextBtn) return false;
-        const style = window.getComputedStyle(nextBtn);
+        const progressBar =
+          nextBtn.parentElement.querySelector(".btn-progress-bar");
+        if (!progressBar) return false;
+        const style = window.getComputedStyle(progressBar);
         const progress =
           parseFloat(style.getPropertyValue("--progress").replace("%", "")) ||
           0;
@@ -224,9 +227,12 @@ test.describe("Timer and Countdown System Tests", () => {
     // Wait for progress to advance significantly from pause point
     await page.waitForFunction(
       pauseProgress => {
-        const nextBtn = document.querySelector("#next-btn .btn-progress-bar");
+        const nextBtn = document.querySelector("#next-btn");
         if (!nextBtn) return false;
-        const style = window.getComputedStyle(nextBtn);
+        const progressBar =
+          nextBtn.parentElement.querySelector(".btn-progress-bar");
+        if (!progressBar) return false;
+        const style = window.getComputedStyle(progressBar);
         const progress =
           parseFloat(style.getPropertyValue("--progress").replace("%", "")) ||
           0;
@@ -258,9 +264,12 @@ test.describe("Timer and Countdown System Tests", () => {
     // Wait for some progress to accumulate (about 2 seconds worth)
     await page.waitForFunction(
       () => {
-        const nextBtn = document.querySelector("#next-btn .btn-progress-bar");
+        const nextBtn = document.querySelector("#next-btn");
         if (!nextBtn) return false;
-        const style = window.getComputedStyle(nextBtn);
+        const progressBar =
+          nextBtn.parentElement.querySelector(".btn-progress-bar");
+        if (!progressBar) return false;
+        const style = window.getComputedStyle(progressBar);
         const progress =
           parseFloat(style.getPropertyValue("--progress").replace("%", "")) ||
           0;
@@ -289,9 +298,12 @@ test.describe("Timer and Countdown System Tests", () => {
     // Verify the new timer works correctly - wait for some progress
     await page.waitForFunction(
       () => {
-        const nextBtn = document.querySelector("#next-btn .btn-progress-bar");
+        const nextBtn = document.querySelector("#next-btn");
         if (!nextBtn) return false;
-        const style = window.getComputedStyle(nextBtn);
+        const progressBar =
+          nextBtn.parentElement.querySelector(".btn-progress-bar");
+        if (!progressBar) return false;
+        const style = window.getComputedStyle(progressBar);
         const progress =
           parseFloat(style.getPropertyValue("--progress").replace("%", "")) ||
           0;
@@ -389,9 +401,12 @@ test.describe("Timer and Countdown System Tests", () => {
     // Wait for initial progress to show up
     await page.waitForFunction(
       () => {
-        const nextBtn = document.querySelector("#next-btn .btn-progress-bar");
+        const nextBtn = document.querySelector("#next-btn");
         if (!nextBtn) return false;
-        const style = window.getComputedStyle(nextBtn);
+        const progressBar =
+          nextBtn.parentElement.querySelector(".btn-progress-bar");
+        if (!progressBar) return false;
+        const style = window.getComputedStyle(progressBar);
         const progress =
           parseFloat(style.getPropertyValue("--progress").replace("%", "")) ||
           0;
@@ -546,9 +561,12 @@ test.describe("Timer and Countdown System Tests", () => {
     // Wait for timer to expire by waiting for progress bar to complete
     await page.waitForFunction(
       () => {
-        const nextBtn = document.querySelector("#next-btn .btn-progress-bar");
+        const nextBtn = document.querySelector("#next-btn");
         if (!nextBtn) return false;
-        const style = window.getComputedStyle(nextBtn);
+        const progressBar =
+          nextBtn.parentElement.querySelector(".btn-progress-bar");
+        if (!progressBar) return false;
+        const style = window.getComputedStyle(progressBar);
         const progress =
           parseFloat(style.getPropertyValue("--progress").replace("%", "")) ||
           0;
@@ -588,9 +606,12 @@ test.describe("Timer and Countdown System Tests", () => {
     // Wait for some progress, then show answer manually
     await page.waitForFunction(
       () => {
-        const nextBtn = document.querySelector("#next-btn .btn-progress-bar");
+        const nextBtn = document.querySelector("#next-btn");
         if (!nextBtn) return false;
-        const style = window.getComputedStyle(nextBtn);
+        const progressBar =
+          nextBtn.parentElement.querySelector(".btn-progress-bar");
+        if (!progressBar) return false;
+        const style = window.getComputedStyle(progressBar);
         const progress =
           parseFloat(style.getPropertyValue("--progress").replace("%", "")) ||
           0;

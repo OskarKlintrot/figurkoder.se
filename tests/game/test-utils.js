@@ -72,7 +72,7 @@ export async function startGame(page, options = {}) {
  * @returns {Promise<number>} Progress percentage (0-100)
  */
 export async function getProgressBarPercentage(page) {
-  const progressBar = page.locator("#next-btn .btn-progress-bar");
+  const progressBar = page.locator(".btn-wrapper .btn-progress-bar");
   const progressValue = await progressBar.evaluate(el => {
     const style = window.getComputedStyle(el);
     const progressVar = style.getPropertyValue("--progress");

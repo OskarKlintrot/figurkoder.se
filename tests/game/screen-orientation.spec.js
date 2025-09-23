@@ -61,8 +61,13 @@ test.describe("Screen Orientation Tests", () => {
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
 
-    // Wait a bit for the orientation lock to be attempted
-    await page.waitForTimeout(100);
+    // Wait for the orientation lock to be attempted
+    await page.waitForFunction(() => {
+      return (
+        window.mockScreenOrientation &&
+        window.mockScreenOrientation.calls.length > 0
+      );
+    });
 
     // Check if orientation lock was attempted
     const orientationCalls = await page.evaluate(() => {

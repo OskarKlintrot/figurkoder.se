@@ -114,7 +114,7 @@
 /* Buttons */
 .btn {
   padding: var(--spacing-lg) var(--spacing-2xl);
-  border: var(--border-width-thin) solid var(--color-border);
+  border: none;
   border-radius: var(--radius-md);
   background: var(--color-surface);
   cursor: pointer;
@@ -129,7 +129,6 @@
 .btn:disabled {
   background: var(--color-surface-secondary);
   color: var(--color-text-light);
-  border-color: var(--color-border-lighter);
   cursor: not-allowed;
   opacity: 0.6;
   transform: none;
@@ -138,7 +137,6 @@
 .btn.primary {
   background: var(--color-primary);
   color: var(--color-surface);
-  border-color: var(--color-primary);
 }
 
 .btn.primary:hover {
@@ -147,13 +145,11 @@
 
 .btn.primary:disabled {
   background: var(--color-text-light);
-  border-color: var(--color-text-light);
 }
 
 .btn.secondary {
   background: var(--color-secondary);
   color: var(--color-surface);
-  border: none;
 }
 
 .btn.secondary:hover {
@@ -163,13 +159,11 @@
 .btn.secondary:disabled {
   background: var(--color-text-light);
   color: var(--color-text-lighter);
-  border-color: var(--color-text-light);
 }
 
 .btn.warning {
   background: var(--color-warning);
   color: var(--color-surface);
-  border: none;
 }
 
 .btn.warning:hover {
@@ -179,7 +173,6 @@
 .btn.warning:disabled {
   background: var(--color-text-light);
   color: var(--color-text-lighter);
-  border-color: var(--color-text-light);
 }
 
 /* Icon Button */
@@ -227,14 +220,14 @@
 
 .btn-progress-bar {
   position: absolute;
-  top: calc(var(--border-width-thin) * -1);
-  left: calc(var(--border-width-thin) * -1);
-  height: calc(100% + calc(var(--border-width-thin) * 2));
+  top: 0;
+  left: 0;
+  height: 100%;
   width: var(--progress);
   background: linear-gradient(
     90deg,
     var(--color-primary-hover) 0%,
-    var(--color-primary-hover) calc(100% + calc(var(--border-width-thin) * 2))
+    var(--color-primary-hover) 100%
   );
   transition: width 0.1s linear;
 }

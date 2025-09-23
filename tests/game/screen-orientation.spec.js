@@ -42,49 +42,33 @@ test.describe("Screen Orientation Tests", () => {
   test("should attempt orientation lock on page load", async ({ page }) => {
     // Mock Screen Orientation API for testing
     await page.addInitScript(() => {
-      window.mockScreenOrientation = {
-        calls: [],
+      if (!window.screen) {
+        window.screen = {};
+      }
+
+      window.screen.orientation = {
         lock: function (orientation) {
-          this.calls.push({ action: "lock", orientation: orientation });
+          window.orientationLockCalled = true;
+          window.orientationLockValue = orientation;
           return Promise.resolve();
         },
       };
-
-      if (!window.screen.orientation) {
-        window.screen.orientation = window.mockScreenOrientation;
-      } else {
-        // Override existing methods
-        window.screen.orientation.lock = window.mockScreenOrientation.lock;
-      }
     });
 
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
 
-    // Wait for the orientation lock to be attempted
-    await page.waitForFunction(() => {
-      return (
-        window.mockScreenOrientation &&
-        window.mockScreenOrientation.calls.length > 0
-      );
-    });
-
     // Check if orientation lock was attempted
-    const orientationCalls = await page.evaluate(() => {
-      return window.mockScreenOrientation
-        ? window.mockScreenOrientation.calls
-        : [];
+    const result = await page.evaluate(() => {
+      return {
+        lockCalled: !!window.orientationLockCalled,
+        lockValue: window.orientationLockValue,
+      };
     });
 
-    // Should have attempted to lock orientation
-    const lockCalls = orientationCalls.filter(call => call.action === "lock");
-    expect(lockCalls.length).toBeGreaterThan(0);
-
-    // Should have requested portrait mode
-    const portraitLockCalls = lockCalls.filter(
-      call => call.orientation === "portrait",
-    );
-    expect(portraitLockCalls.length).toBeGreaterThan(0);
+    // Should have attempted to lock orientation to portrait
+    expect(result.lockCalled).toBe(true);
+    expect(result.lockValue).toBe("portrait");
   });
 
   test("should handle orientation lock errors gracefully", async ({ page }) => {

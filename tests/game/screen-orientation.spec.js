@@ -40,10 +40,7 @@ test.describe("Screen Orientation Tests", () => {
   });
 
   test("should attempt orientation lock on page load", async ({ page }) => {
-    let orientationLockCalled = false;
-    let orientationLockValue = "";
-
-    // Mock Screen Orientation API and inject a test version of the script
+    // Mock Screen Orientation API for testing
     await page.addInitScript(() => {
       // Set up the mock before any scripts run
       window.screen = window.screen || {};
@@ -54,19 +51,15 @@ test.describe("Screen Orientation Tests", () => {
           return Promise.resolve();
         },
       };
-
-      // Add a direct test of the orientation locking logic
-      if ("screen" in window && "orientation" in window.screen) {
-        window.screen.orientation.lock("portrait").catch(err => {
-          console.log("Screen orientation lock failed:", err);
-        });
-      }
     });
 
     await page.goto("/");
     await page.waitForLoadState("domcontentloaded");
 
-    // Check if orientation lock was attempted
+    // Wait for all deferred scripts to load and execute
+    await page.waitForLoadState("networkidle");
+
+    // Check if orientation lock was attempted by the actual app script
     const result = await page.evaluate(() => {
       return {
         lockCalled: !!window.orientationLockCalled,

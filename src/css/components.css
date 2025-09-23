@@ -219,6 +219,11 @@
 }
 
 /* Progress bar styles for NÄSTA button */
+.btn-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .btn.primary.progress-bar {
   position: relative;
   overflow: hidden;
@@ -227,16 +232,17 @@
 
 .btn-progress-bar {
   position: absolute;
-  top: calc(var(--border-width-thin) * -1);
-  left: calc(var(--border-width-thin) * -1);
-  height: calc(100% + calc(var(--border-width-thin) * 2));
+  top: 0;
+  left: 0;
+  height: 100%;
   width: var(--progress);
   background: linear-gradient(
     90deg,
     var(--color-primary-hover) 0%,
-    var(--color-primary-hover) calc(100% + calc(var(--border-width-thin) * 2))
+    var(--color-primary-hover) 100%
   );
   transition: width 0.1s linear;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
 }
 
 .btn-content {
@@ -245,6 +251,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
+  z-index: 1;
 }
 
 /* Content Sections */

@@ -117,6 +117,11 @@ function resetGameState() {
     if (window.deactivateScreenWakeLock) {
       window.deactivateScreenWakeLock();
     }
+
+    // Unlock screen orientation when resetting game state
+    if (window.unlockScreenOrientation) {
+      window.unlockScreenOrientation();
+    }
   }
 
   // Check if we're in replay mode - if so, only do essential cleanup above
@@ -787,6 +792,11 @@ export function startGame() {
       window.activateScreenWakeLock();
     }
 
+    // Lock screen orientation when resuming
+    if (window.lockScreenOrientation) {
+      window.lockScreenOrientation();
+    }
+
     showCurrentItem(true); // Resume with existing countdown
     updateButtonStates();
     return;
@@ -859,6 +869,11 @@ export function startGame() {
   if (window.activateScreenWakeLock) {
     window.activateScreenWakeLock();
   }
+
+  // Lock screen orientation when starting game
+  if (window.lockScreenOrientation) {
+    window.lockScreenOrientation();
+  }
 }
 
 /**
@@ -885,6 +900,11 @@ export function pauseGame() {
   // Deactivate wake lock when pausing
   if (window.deactivateScreenWakeLock) {
     window.deactivateScreenWakeLock();
+  }
+
+  // Unlock screen orientation when pausing
+  if (window.unlockScreenOrientation) {
+    window.unlockScreenOrientation();
   }
 
   updateButtonStates();
@@ -1015,6 +1035,11 @@ export function stopGame() {
   // Deactivate wake lock when stopping game
   if (window.deactivateScreenWakeLock) {
     window.deactivateScreenWakeLock();
+  }
+
+  // Unlock screen orientation when stopping game
+  if (window.unlockScreenOrientation) {
+    window.unlockScreenOrientation();
   }
 
   // Navigate to results if we should show them
@@ -1207,6 +1232,11 @@ export function showAnswer() {
     window.deactivateScreenWakeLock();
   }
 
+  // Unlock screen orientation when user shows answer (timing challenge ends)
+  if (window.unlockScreenOrientation) {
+    window.unlockScreenOrientation();
+  }
+
   // In training mode, pause the game when answer is manually shown (timing challenge ends)
   if (!gameState.isLearningMode && gameState.isGameRunning) {
     gameState.isGameRunning = false;
@@ -1236,6 +1266,11 @@ export function nextItem(vibrate = false) {
     // Activate wake lock when resuming
     if (window.activateScreenWakeLock) {
       window.activateScreenWakeLock();
+    }
+
+    // Lock screen orientation when resuming
+    if (window.lockScreenOrientation) {
+      window.lockScreenOrientation();
     }
 
     // Update button states to reflect resumed game

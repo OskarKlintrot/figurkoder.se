@@ -63,7 +63,7 @@ async function enableVibrationSetting(page) {
  * @returns {Promise<Array>}
  */
 async function getVibrationCalls(page) {
-  return await page.evaluate(() => window.vibrationCalls || []);
+  return page.evaluate(() => window.vibrationCalls || []);
 }
 
 test.describe("Vibration and Device Integration Tests", () => {

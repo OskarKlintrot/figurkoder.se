@@ -65,7 +65,7 @@ async function setupWakeLockMissingMock(page) {
  * @returns {Promise<Array>}
  */
 async function getWakeLockCalls(page) {
-  return await page.evaluate(() => window.wakeLockCalls || []);
+  return page.evaluate(() => window.wakeLockCalls || []);
 }
 
 /**
@@ -74,7 +74,7 @@ async function getWakeLockCalls(page) {
  * @returns {Promise<Array>}
  */
 async function getWakeLockReleaseCalls(page) {
-  return await page.evaluate(() => window.wakeLockReleaseCalls || []);
+  return page.evaluate(() => window.wakeLockReleaseCalls || []);
 }
 
 test.describe("Wake Lock and Device Integration Tests", () => {

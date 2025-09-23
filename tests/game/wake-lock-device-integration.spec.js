@@ -1,6 +1,82 @@
 import { test, expect } from "@playwright/test";
 import { navigateToGamePage, startGame, getCurrentItem } from "./test-utils.js";
 
+/**
+ * Setup mock Wake Lock API for testing
+ * @param {import('@playwright/test').Page} page
+ */
+async function setupWakeLockMock(page) {
+  await page.addInitScript(() => {
+    window.wakeLockCalls = [];
+    window.wakeLockReleaseCalls = [];
+
+    const mockWakeLock = {
+      release: function () {
+        window.wakeLockReleaseCalls.push(Date.now());
+        return Promise.resolve();
+      },
+      addEventListener: function () {},
+    };
+
+    Object.defineProperty(navigator, "wakeLock", {
+      value: {
+        request: function (type) {
+          window.wakeLockCalls.push({ type, timestamp: Date.now() });
+          return Promise.resolve(mockWakeLock);
+        },
+      },
+      writable: true,
+      configurable: true,
+    });
+  });
+}
+
+/**
+ * Setup mock Wake Lock API that throws errors
+ * @param {import('@playwright/test').Page} page
+ */
+async function setupWakeLockErrorMock(page) {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "wakeLock", {
+      value: {
+        request: function () {
+          return Promise.reject(new Error("Wake lock not allowed"));
+        },
+      },
+      writable: true,
+      configurable: true,
+    });
+  });
+}
+
+/**
+ * Setup mock to remove Wake Lock API entirely
+ * @param {import('@playwright/test').Page} page
+ */
+async function setupWakeLockMissingMock(page) {
+  await page.addInitScript(() => {
+    delete navigator.wakeLock;
+  });
+}
+
+/**
+ * Get wake lock calls from the page
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<Array>}
+ */
+async function getWakeLockCalls(page) {
+  return await page.evaluate(() => window.wakeLockCalls || []);
+}
+
+/**
+ * Get wake lock release calls from the page
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<Array>}
+ */
+async function getWakeLockReleaseCalls(page) {
+  return await page.evaluate(() => window.wakeLockReleaseCalls || []);
+}
+
 test.describe("Wake Lock and Device Integration Tests", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -8,31 +84,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
   });
 
   test("should activate wake lock when starting game", async ({ page }) => {
-    // Mock Wake Lock API for testing
-    await page.addInitScript(() => {
-      window.wakeLockCalls = [];
-      window.wakeLockReleaseCalls = [];
-
-      const mockWakeLock = {
-        release: function () {
-          window.wakeLockReleaseCalls.push(Date.now());
-          return Promise.resolve();
-        },
-        addEventListener: function () {},
-      };
-
-      Object.defineProperty(navigator, "wakeLock", {
-        value: {
-          request: function (type) {
-            window.wakeLockCalls.push({ type, timestamp: Date.now() });
-            return Promise.resolve(mockWakeLock);
-          },
-        },
-        writable: true,
-        configurable: true,
-      });
-    });
-
+    await setupWakeLockMock(page);
     await navigateToGamePage(page);
 
     // Start game - should activate wake lock
@@ -44,7 +96,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     });
 
     // Verify wake lock was requested
-    const wakeLockCalls = await page.evaluate(() => window.wakeLockCalls || []);
+    const wakeLockCalls = await getWakeLockCalls(page);
     expect(wakeLockCalls).toHaveLength(1);
     expect(wakeLockCalls[0].type).toBe("screen");
 
@@ -54,31 +106,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
   });
 
   test("should deactivate wake lock when pausing game", async ({ page }) => {
-    // Mock Wake Lock API for testing
-    await page.addInitScript(() => {
-      window.wakeLockCalls = [];
-      window.wakeLockReleaseCalls = [];
-
-      const mockWakeLock = {
-        release: function () {
-          window.wakeLockReleaseCalls.push(Date.now());
-          return Promise.resolve();
-        },
-        addEventListener: function () {},
-      };
-
-      Object.defineProperty(navigator, "wakeLock", {
-        value: {
-          request: function (type) {
-            window.wakeLockCalls.push({ type, timestamp: Date.now() });
-            return Promise.resolve(mockWakeLock);
-          },
-        },
-        writable: true,
-        configurable: true,
-      });
-    });
-
+    await setupWakeLockMock(page);
     await navigateToGamePage(page);
 
     // Start game
@@ -102,38 +130,12 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await expect(page.locator("#play-btn")).toBeEnabled();
 
     // Verify wake lock was released
-    const wakeLockReleaseCalls = await page.evaluate(
-      () => window.wakeLockReleaseCalls || [],
-    );
+    const wakeLockReleaseCalls = await getWakeLockReleaseCalls(page);
     expect(wakeLockReleaseCalls).toHaveLength(1);
   });
 
   test("should reactivate wake lock when resuming game", async ({ page }) => {
-    // Mock Wake Lock API for testing
-    await page.addInitScript(() => {
-      window.wakeLockCalls = [];
-      window.wakeLockReleaseCalls = [];
-
-      const mockWakeLock = {
-        release: function () {
-          window.wakeLockReleaseCalls.push(Date.now());
-          return Promise.resolve();
-        },
-        addEventListener: function () {},
-      };
-
-      Object.defineProperty(navigator, "wakeLock", {
-        value: {
-          request: function (type) {
-            window.wakeLockCalls.push({ type, timestamp: Date.now() });
-            return Promise.resolve(mockWakeLock);
-          },
-        },
-        writable: true,
-        configurable: true,
-      });
-    });
-
+    await setupWakeLockMock(page);
     await navigateToGamePage(page);
 
     // Start game
@@ -160,38 +162,14 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await expect(page.locator("#pause-btn")).toBeEnabled();
 
     // Verify wake lock was requested twice (start + resume)
-    const wakeLockCalls = await page.evaluate(() => window.wakeLockCalls || []);
+    const wakeLockCalls = await getWakeLockCalls(page);
     expect(wakeLockCalls).toHaveLength(2);
     expect(wakeLockCalls[0].type).toBe("screen");
     expect(wakeLockCalls[1].type).toBe("screen");
   });
 
   test("should deactivate wake lock when stopping game", async ({ page }) => {
-    // Mock Wake Lock API for testing
-    await page.addInitScript(() => {
-      window.wakeLockCalls = [];
-      window.wakeLockReleaseCalls = [];
-
-      const mockWakeLock = {
-        release: function () {
-          window.wakeLockReleaseCalls.push(Date.now());
-          return Promise.resolve();
-        },
-        addEventListener: function () {},
-      };
-
-      Object.defineProperty(navigator, "wakeLock", {
-        value: {
-          request: function (type) {
-            window.wakeLockCalls.push({ type, timestamp: Date.now() });
-            return Promise.resolve(mockWakeLock);
-          },
-        },
-        writable: true,
-        configurable: true,
-      });
-    });
-
+    await setupWakeLockMock(page);
     await navigateToGamePage(page);
 
     // Start game
@@ -209,18 +187,12 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await expect(page.locator("#game-form")).toBeVisible();
 
     // Verify wake lock was released
-    const wakeLockReleaseCalls = await page.evaluate(
-      () => window.wakeLockReleaseCalls || [],
-    );
+    const wakeLockReleaseCalls = await getWakeLockReleaseCalls(page);
     expect(wakeLockReleaseCalls).toHaveLength(1);
   });
 
   test("should handle missing Wake Lock API gracefully", async ({ page }) => {
-    // Mock missing Wake Lock API
-    await page.addInitScript(() => {
-      delete navigator.wakeLock;
-    });
-
+    await setupWakeLockMissingMock(page);
     await navigateToGamePage(page);
 
     // Should still work without wake lock API
@@ -254,19 +226,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
   });
 
   test("should handle wake lock API errors gracefully", async ({ page }) => {
-    // Mock Wake Lock API that throws errors
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator, "wakeLock", {
-        value: {
-          request: function () {
-            return Promise.reject(new Error("Wake lock not allowed"));
-          },
-        },
-        writable: true,
-        configurable: true,
-      });
-    });
-
+    await setupWakeLockErrorMock(page);
     await navigateToGamePage(page);
 
     // Should still work despite wake lock API failure

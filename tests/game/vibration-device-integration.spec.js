@@ -1,6 +1,71 @@
 import { test, expect } from "@playwright/test";
 import { navigateToGamePage, startGame, getCurrentItem } from "./test-utils.js";
 
+/**
+ * Setup mock Vibration API for testing
+ * @param {import('@playwright/test').Page} page
+ */
+async function setupVibrationMock(page) {
+  await page.addInitScript(() => {
+    window.vibrationCalls = [];
+    Object.defineProperty(navigator, "vibrate", {
+      value: function (pattern) {
+        window.vibrationCalls.push(pattern);
+        return true;
+      },
+      writable: true,
+      configurable: true,
+    });
+  });
+}
+
+/**
+ * Setup mock Vibration API that throws errors
+ * @param {import('@playwright/test').Page} page
+ */
+async function setupVibrationErrorMock(page) {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "vibrate", {
+      value: function () {
+        throw new Error("Vibration hardware error");
+      },
+      writable: true,
+      configurable: true,
+    });
+  });
+}
+
+/**
+ * Setup mock to remove Vibration API entirely
+ * @param {import('@playwright/test').Page} page
+ */
+async function setupVibrationMissingMock(page) {
+  await page.addInitScript(() => {
+    delete navigator.vibrate;
+  });
+}
+
+/**
+ * Enable vibration setting in the UI
+ * @param {import('@playwright/test').Page} page
+ */
+async function enableVibrationSetting(page) {
+  await page.evaluate(() => {
+    const checkbox = document.getElementById("vibration-setting");
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change"));
+  });
+}
+
+/**
+ * Get vibration calls from the page
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<Array>}
+ */
+async function getVibrationCalls(page) {
+  return await page.evaluate(() => window.vibrationCalls || []);
+}
+
 test.describe("Vibration and Device Integration Tests", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -26,11 +91,7 @@ test.describe("Vibration and Device Integration Tests", () => {
     const vibrationCheckbox = page.locator("#vibration-setting");
 
     // Enable vibration setting
-    await page.evaluate(() => {
-      const checkbox = document.getElementById("vibration-setting");
-      checkbox.checked = true;
-      checkbox.dispatchEvent(new Event("change"));
-    });
+    await enableVibrationSetting(page);
 
     // Reload page and verify setting persists
     await page.reload();
@@ -41,19 +102,11 @@ test.describe("Vibration and Device Integration Tests", () => {
   });
 
   test("should handle missing Vibration API gracefully", async ({ page }) => {
-    // Mock missing Vibration API
-    await page.addInitScript(() => {
-      delete navigator.vibrate;
-    });
-
+    await setupVibrationMissingMock(page);
     await navigateToGamePage(page);
 
     // Enable vibration setting
-    await page.evaluate(() => {
-      const checkbox = document.getElementById("vibration-setting");
-      checkbox.checked = true;
-      checkbox.dispatchEvent(new Event("change"));
-    });
+    await enableVibrationSetting(page);
 
     // Should still load and function without errors
     await startGame(page, {
@@ -74,27 +127,11 @@ test.describe("Vibration and Device Integration Tests", () => {
   test("should call vibration API during auto-advance in learning mode", async ({
     page,
   }) => {
-    // Mock Vibration API for testing
-    await page.addInitScript(() => {
-      window.vibrationCalls = [];
-      Object.defineProperty(navigator, "vibrate", {
-        value: function (pattern) {
-          window.vibrationCalls.push(pattern);
-          return true;
-        },
-        writable: true,
-        configurable: true,
-      });
-    });
-
+    await setupVibrationMock(page);
     await navigateToGamePage(page);
 
     // Enable vibration setting
-    await page.evaluate(() => {
-      const checkbox = document.getElementById("vibration-setting");
-      checkbox.checked = true;
-      checkbox.dispatchEvent(new Event("change"));
-    });
+    await enableVibrationSetting(page);
 
     // Start learning mode game with short timer
     await startGame(page, {
@@ -108,9 +145,7 @@ test.describe("Vibration and Device Integration Tests", () => {
     await page.waitForTimeout(3000);
 
     // Verify vibration was called
-    const vibrationCalls = await page.evaluate(
-      () => window.vibrationCalls || [],
-    );
+    const vibrationCalls = await getVibrationCalls(page);
 
     // Stop the game
     await page.click("#stop-btn");
@@ -122,25 +157,11 @@ test.describe("Vibration and Device Integration Tests", () => {
   });
 
   test("should handle vibration API errors gracefully", async ({ page }) => {
-    // Mock Vibration API that throws errors
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator, "vibrate", {
-        value: function () {
-          throw new Error("Vibration hardware error");
-        },
-        writable: true,
-        configurable: true,
-      });
-    });
-
+    await setupVibrationErrorMock(page);
     await navigateToGamePage(page);
 
     // Enable vibration setting
-    await page.evaluate(() => {
-      const checkbox = document.getElementById("vibration-setting");
-      checkbox.checked = true;
-      checkbox.dispatchEvent(new Event("change"));
-    });
+    await enableVibrationSetting(page);
 
     // Should still load without errors despite vibration API failure
     await startGame(page, {

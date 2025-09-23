@@ -28,7 +28,7 @@ test.describe("Screen Orientation Tests", () => {
   }) => {
     // Mock missing Screen Orientation API
     await page.addInitScript(() => {
-      delete window.screen.orientation;
+      window.screen.orientation = undefined;
     });
 
     await page.reload();

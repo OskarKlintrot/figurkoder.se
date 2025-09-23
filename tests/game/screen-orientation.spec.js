@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { navigateToGamePage, startGame } from "./test-utils.js";
 
 test.describe("Screen Orientation Tests", () => {
   test.beforeEach(async ({ page }) => {
-    await navigateToGamePage(page);
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("should have orientation preference in web manifest", async ({
@@ -21,15 +21,6 @@ test.describe("Screen Orientation Tests", () => {
     // Check that the screen orientation script is loaded
     const scriptTags = await page.locator('script[src*="screen-orientation"]');
     await expect(scriptTags).toHaveCount(1);
-
-    // Check that orientation functions are available globally
-    const orientationFunctionsAvailable = await page.evaluate(() => {
-      return (
-        typeof window.lockScreenOrientation === "function" &&
-        typeof window.unlockScreenOrientation === "function"
-      );
-    });
-    expect(orientationFunctionsAvailable).toBeTruthy();
   });
 
   test("should handle missing Screen Orientation API gracefully", async ({
@@ -46,35 +37,16 @@ test.describe("Screen Orientation Tests", () => {
     // Should still load without errors
     const hasContent = await page.locator("body").textContent();
     expect(hasContent).toContain("Figurkoder");
-
-    // Orientation functions should still exist as no-ops
-    const orientationFunctionsExist = await page.evaluate(() => {
-      return (
-        typeof window.lockScreenOrientation === "function" &&
-        typeof window.unlockScreenOrientation === "function"
-      );
-    });
-    expect(orientationFunctionsExist).toBeTruthy();
   });
 
-  test("should attempt orientation lock during game", async ({ page }) => {
+  test("should attempt orientation lock on page load", async ({ page }) => {
     // Mock Screen Orientation API for testing
     await page.addInitScript(() => {
-      let isLocked = false;
       window.mockScreenOrientation = {
         calls: [],
         lock: function (orientation) {
           this.calls.push({ action: "lock", orientation: orientation });
-          isLocked = true;
           return Promise.resolve();
-        },
-        unlock: function () {
-          this.calls.push({ action: "unlock" });
-          isLocked = false;
-          return Promise.resolve();
-        },
-        get locked() {
-          return isLocked;
         },
       };
 
@@ -82,23 +54,15 @@ test.describe("Screen Orientation Tests", () => {
         window.screen.orientation = window.mockScreenOrientation;
       } else {
         // Override existing methods
-        const originalLock = window.screen.orientation.lock;
-        const originalUnlock = window.screen.orientation.unlock;
         window.screen.orientation.lock = window.mockScreenOrientation.lock;
-        window.screen.orientation.unlock = window.mockScreenOrientation.unlock;
       }
     });
 
-    // Start a game to trigger orientation lock
-    await startGame(page, {
-      learningMode: true,
-      fromRange: 0,
-      toRange: 5,
-      timeLimit: 5,
-    });
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
 
-    // Wait for game to be active
-    await expect(page.locator("#current-item")).toBeVisible();
+    // Wait a bit for the orientation lock to be attempted
+    await page.waitForTimeout(100);
 
     // Check if orientation lock was attempted
     const orientationCalls = await page.evaluate(() => {
@@ -116,22 +80,52 @@ test.describe("Screen Orientation Tests", () => {
       call => call.orientation === "portrait",
     );
     expect(portraitLockCalls.length).toBeGreaterThan(0);
+  });
 
-    // Stop the game
-    await page.click("#stop-btn");
+  test("should attempt orientation lock on user interaction", async ({
+    page,
+  }) => {
+    // Mock Screen Orientation API for testing
+    await page.addInitScript(() => {
+      window.mockScreenOrientation = {
+        calls: [],
+        lock: function (orientation) {
+          this.calls.push({ action: "lock", orientation: orientation });
+          return Promise.resolve();
+        },
+      };
 
-    // Wait for game to stop
-    await page.waitForTimeout(500);
+      if (!window.screen.orientation) {
+        window.screen.orientation = window.mockScreenOrientation;
+      } else {
+        window.screen.orientation.lock = window.mockScreenOrientation.lock;
+      }
+    });
 
-    // Check if orientation was unlocked
-    const updatedCalls = await page.evaluate(() => {
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+
+    // Clear any initial calls
+    await page.evaluate(() => {
+      if (window.mockScreenOrientation) {
+        window.mockScreenOrientation.calls = [];
+      }
+    });
+
+    // Trigger a click to test user interaction handler
+    await page.click("body");
+    await page.waitForTimeout(100);
+
+    // Check if orientation lock was attempted on interaction
+    const orientationCalls = await page.evaluate(() => {
       return window.mockScreenOrientation
         ? window.mockScreenOrientation.calls
         : [];
     });
 
-    const unlockCalls = updatedCalls.filter(call => call.action === "unlock");
-    expect(unlockCalls.length).toBeGreaterThan(0);
+    // Should have attempted to lock orientation on interaction
+    const lockCalls = orientationCalls.filter(call => call.action === "lock");
+    expect(lockCalls.length).toBeGreaterThan(0);
   });
 
   test("should handle orientation lock errors gracefully", async ({ page }) => {
@@ -141,29 +135,22 @@ test.describe("Screen Orientation Tests", () => {
         lock: function () {
           throw new Error("Orientation lock not allowed");
         },
-        unlock: function () {
-          throw new Error("Orientation unlock failed");
-        },
       };
     });
 
-    // Should still be able to start and play game
-    await startGame(page, {
-      learningMode: true,
-      fromRange: 0,
-      toRange: 3,
-      timeLimit: 3,
-    });
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.locator("#current-item")).toBeVisible();
+    // Should still load without errors despite orientation lock failure
+    const hasContent = await page.locator("body").textContent();
+    expect(hasContent).toContain("Figurkoder");
 
-    // Game should function normally despite orientation errors
-    await page.click("#next-btn");
-    await page.waitForTimeout(200);
+    // Should be able to interact with the app normally
+    await page.click("body");
+    await page.waitForTimeout(100);
 
-    const currentItem = await page.locator("#current-item").textContent();
-    expect(currentItem).toBeTruthy();
-
-    await page.click("#stop-btn");
+    // App should still be functional
+    const titleVisible = await page.locator("h1").isVisible();
+    expect(titleVisible).toBeTruthy();
   });
 });

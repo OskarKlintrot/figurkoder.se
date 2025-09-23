@@ -108,12 +108,12 @@ test.describe("Screen Orientation Tests", () => {
     });
 
     // Should have attempted to lock orientation
-    const lockCalls = orientationCalls.filter((call) => call.action === "lock");
+    const lockCalls = orientationCalls.filter(call => call.action === "lock");
     expect(lockCalls.length).toBeGreaterThan(0);
 
     // Should have requested portrait mode
     const portraitLockCalls = lockCalls.filter(
-      (call) => call.orientation === "portrait",
+      call => call.orientation === "portrait",
     );
     expect(portraitLockCalls.length).toBeGreaterThan(0);
 
@@ -130,9 +130,7 @@ test.describe("Screen Orientation Tests", () => {
         : [];
     });
 
-    const unlockCalls = updatedCalls.filter(
-      (call) => call.action === "unlock",
-    );
+    const unlockCalls = updatedCalls.filter(call => call.action === "unlock");
     expect(unlockCalls.length).toBeGreaterThan(0);
   });
 

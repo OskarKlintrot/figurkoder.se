@@ -45,10 +45,7 @@ test.describe("Screen Orientation Tests", () => {
       // Set up the mock before any scripts run
       window.screen = window.screen || {};
 
-      const originalOrientation = window.screen.orientation;
-
-      // Only mock the lock method, preserve all existing properties
-      Object.defineProperty(originalOrientation, "lock", {
+      Object.defineProperty(window.screen.orientation, "lock", {
         value: function (orientation) {
           window.orientationLockCalled = true;
           window.orientationLockValue = orientation;
@@ -60,10 +57,7 @@ test.describe("Screen Orientation Tests", () => {
     });
 
     await page.goto("/");
-    await page.waitForLoadState("load");
-
-    // Wait for deferred scripts to execute
-    await page.waitForTimeout(1000);
+    await page.waitForFunction(() => window.orientationLockCalled === true);
 
     // Verify that orientation lock was attempted
     const result = await page.evaluate(() => {
@@ -87,10 +81,7 @@ test.describe("Screen Orientation Tests", () => {
       // Set up the mock before any scripts run
       window.screen = window.screen || {};
 
-      const originalOrientation = window.screen.orientation;
-
-      // If orientation exists, only replace the lock method
-      Object.defineProperty(originalOrientation, "lock", {
+      Object.defineProperty(window.screen.orientation, "lock", {
         value: function () {
           return Promise.reject(new Error("Orientation lock not allowed"));
         },
@@ -100,10 +91,7 @@ test.describe("Screen Orientation Tests", () => {
     });
 
     await page.goto("/");
-    await page.waitForLoadState("domcontentloaded");
-
-    // Wait for deferred scripts to execute
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("networkidle");
 
     // Should still load without errors despite orientation lock failure
     const hasContent = await page.locator("body").textContent();

@@ -2,10 +2,9 @@ import { test, expect } from "@playwright/test";
 import {
   navigateToGamePage,
   startGame,
-  getCurrentItem,
   pauseGame,
   resumeGame,
-  stopGameAndReturnToForm,
+  stopGame,
 } from "./test-utils.js";
 
 /**
@@ -177,7 +176,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await expect(page.locator("#current-item")).toBeVisible();
 
     // Stop game - should deactivate wake lock
-    await stopGameAndReturnToForm(page);
+    await stopGame(page);
 
     // Verify wake lock was released
     const wakeLockReleaseCalls = await getWakeLockReleaseCalls(page);
@@ -202,7 +201,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await pauseGame(page);
     await resumeGame(page);
 
-    await stopGameAndReturnToForm(page);
+    await stopGame(page);
 
     // App should still be functional
     const titleVisible = await page.locator("h1").isVisible();
@@ -227,7 +226,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await pauseGame(page);
     await resumeGame(page);
 
-    await stopGameAndReturnToForm(page);
+    await stopGame(page);
 
     // App should still be functional
     const titleVisible = await page.locator("h1").isVisible();

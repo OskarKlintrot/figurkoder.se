@@ -3,7 +3,7 @@ import {
   navigateToGamePage,
   startGame,
   getCurrentItem,
-  stopGameAndReturnToForm,
+  stopGame,
 } from "./test-utils.js";
 
 /**
@@ -153,7 +153,7 @@ test.describe("Vibration and Device Integration Tests", () => {
     const vibrationCalls = await getVibrationCalls(page);
 
     // Stop the game
-    await stopGameAndReturnToForm(page);
+    await stopGame(page);
 
     // App should function normally regardless of vibration calls
     const hasContent = await page.locator("body").textContent();
@@ -185,6 +185,6 @@ test.describe("Vibration and Device Integration Tests", () => {
     const newItem = await getCurrentItem(page);
     expect(newItem).toBeTruthy();
 
-    await stopGameAndReturnToForm(page);
+    await stopGame(page);
   });
 });

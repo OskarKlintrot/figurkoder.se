@@ -30,43 +30,6 @@ export async function navigateToGamePage(page) {
 }
 
 /**
- * Start a game with specific settings
- * @param {import('@playwright/test').Page} page
- * @param {Object} options
- * @param {boolean} options.learningMode - Whether to enable learning mode
- * @param {number} options.fromRange - Starting range value
- * @param {number} options.toRange - Ending range value
- * @param {number} options.timeLimit - Time limit in seconds
- */
-export async function startGame(page, options = {}) {
-  const {
-    learningMode = false,
-    fromRange = 0,
-    toRange = 9,
-    timeLimit = 5,
-  } = options;
-
-  // Fill in form settings
-  await page.fill("#from-input", fromRange.toString());
-  await page.fill("#to-input", toRange.toString());
-  await page.fill("#time-input", timeLimit.toString());
-
-  // Set learning mode
-  if (learningMode) {
-    await page.check("#learning-mode");
-  } else {
-    await page.uncheck("#learning-mode");
-  }
-
-  // Start the game
-  await page.click('button[type="submit"]');
-
-  // Wait for game controls to be visible and game to actually start
-  await page.waitForSelector(".game-controls", { timeout: 5000 });
-  await page.waitForSelector("#current-item", { timeout: 5000 });
-}
-
-/**
  * Get the current progress bar percentage
  * @param {import('@playwright/test').Page} page
  * @returns {Promise<number>} Progress percentage (0-100)
@@ -356,6 +319,43 @@ export async function navigateBackToGameForm(page) {
 }
 
 /**
+ * Start a game with specific settings
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {boolean} options.learningMode - Whether to enable learning mode
+ * @param {number} options.fromRange - Starting range value
+ * @param {number} options.toRange - Ending range value
+ * @param {number} options.timeLimit - Time limit in seconds
+ */
+export async function startGame(page, options = {}) {
+  const {
+    learningMode = false,
+    fromRange = 0,
+    toRange = 9,
+    timeLimit = 5,
+  } = options;
+
+  // Fill in form settings
+  await page.fill("#from-input", fromRange.toString());
+  await page.fill("#to-input", toRange.toString());
+  await page.fill("#time-input", timeLimit.toString());
+
+  // Set learning mode
+  if (learningMode) {
+    await page.check("#learning-mode");
+  } else {
+    await page.uncheck("#learning-mode");
+  }
+
+  // Start the game
+  await page.click('button[type="submit"]');
+
+  // Wait for game controls to be visible and game to actually start
+  await page.waitForSelector(".game-controls", { timeout: 5000 });
+  await page.waitForSelector("#current-item", { timeout: 5000 });
+}
+
+/**
  * Pause the currently running game
  * @param {import('@playwright/test').Page} page
  */
@@ -383,14 +383,6 @@ export async function resumeGame(page) {
  * @param {import('@playwright/test').Page} page
  */
 export async function stopGame(page) {
-  await page.click("#stop-btn");
-}
-
-/**
- * Stop the currently running game and expect to return to game form
- * @param {import('@playwright/test').Page} page
- */
-export async function stopGameAndReturnToForm(page) {
   await page.click("#stop-btn");
   await expect(page.locator("#game-form")).toBeVisible();
 }

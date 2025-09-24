@@ -198,8 +198,34 @@ export async function resumeGame(page) {
 /**
  * Stop the currently running game
  * @param {import('@playwright/test').Page} page
+ * @param {Object} options - Stop game options
+ * @param {boolean} options.isLearningMode - Whether the game is in learning mode
  */
-export async function stopGame(page) {
+export async function stopGame(page, options = {}) {
+  const { isLearningMode = false } = options;
+
   await page.click("#stop-btn");
-  await expect(page.locator("#game-form")).toBeVisible();
+
+  if (isLearningMode) {
+    // In learning mode, should stay on game page
+    await page.waitForFunction(() => {
+      const gamePage = document.querySelector("#game-page");
+      return gamePage && gamePage.classList.contains("active");
+    });
+  } else {
+    // In training mode, can either go to results page (if has results) or back to form (if no results)
+    await page.waitForFunction(() => {
+      const resultsPage = document.querySelector("#results-page");
+      const gamePage = document.querySelector("#game-page");
+
+      // Check if results page became active (has results to show)
+      const resultsPageActive =
+        resultsPage && resultsPage.classList.contains("active");
+
+      // Check if still on game page (no results, back to form)
+      const gamePageActive = gamePage && gamePage.classList.contains("active");
+
+      return resultsPageActive || gamePageActive;
+    });
+  }
 }

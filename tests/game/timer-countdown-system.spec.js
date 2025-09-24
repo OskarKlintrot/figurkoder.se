@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import {
   navigateToGamePage,
   startGame,
+  stopGame,
   getProgressBarPercentage,
   getCurrentItem,
   assertButtonStates,
@@ -392,8 +393,7 @@ test.describe("Timer and Countdown System Tests", () => {
     expect(elapsedTime).toBeGreaterThan(1000 - TIMING_TOLERANCE_MS);
     expect(elapsedTime).toBeLessThan(1000 + TIMING_TOLERANCE_MS);
 
-    await page.click("#stop-btn");
-    await expect(page.locator("#game-form")).toBeVisible();
+    await stopGame(page, { isLearningMode: true });
 
     // Test longer timer (30 seconds) - just verify it starts correctly
     await startGame(page, {

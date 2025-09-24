@@ -38,7 +38,7 @@ test.describe("Navigation and Back Button Tests", () => {
 
     // In training mode, check if results are displayed or we return to form
     const resultPageVisible = await page
-      .locator("#result-page")
+      .locator("#results-page")
       .isVisible()
       .catch(() => false);
     const formVisible = await page

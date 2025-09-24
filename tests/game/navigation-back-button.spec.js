@@ -4,6 +4,7 @@ import {
   startGame,
   getCurrentItem,
   navigateToPageViaMenu,
+  stopGame,
 } from "./test-utils.js";
 
 test.describe("Navigation and Back Button Tests", () => {
@@ -34,7 +35,7 @@ test.describe("Navigation and Back Button Tests", () => {
     }
 
     // Stop the game to potentially see results
-    await page.click("#stop-btn");
+    await stopGame(page);
 
     // In training mode, check if results are displayed or we return to form
     const resultPageVisible = await page

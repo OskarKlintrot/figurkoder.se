@@ -354,3 +354,43 @@ export async function navigateBackToGameForm(page) {
     await navigateToGamePage(page);
   }
 }
+
+/**
+ * Pause the currently running game
+ * @param {import('@playwright/test').Page} page
+ */
+export async function pauseGame(page) {
+  await page.waitForFunction(() => {
+    const pauseBtn = document.querySelector("#pause-btn");
+    return pauseBtn && !pauseBtn.disabled;
+  });
+
+  await page.evaluate(() => document.querySelector("#pause-btn").click());
+  await expect(page.locator("#play-btn")).toBeEnabled();
+}
+
+/**
+ * Resume a paused game
+ * @param {import('@playwright/test').Page} page
+ */
+export async function resumeGame(page) {
+  await page.click("#play-btn");
+  await expect(page.locator("#pause-btn")).toBeEnabled();
+}
+
+/**
+ * Stop the currently running game
+ * @param {import('@playwright/test').Page} page
+ */
+export async function stopGame(page) {
+  await page.click("#stop-btn");
+}
+
+/**
+ * Stop the currently running game and expect to return to game form
+ * @param {import('@playwright/test').Page} page
+ */
+export async function stopGameAndReturnToForm(page) {
+  await page.click("#stop-btn");
+  await expect(page.locator("#game-form")).toBeVisible();
+}

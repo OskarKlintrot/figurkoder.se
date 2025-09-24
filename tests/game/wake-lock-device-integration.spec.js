@@ -1,5 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { navigateToGamePage, startGame, getCurrentItem } from "./test-utils.js";
+import {
+  navigateToGamePage,
+  startGame,
+  getCurrentItem,
+  pauseGame,
+  resumeGame,
+  stopGameAndReturnToForm,
+} from "./test-utils.js";
 
 /**
  * Setup mock Wake Lock API for testing
@@ -75,29 +82,6 @@ async function getWakeLockCalls(page) {
  */
 async function getWakeLockReleaseCalls(page) {
   return page.evaluate(() => window.wakeLockReleaseCalls || []);
-}
-
-/**
- * Pause the currently running game
- * @param {import('@playwright/test').Page} page
- */
-async function pauseGame(page) {
-  await page.waitForFunction(() => {
-    const pauseBtn = document.querySelector("#pause-btn");
-    return pauseBtn && !pauseBtn.disabled;
-  });
-
-  await page.evaluate(() => document.querySelector("#pause-btn").click());
-  await expect(page.locator("#play-btn")).toBeEnabled();
-}
-
-/**
- * Resume a paused game
- * @param {import('@playwright/test').Page} page
- */
-async function resumeGame(page) {
-  await page.click("#play-btn");
-  await expect(page.locator("#pause-btn")).toBeEnabled();
 }
 
 test.describe("Wake Lock and Device Integration Tests", () => {
@@ -193,8 +177,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await expect(page.locator("#current-item")).toBeVisible();
 
     // Stop game - should deactivate wake lock
-    await page.click("#stop-btn");
-    await expect(page.locator("#game-form")).toBeVisible();
+    await stopGameAndReturnToForm(page);
 
     // Verify wake lock was released
     const wakeLockReleaseCalls = await getWakeLockReleaseCalls(page);
@@ -219,8 +202,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await pauseGame(page);
     await resumeGame(page);
 
-    await page.click("#stop-btn");
-    await expect(page.locator("#game-form")).toBeVisible();
+    await stopGameAndReturnToForm(page);
 
     // App should still be functional
     const titleVisible = await page.locator("h1").isVisible();
@@ -245,8 +227,7 @@ test.describe("Wake Lock and Device Integration Tests", () => {
     await pauseGame(page);
     await resumeGame(page);
 
-    await page.click("#stop-btn");
-    await expect(page.locator("#game-form")).toBeVisible();
+    await stopGameAndReturnToForm(page);
 
     // App should still be functional
     const titleVisible = await page.locator("h1").isVisible();

@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { navigateToGamePage, startGame, getCurrentItem } from "./test-utils.js";
+import {
+  navigateToGamePage,
+  startGame,
+  getCurrentItem,
+  stopGameAndReturnToForm,
+} from "./test-utils.js";
 
 /**
  * Setup mock Vibration API for testing
@@ -148,8 +153,7 @@ test.describe("Vibration and Device Integration Tests", () => {
     const vibrationCalls = await getVibrationCalls(page);
 
     // Stop the game
-    await page.click("#stop-btn");
-    await expect(page.locator("#game-form")).toBeVisible();
+    await stopGameAndReturnToForm(page);
 
     // App should function normally regardless of vibration calls
     const hasContent = await page.locator("body").textContent();
@@ -181,7 +185,6 @@ test.describe("Vibration and Device Integration Tests", () => {
     const newItem = await getCurrentItem(page);
     expect(newItem).toBeTruthy();
 
-    await page.click("#stop-btn");
-    await expect(page.locator("#game-form")).toBeVisible();
+    await stopGameAndReturnToForm(page);
   });
 });

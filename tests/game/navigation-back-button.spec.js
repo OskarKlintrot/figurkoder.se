@@ -3,7 +3,6 @@ import {
   navigateToGamePage,
   startGame,
   getCurrentItem,
-  navigateToPageViaMenu,
   stopGame,
 } from "./test-utils.js";
 

@@ -2,13 +2,10 @@ import { test, expect } from "@playwright/test";
 import {
   navigateToGamePage,
   startGame,
-  getCurrentItem,
-  assertButtonStates,
   isProgressBarActive,
   waitForProgressBarActive,
   getProgressBarPercentage,
   pauseGame,
-  resumeGame,
   stopGame,
 } from "./test-utils.js";
 

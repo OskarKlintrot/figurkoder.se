@@ -45,27 +45,6 @@ export async function getProgressBarPercentage(page) {
 }
 
 /**
- * Monitor progress bar changes over time
- * @param {import('@playwright/test').Page} page
- * @param {number} duration - Duration to monitor in milliseconds
- * @param {number} interval - Sampling interval in milliseconds
- * @returns {Promise<Array<{time: number, progress: number}>>} Array of progress samples
- */
-export async function monitorProgressBar(page, duration, interval = 100) {
-  const samples = [];
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < duration) {
-    const currentTime = Date.now() - startTime;
-    const progress = await getProgressBarPercentage(page);
-    samples.push({ time: currentTime, progress });
-    await page.waitForTimeout(interval);
-  }
-
-  return samples;
-}
-
-/**
  * Get current item text
  * @param {import('@playwright/test').Page} page
  * @returns {Promise<string>} Current item text
@@ -81,46 +60,6 @@ export async function getCurrentItem(page) {
  */
 export async function getCurrentSolution(page) {
   return await page.locator("#solution-display").textContent();
-}
-
-/**
- * Check if button is disabled
- * @param {import('@playwright/test').Page} page
- * @param {string} selector - Button selector
- * @returns {Promise<boolean>} Whether button is disabled
- */
-export async function isButtonDisabled(page, selector) {
-  const button = page.locator(selector);
-  return await button.isDisabled();
-}
-
-/**
- * Check if button is enabled
- * @param {import('@playwright/test').Page} page
- * @param {string} selector - Button selector
- * @returns {Promise<boolean>} Whether button is enabled
- */
-export async function isButtonEnabled(page, selector) {
-  const button = page.locator(selector);
-  return await button.isEnabled();
-}
-
-/**
- * Wait for current item to change
- * @param {import('@playwright/test').Page} page
- * @param {string} previousItem - Previous item text to wait to change from
- * @param {number} timeout - Timeout in milliseconds
- */
-export async function waitForItemChange(page, previousItem, timeout = 5000) {
-  await page.waitForFunction(
-    (selector, previousText) => {
-      const el = document.querySelector(selector);
-      return el && el.textContent !== previousText;
-    },
-    "#current-item",
-    previousItem,
-    { timeout },
-  );
 }
 
 /**
@@ -174,32 +113,6 @@ export async function waitForProgressBarActive(page, timeout = 2000) {
 }
 
 /**
- * Wait for progress bar to become inactive
- * @param {import('@playwright/test').Page} page
- * @param {number} timeout - Timeout in milliseconds
- */
-export async function waitForProgressBarInactive(page, timeout = 2000) {
-  await page.waitForFunction(
-    () => {
-      const nextBtn = document.querySelector("#next-btn");
-      return nextBtn && !nextBtn.classList.contains("progress-bar");
-    },
-    undefined,
-    { timeout },
-  );
-}
-
-/**
- * Check if game is in learning mode
- * @param {import('@playwright/test').Page} page
- * @returns {Promise<boolean>} Whether learning mode is active
- */
-export async function isLearningMode(page) {
-  const checkbox = page.locator("#learning-mode");
-  return await checkbox.isChecked();
-}
-
-/**
  * Check if solution is visible (not showing dots and element is visible)
  * @param {import('@playwright/test').Page} page
  * @returns {Promise<boolean>} Whether solution is visible
@@ -213,42 +126,6 @@ export async function isSolutionVisible(page) {
 }
 
 /**
- * Navigate to a specific page using the navigation menu
- * @param {import('@playwright/test').Page} page
- * @param {string} menuText - The menu text to click (e.g., "Om", "Spela")
- * @param {string} pageId - The page ID to wait for (e.g., "about-page", "game-page")
- */
-export async function navigateToPageViaMenu(page, menuText, pageId) {
-  // Click the menu button to open navigation
-  const menuButton = page.locator(
-    'button:has-text("Meny"), .menu-btn, #menu-btn',
-  );
-  const hasMenuButton = await menuButton.isVisible().catch(() => false);
-
-  if (hasMenuButton) {
-    await menuButton.click();
-
-    // Wait for menu to be visible
-    await page.waitForSelector("#nav-menu.open, .nav-menu.open", {
-      timeout: 5000,
-    });
-
-    // Click on the appropriate menu item
-    await page.click(
-      `button:has-text("${menuText}"), a:has-text("${menuText}")`,
-    );
-  } else {
-    // If no menu button, try direct navigation link
-    await page.click(
-      `a:has-text("${menuText}"), button:has-text("${menuText}")`,
-    );
-  }
-
-  // Wait for the target page to be active
-  await page.waitForSelector(`#${pageId}.active`, { timeout: 5000 });
-}
-
-/**
  * Check if solution display is actually visible (not hidden)
  * @param {import('@playwright/test').Page} page
  * @returns {Promise<boolean>} Whether solution display element is visible
@@ -256,66 +133,6 @@ export async function navigateToPageViaMenu(page, menuText, pageId) {
 export async function isSolutionDisplayVisible(page) {
   const solutionDisplay = page.locator("#solution-display");
   return await solutionDisplay.isVisible().catch(() => false);
-}
-
-/**
- * Wait for countdown timer to reach specific value
- * @param {import('@playwright/test').Page} page
- * @param {number} seconds - Seconds to wait for
- * @param {number} timeout - Timeout in milliseconds
- */
-export async function waitForCountdown(page, seconds, timeout = 5000) {
-  await page.waitForFunction(
-    targetSeconds => {
-      const timer = document.querySelector("#timer, .timer");
-      if (!timer) return false;
-      const timerText = timer.textContent;
-      const currentSeconds = parseInt(timerText);
-      return currentSeconds <= targetSeconds;
-    },
-    seconds,
-    { timeout },
-  );
-}
-
-/**
- * Navigate to results page after completing a game
- * @param {import('@playwright/test').Page} page
- */
-export async function navigateToResults(page) {
-  // Look for results button or automatic navigation
-  const resultButton = page.locator(
-    'button:has-text("Resultat"), button:has-text("Results"), #results-btn',
-  );
-  const hasResultButton = await resultButton.isVisible().catch(() => false);
-
-  if (hasResultButton) {
-    await resultButton.click();
-  }
-
-  // Wait for results page to be visible
-  await page.waitForSelector("#result-page, .result-page", { timeout: 5000 });
-}
-
-/**
- * Navigate back to game form from any page (results, etc.)
- * @param {import('@playwright/test').Page} page
- */
-export async function navigateBackToGameForm(page) {
-  // Look for back button or equivalent
-  const backButton = page.locator(
-    'button:has-text("Tillbaka"), button:has-text("arrow_back"), .back-btn',
-  );
-  const hasBackButton = await backButton.isVisible().catch(() => false);
-
-  if (hasBackButton) {
-    await backButton.click();
-    // Wait for game form to be visible
-    await page.waitForSelector("#game-form", { timeout: 5000 });
-  } else {
-    // Fallback: navigate to game page directly
-    await navigateToGamePage(page);
-  }
 }
 
 /**

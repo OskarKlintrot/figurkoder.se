@@ -1,10 +1,5 @@
 import { test, expect } from "@playwright/test";
-import {
-  navigateToGamePage,
-  startGame,
-  getCurrentItem,
-  navigateToResults,
-} from "./test-utils.js";
+import { navigateToGamePage, startGame, getCurrentItem } from "./test-utils.js";
 
 test.describe("Results and Performance Tracking Tests", () => {
   test.beforeEach(async ({ page }) => {

@@ -4,12 +4,7 @@ import {
   startGame,
   getCurrentItem,
   assertButtonStates,
-  waitForProgressBarActive,
-  isProgressBarActive,
-  isSolutionVisible,
   pauseGame,
-  resumeGame,
-  stopGame,
 } from "./test-utils.js";
 
 test.describe("Game State Management Tests", () => {

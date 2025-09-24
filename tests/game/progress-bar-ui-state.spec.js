@@ -2,11 +2,11 @@ import { test, expect } from "@playwright/test";
 import {
   navigateToGamePage,
   startGame,
-  getCurrentItem,
-  assertButtonStates,
   isProgressBarActive,
   waitForProgressBarActive,
   getProgressBarPercentage,
+  pauseGame,
+  stopGame,
 } from "./test-utils.js";
 
 test.describe("Progress Bar and UI State Tests", () => {
@@ -67,7 +67,7 @@ test.describe("Progress Bar and UI State Tests", () => {
       }
     } else if (gameControlsVisible) {
       // Game still running - stop and restart to test reset
-      await page.click("#stop-btn");
+      await stopGame(page);
       await expect(page.locator("#game-form")).toBeVisible();
 
       // Start new game (replay scenario)
@@ -138,15 +138,7 @@ test.describe("Progress Bar and UI State Tests", () => {
     expect(Math.abs(progressBtnBox.y - nextBtnBox.y)).toBeLessThan(5);
 
     // Pause game (use JS evaluation to avoid element blocking)
-    await page.waitForFunction(() => {
-      const pauseBtn = document.querySelector("#pause-btn");
-      return pauseBtn && !pauseBtn.disabled;
-    });
-
-    await page.evaluate(() => {
-      document.querySelector("#pause-btn").click();
-    });
-    await expect(page.locator("#play-btn")).toBeEnabled();
+    await pauseGame(page);
 
     // Check layout integrity during pause
     await expect(page.locator(".game-controls")).toBeVisible();
@@ -157,7 +149,7 @@ test.describe("Progress Bar and UI State Tests", () => {
     expect(Math.abs(pausedBtnBox.x - nextBtnBox.x)).toBeLessThan(5);
 
     // Stop game
-    await page.click("#stop-btn");
+    await stopGame(page);
 
     // Check layout integrity after stop
     await expect(page.locator("#game-form")).toBeVisible();

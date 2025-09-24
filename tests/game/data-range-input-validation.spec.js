@@ -1,10 +1,5 @@
 import { test, expect } from "@playwright/test";
-import {
-  navigateToGamePage,
-  startGame,
-  getCurrentItem,
-  navigateBackToGameForm,
-} from "./test-utils.js";
+import { navigateToGamePage, startGame, getCurrentItem } from "./test-utils.js";
 
 test.describe("Data Range and Input Validation Tests", () => {
   test.beforeEach(async ({ page }) => {

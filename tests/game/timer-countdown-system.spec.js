@@ -2,14 +2,13 @@ import { test, expect } from "@playwright/test";
 import {
   navigateToGamePage,
   startGame,
+  stopGame,
   getProgressBarPercentage,
-  monitorProgressBar,
   getCurrentItem,
   assertButtonStates,
   isProgressBarActive,
   waitForProgressBarActive,
   isSolutionVisible,
-  navigateToPageViaMenu,
 } from "./test-utils.js";
 
 // Test constants for timing tolerances and thresholds
@@ -22,6 +21,27 @@ const MAX_RETRY_ATTEMPTS = 20; // Maximum retry attempts for polling operations
 const DEFAULT_WAIT_TIMEOUT_MS = 5000; // Default timeout for waitForFunction operations
 const SHORT_WAIT_TIMEOUT_MS = 2000; // Short timeout for quick operations
 const MAX_POLLING_TIME_MS = 5000; // Maximum time to poll for item changes
+
+/**
+ * Monitor progress bar changes over time
+ * @param {import('@playwright/test').Page} page
+ * @param {number} duration - Duration to monitor in milliseconds
+ * @param {number} interval - Sampling interval in milliseconds
+ * @returns {Promise<Array<{time: number, progress: number}>>} Array of progress samples
+ */
+async function monitorProgressBar(page, duration, interval = 100) {
+  const samples = [];
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < duration) {
+    const currentTime = Date.now() - startTime;
+    const progress = await getProgressBarPercentage(page);
+    samples.push({ time: currentTime, progress });
+    await page.waitForTimeout(interval);
+  }
+
+  return samples;
+}
 
 test.describe("Timer and Countdown System Tests", () => {
   // Run timer tests serially to avoid timing conflicts
@@ -373,8 +393,7 @@ test.describe("Timer and Countdown System Tests", () => {
     expect(elapsedTime).toBeGreaterThan(1000 - TIMING_TOLERANCE_MS);
     expect(elapsedTime).toBeLessThan(1000 + TIMING_TOLERANCE_MS);
 
-    await page.click("#stop-btn");
-    await expect(page.locator("#game-form")).toBeVisible();
+    await stopGame(page, { isLearningMode: true });
 
     // Test longer timer (30 seconds) - just verify it starts correctly
     await startGame(page, {

@@ -4,9 +4,7 @@ import {
   startGame,
   getCurrentItem,
   assertButtonStates,
-  waitForProgressBarActive,
-  isProgressBarActive,
-  isSolutionVisible,
+  pauseGame,
 } from "./test-utils.js";
 
 test.describe("Game State Management Tests", () => {
@@ -84,14 +82,7 @@ test.describe("Game State Management Tests", () => {
     });
 
     // Pause game using JS evaluation to avoid element blocking
-    await page.waitForFunction(() => {
-      const pauseBtn = document.querySelector("#pause-btn");
-      return pauseBtn && !pauseBtn.disabled;
-    });
-
-    await page.evaluate(() => {
-      document.querySelector("#pause-btn").click();
-    });
+    await pauseGame(page);
 
     // Test button states when paused
     await assertButtonStates(page, {
@@ -149,9 +140,7 @@ test.describe("Game State Management Tests", () => {
     const currentItem = await getCurrentItem(page);
 
     // Pause at this point using different approach
-    await page.evaluate(() => {
-      document.querySelector("#pause-btn").click();
-    });
+    await pauseGame(page);
 
     // Verify pause state
     await expect(page.locator("#play-btn")).toBeEnabled();

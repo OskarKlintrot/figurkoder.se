@@ -29,7 +29,7 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     await expect(page.locator("#solution-display")).toBeVisible();
     const solutionText = await page.locator("#solution-display").textContent();
     expect(solutionText).not.toBe("•••");
-    // VISA-knappen ska vara inaktiverad
+    // VISA button should be disabled
     await expect(page.locator("#show-btn")).toBeDisabled();
   });
 

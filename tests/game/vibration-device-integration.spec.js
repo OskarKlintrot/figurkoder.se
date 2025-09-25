@@ -160,6 +160,32 @@ test.describe("Vibration and Device Integration Tests", () => {
     expect(hasContent).toContain("Figurkoder");
   });
 
+  test("should vibrate when time runs out and solution is shown in training mode (non-learning mode)", async ({
+    page,
+  }) => {
+    await setupVibrationMock(page);
+    await navigateToGamePage(page);
+    await enableVibrationSetting(page);
+
+    // Start game in training mode with short timer
+    await startGame(page, {
+      learningMode: false,
+      fromRange: 0,
+      toRange: 1,
+      timeLimit: 1,
+    });
+
+    // Wait until solution is shown
+    await page.waitForFunction(() => {
+      const el = document.querySelector("#solution-display");
+      return el && el.textContent && el.textContent.trim() !== "•••";
+    });
+
+    // Check that vibration was triggered
+    const vibrationCalls = await getVibrationCalls(page);
+    expect(vibrationCalls).toContain(100);
+  });
+
   test("should handle vibration API errors gracefully", async ({ page }) => {
     await setupVibrationErrorMock(page);
     await navigateToGamePage(page);

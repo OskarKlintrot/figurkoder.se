@@ -12,6 +12,27 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     await navigateToGamePage(page);
   });
 
+  test("should automatically reveal answer when timer expires in training mode", async ({
+    page,
+  }) => {
+    await startGame(page, {
+      learningMode: false,
+      fromRange: 0,
+      toRange: 1,
+      timeLimit: 1,
+    });
+
+    await page.waitForFunction(() => {
+      const el = document.querySelector("#solution-display");
+      return el && el.textContent && el.textContent !== "•••";
+    });
+    await expect(page.locator("#solution-display")).toBeVisible();
+    const solutionText = await page.locator("#solution-display").textContent();
+    expect(solutionText).not.toBe("•••");
+    // VISA button should be disabled
+    await expect(page.locator("#show-btn")).toBeDisabled();
+  });
+
   test("should reveal answer when clicking VISA button in training mode", async ({
     page,
   }) => {
@@ -39,8 +60,8 @@ test.describe("Show Answer (VISA) Functionality Tests", () => {
     // Verify the solution display contains actual content (not placeholder)
     const solutionText = await page.locator("#solution-display").textContent();
     expect(solutionText).toBeTruthy();
-    expect(solutionText.trim()).not.toBe("");
-    expect(solutionText.trim()).not.toBe("•••");
+    expect(solutionText).not.toBe("");
+    expect(solutionText).not.toBe("•••");
 
     // Verify button becomes disabled after showing answer
     await expect(page.locator("#show-btn")).toBeDisabled();

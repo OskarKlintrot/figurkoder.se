@@ -1133,10 +1133,10 @@ export function startCountdown(resume = false) {
 
       if (gameState.isGameRunning && !gameState.paused) {
         if (gameState.isLearningMode) {
-          // In learning mode, auto-advance to next item with vibration
           nextItem(true);
         } else {
-          // In training mode, just show the answer and pause
+          vibrate();
+
           showAnswer();
           resetProgressBar();
           // Set game state to paused after countdown finishes
@@ -1219,9 +1219,9 @@ export function showAnswer() {
 
 /**
  * Advances to the next item in the game
- * @param {boolean} vibrate - Whether to vibrate the device (for auto-advance)
+ * @param {boolean} shouldVibrate - Whether to vibrate the device (for auto-advance)
  */
-export function nextItem(vibrate = false) {
+export function nextItem(shouldVibrate = false) {
   // If game is paused, resume and advance to next item
   if (gameState.paused) {
     // Resume the game first
@@ -1250,14 +1250,8 @@ export function nextItem(vibrate = false) {
   resetProgressBar();
 
   // Vibrate device for 100ms on auto-advance in learning mode (if enabled)
-  if (
-    gameState.vibrationEnabled &&
-    navigator.vibrate &&
-    gameState.isLearningMode &&
-    vibrate
-  ) {
-    navigator.vibrate(100);
-    console.log("Vibration triggered: 100ms");
+  if (gameState.isLearningMode && shouldVibrate) {
+    vibrate();
   }
 
   // Record result for current item if not already recorded (i.e., user pressed NEXT)
@@ -1487,6 +1481,16 @@ export function replay(slowOnly = false) {
 // ============================================================================
 //  UTILITY FUNCTIONS
 // ============================================================================
+
+/**
+ * Vibrate if supported and enabled in game settings
+ */
+function vibrate() {
+  if (gameState.vibrationEnabled && navigator.vibrate) {
+    navigator.vibrate(100);
+    console.log("Vibration triggered: 100ms");
+  }
+}
 
 /**
  * Shuffles an array in place using Fisher-Yates algorithm

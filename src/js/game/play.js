@@ -1250,7 +1250,7 @@ export function nextItem(shouldVibrate = false) {
   resetProgressBar();
 
   // Vibrate device for 100ms on auto-advance in learning mode (if enabled)
-  if (gameState.vibrationEnabled && gameState.isLearningMode && shouldVibrate) {
+  if (gameState.isLearningMode && shouldVibrate) {
     vibrate();
   }
 
@@ -1483,10 +1483,10 @@ export function replay(slowOnly = false) {
 // ============================================================================
 
 /**
- * Vibrate if supported
+ * Vibrate if supported and enabled in game settings
  */
 function vibrate() {
-  if (navigator.vibrate) {
+  if (gameState.vibrationEnabled && navigator.vibrate) {
     navigator.vibrate(100);
     console.log("Vibration triggered: 100ms");
   }

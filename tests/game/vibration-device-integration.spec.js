@@ -175,7 +175,7 @@ test.describe("Vibration and Device Integration Tests", () => {
       timeLimit: 1,
     });
 
-    // Vänta tills lösningen visas
+    // Wait until solution is shown
     await page.waitForFunction(() => {
       const el = document.querySelector("#solution-display");
       return el && el.textContent && el.textContent.trim() !== "•••";

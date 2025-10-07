@@ -89,14 +89,17 @@ const gameState = {
  * Resets the progress bar to 0% and removes progress bar styling
  */
 function resetProgressBar() {
+  // First remove the progress-bar class to ensure color reset
+  domCache.nextBtn.classList.remove("progress-bar");
+
   // Temporarily remove transition to avoid layout issues during reset
   domCache.progressBar.style.transition = "none";
   domCache.progressBar.style.setProperty("--progress", "0%");
+
   // Restore transition on the next animation frame to avoid forced reflow
   requestAnimationFrame(() => {
     domCache.progressBar.style.transition = "";
   });
-  domCache.nextBtn.classList.remove("progress-bar");
 }
 
 /**

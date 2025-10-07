@@ -352,6 +352,7 @@
 
 .replay-buttons {
   display: flex;
+  flex-direction: column;
   gap: var(--spacing-xl);
   margin-top: var(--spacing-3xl);
   justify-content: center;
@@ -366,7 +367,7 @@
   padding: var(--spacing-button) var(--spacing-3xl);
   font-size: var(--font-size-base);
   font-weight: 600;
-  max-width: var(--max-width-replay-btn);
+  max-width: none;
 }
 
 /* Figurkod List */

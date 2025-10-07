@@ -325,10 +325,11 @@ export function updateButtonStates() {
     domCache.playBtn.classList.remove("hidden");
     domCache.pauseBtn.classList.remove("hidden");
 
-    // Special handling for replay slow mode
+    // Special handling for replay slow and shown modes
     const isReplaySlow = contextData && contextData.replayType === "slow";
+    const isReplayShown = contextData && contextData.replayType === "shown";
 
-    if (isReplaySlow) {
+    if (isReplaySlow || isReplayShown) {
       domCache.replayBtn.classList.remove("hidden");
     } else {
       domCache.replayBtn.classList.add("hidden");
@@ -488,6 +489,21 @@ function initializeGame() {
       gameState.currentGameDataSet = contextData.fullGameDataSet.filter(item =>
         slowSet.has(item[0]),
       );
+    } else if (
+      contextData.replayType === "shown" &&
+      Array.isArray(contextData.gameResults)
+    ) {
+      // Only include items that had their answer shown
+      const shownSet = new Set();
+      contextData.gameResults.forEach(result => {
+        if (result.showedAnswer) {
+          shownSet.add(result.figurkod);
+        }
+      });
+
+      gameState.currentGameDataSet = contextData.fullGameDataSet.filter(item =>
+        shownSet.has(item[0]),
+      );
     } else {
       gameState.currentGameDataSet = [...contextData.fullGameDataSet];
     }
@@ -533,10 +549,13 @@ function initializeGame() {
 
     // Set learning mode based on replay type
     const learningModeCheckbox = domCache.learningModeCheckbox;
-    if (contextData.replayType === "slow") {
+    if (
+      contextData.replayType === "slow" ||
+      contextData.replayType === "shown"
+    ) {
       hideRangeControls();
       domCache.roundsInput.parentNode.classList.add("hidden");
-      // Enable learning mode for slow replay
+      // Enable learning mode for slow and shown replay
       if (learningModeCheckbox) {
         learningModeCheckbox.checked = true;
         gameState.isLearningMode = true;
@@ -823,7 +842,8 @@ export function startGame() {
   gameState.rangeEnd = toIndex;
 
   const filteredData =
-    contextData && contextData.replayType === "slow"
+    contextData &&
+    (contextData.replayType === "slow" || contextData.replayType === "shown")
       ? [...gameState.currentGameDataSet]
       : game.data.slice(fromIndex, toIndex + 1);
 
@@ -1433,6 +1453,18 @@ function updateResults() {
     replaySlowBtn.disabled = slowOrErrorCount === 0;
     replaySlowText.textContent = `Repetera långsamma (${slowOrErrorCount})`;
   }
+
+  // Update replay shown button
+  const replayShownBtn = document.getElementById("replay-shown-btn");
+  const replayShownText = document.getElementById("replay-shown-text");
+  if (replayShownBtn && replayShownText) {
+    const shownCount = resultData.gameResults.filter(
+      result => result.showedAnswer,
+    ).length;
+
+    replayShownBtn.disabled = shownCount === 0;
+    replayShownText.textContent = `Repetera visade (${shownCount})`;
+  }
 }
 
 /**
@@ -1466,6 +1498,45 @@ export function replay(slowOnly = false) {
 
   domCache.learningModeCheckbox.checked = slowOnly;
   gameState.isLearningMode = slowOnly;
+  resetProgressBar();
+  updateButtonStates();
+
+  // Set the replay data in context for initializeGame to use
+  setContextData(replayData);
+
+  // Reset back button to default behavior when using replay/back button
+  const backBtn = document.getElementById("back-btn");
+  if (backBtn) {
+    backBtn.onclick = () => history.back();
+  }
+
+  activatePage("game-page", setupGamePage);
+}
+
+/**
+ * Replays only the items that had their answer shown
+ */
+export function replayShown() {
+  // Get result data from context
+  const resultData = getContextData();
+  if (!resultData) {
+    console.warn("No result data found for replay shown");
+    return;
+  }
+
+  if (!resultData.gameResults.length) {
+    console.warn("Missing game results data for shown replay");
+    return;
+  }
+
+  const replayData = {
+    ...resultData,
+    replayType: "shown",
+  };
+
+  // Enable learning mode for shown replay (similar to slow replay)
+  domCache.learningModeCheckbox.checked = true;
+  gameState.isLearningMode = true;
   resetProgressBar();
   updateButtonStates();
 

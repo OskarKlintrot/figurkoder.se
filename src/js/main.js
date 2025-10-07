@@ -1,5 +1,6 @@
 import {
   replay,
+  replayShown,
   startGame,
   pauseGame,
   stopGame,
@@ -73,6 +74,7 @@ window.startGame = startGame;
 window.pauseGame = pauseGame;
 window.stopGame = stopGame;
 window.replay = replay;
+window.replayShown = replayShown;
 window.toggleVibrationSetting = toggleVibrationSetting;
 window.toggleDebugViewSetting = toggleDebugViewSetting;
 window.clearDebugConsole = clearDebugConsole;

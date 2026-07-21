@@ -41,7 +41,10 @@
       rel="preload"
       href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap"
       as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
     />
     <noscript>
       <link
@@ -388,7 +391,12 @@
         <h2>404 – Sidan hittades inte</h2>
         <p>Tyvärr kunde vi inte hitta sidan du sökte efter.</p>
         <p>
-          <a href="/" onclick="navigateToPage('main-menu'); return false;"
+          <a
+            href="/"
+            onclick="
+              navigateToPage('main-menu');
+              return false;
+            "
             >Gå tillbaka till startsidan</a
           >
         </p>
@@ -423,25 +431,37 @@
       <button class="nav-close" onclick="closeMenu()">×</button>
       <button
         class="nav-item"
-        onclick="navigateToPage('main-menu'); closeMenu();"
+        onclick="
+          navigateToPage('main-menu');
+          closeMenu();
+        "
       >
         Hem
       </button>
       <button
         class="nav-item"
-        onclick="navigateToPage('about-page'); closeMenu();"
+        onclick="
+          navigateToPage('about-page');
+          closeMenu();
+        "
       >
         Om sidan
       </button>
       <button
         class="nav-item"
-        onclick="navigateToPage('faq-page'); closeMenu();"
+        onclick="
+          navigateToPage('faq-page');
+          closeMenu();
+        "
       >
         Vanliga frågor
       </button>
       <button
         class="nav-item"
-        onclick="navigateToPage('contact-page'); closeMenu();"
+        onclick="
+          navigateToPage('contact-page');
+          closeMenu();
+        "
       >
         Kontakta mig
       </button>
